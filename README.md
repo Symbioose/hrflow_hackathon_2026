@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Passive Talent Intelligence Agent
 
-## Getting Started
+Agent IA de recrutement pour le hackathon HrFlow GenAI & RH (27-28 mars 2026).
 
-First, run the development server:
+Un recruteur envoie une requete via WhatsApp ou le dashboard → l'agent analyse les candidatures Indeed, score les profils via HrFlow, source des talents passifs (GitHub, LinkedIn), et renvoie le top 3 avec explications en francais.
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env   # Remplir les cles
+npm run dev             # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables d'environnement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copier `.env.example` et remplir :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description | Statut |
+|---|---|---|
+| `HRFLOW_API_KEY` | Cle API HrFlow (Read & Write, prefixe `ask_`) | OK |
+| `HRFLOW_API_EMAIL` | Email du compte HrFlow | OK |
+| `HRFLOW_SOURCE_KEY` | Source contenant les profils | OK (demo: 10k profils) |
+| `HRFLOW_BOARD_KEY` | Board contenant les jobs | OK (demo: 1k jobs) |
+| `PROXYCURL_API_KEY` | Enrichissement LinkedIn | A configurer |
+| `GITHUB_TOKEN` | Sourcing passif GitHub | A configurer |
+| `OLLAMA_BASE_URL` | URL Ollama (Mac Mini) | A configurer |
+| `OLLAMA_MODEL` | Modele LLM (qwen3:14b) | A configurer |
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  page.tsx                      Dashboard 3 colonnes
+  layout.tsx                    Layout avec Geist font
+  globals.css                   Theme dark + animations
+  components/
+    TopBar.tsx                  Barre status connexions
+    WhatsAppPanel.tsx           Chat recruteur (mock)
+    AgentFeed.tsx               Feed pipeline temps reel (mock)
+    CandidatePanel.tsx          Cartes candidats avec scores (mock)
+  lib/
+    hrflow.ts                   Client HrFlow centralise + types TS
+  api/hrflow/
+    parse/route.ts              POST — Upload et parse un CV
+    score/route.ts              GET  — Score profils vs job
+    ask/route.ts                GET  — Q&A sur un profil
+    profiles/route.ts           GET  — Lister les profils indexes
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend** : Next.js 16, React 19, Tailwind CSS v4
+- **Backend** : Next.js API Routes
+- **IA RH** : HrFlow.ai (parsing, scoring, asking)
+- **LLM** : Ollama + Qwen3 14B (Mac Mini M4 Pro via OpenClaw)
+- **Sourcing** : GitHub API, Proxycurl (LinkedIn)
