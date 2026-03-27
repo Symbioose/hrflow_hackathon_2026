@@ -53,10 +53,25 @@ export default function CandidatePanel({
 }: CandidatePanelProps) {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [skillsPreviewKey, setSkillsPreviewKey] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"default" | "score-desc" | "score-asc" | "high-only">("default");
 
   const toggleSkillsPreview = (key: string) => {
     setSkillsPreviewKey(skillsPreviewKey === key ? null : key);
   };
+
+  /* ─── Sort / filter logic ──────────────────────────────── */
+  const sortedProfiles = (() => {
+    let list = [...profiles];
+    if (sortMode === "high-only") {
+      list = list.filter((p) => (scores?.get(p.key) ?? 0) >= 70);
+    }
+    if (sortMode === "score-desc" || sortMode === "high-only") {
+      list.sort((a, b) => (scores?.get(b.key) ?? 0) - (scores?.get(a.key) ?? 0));
+    } else if (sortMode === "score-asc") {
+      list.sort((a, b) => (scores?.get(a.key) ?? 0) - (scores?.get(b.key) ?? 0));
+    }
+    return list;
+  })();
 
   return (
     <div className="flex flex-col h-full">
@@ -65,13 +80,28 @@ export default function CandidatePanel({
         <div className="flex items-center gap-3">
           <p className="text-[14px] font-semibold text-[var(--text-primary)]">Candidats</p>
           <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[var(--accent-emerald-dim)] text-[var(--accent-emerald)] font-medium">
-            {profiles.length} charges
+            {sortedProfiles.length}{sortMode === "high-only" ? `/${profiles.length}` : ""} charges
           </span>
         </div>
         {scores && scores.size > 0 && (
-          <span className="text-[11px] text-[var(--accent-cyan)] font-mono">
-            Scoring IA actif
-          </span>
+          <div className="flex items-center gap-2">
+            {(["default", "score-desc", "score-asc", "high-only"] as const).map((mode) => {
+              const labels = { "default": "Ordre", "score-desc": "Score \u2193", "score-asc": "Score \u2191", "high-only": "\u2265 70%" };
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setSortMode(mode)}
+                  className={`text-[10px] px-2 py-1 rounded-full border transition-colors cursor-pointer ${
+                    sortMode === mode
+                      ? "border-[var(--accent-cyan)] text-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10"
+                      : "border-white/10 text-[var(--text-muted)] hover:border-white/20"
+                  }`}
+                >
+                  {labels[mode]}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 
@@ -86,13 +116,15 @@ export default function CandidatePanel({
           </div>
         )}
 
-        {!loading && profiles.length === 0 && (
+        {!loading && sortedProfiles.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-[12px] text-[var(--text-muted)]">Aucun profil trouve.</p>
+            <p className="text-[12px] text-[var(--text-muted)]">
+              {sortMode === "high-only" ? "Aucun profil avec un score >= 70%." : "Aucun profil trouve."}
+            </p>
           </div>
         )}
 
-        {profiles.map((profile, i) => (
+        {sortedProfiles.map((profile, i) => (
           <CandidateCard
             key={profile.key}
             profile={profile}
