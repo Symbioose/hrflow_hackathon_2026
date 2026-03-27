@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const result = await hrflow.askProfile(profileKey, question);
+  const result = await hrflow.askProfile(profileKey, [question]);
 
-  return NextResponse.json(result, { status: result.code });
+  return NextResponse.json(result, { status: result.code ?? 500 });
 }

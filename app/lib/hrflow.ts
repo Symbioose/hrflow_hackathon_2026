@@ -44,7 +44,7 @@ export const hrflow = {
   },
 
   /** POST /profile/indexing — Index a parsed profile */
-  async indexProfile(profile: HrFlowProfileInput) {
+  async indexProfile(profile: Record<string, unknown>) {
     const { sourceKey } = getConfig();
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
@@ -58,7 +58,7 @@ export const hrflow = {
   },
 
   /** GET /profiles/scoring — Score profiles against a job */
-  async scoreProfiles(jobKey: string, options?: { limit?: number; page?: number }) {
+  async scoreProfiles(jobKey: string, algorithmKey: string, options?: { limit?: number; page?: number }) {
     const { sourceKey, boardKey } = getConfig();
     if (!sourceKey || !boardKey) throw new Error("Missing HRFLOW_SOURCE_KEY or HRFLOW_BOARD_KEY");
 
@@ -66,6 +66,7 @@ export const hrflow = {
       board_key: boardKey,
       job_key: jobKey,
       source_keys: JSON.stringify([sourceKey]),
+      algorithm_key: algorithmKey,
       use_agent: "1",
       limit: String(options?.limit ?? 30),
       page: String(options?.page ?? 1),
@@ -80,15 +81,15 @@ export const hrflow = {
     return res.json();
   },
 
-  /** GET /profile/asking — Ask a natural language question about a profile */
-  async askProfile(profileKey: string, question: string) {
+  /** GET /profile/asking — Ask questions about a profile (param: questions array) */
+  async askProfile(profileKey: string, questions: string[]) {
     const { sourceKey } = getConfig();
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
     const params = new URLSearchParams({
       source_key: sourceKey,
       key: profileKey,
-      question,
+      questions: JSON.stringify(questions),
     });
 
     const res = await fetch(`${HRFLOW_BASE_URL}/profile/asking?${params}`, {
@@ -98,27 +99,12 @@ export const hrflow = {
     return res.json();
   },
 
-  /** GET /profile/upskilling — Explain a profile↔job recommendation */
-  async explainProfile(profileKey: string, jobKey: string) {
-    const { sourceKey, boardKey } = getConfig();
-    if (!sourceKey || !boardKey) throw new Error("Missing HRFLOW_SOURCE_KEY or HRFLOW_BOARD_KEY");
-
-    const params = new URLSearchParams({
-      source_key: sourceKey,
-      profile_key: profileKey,
-      board_key: boardKey,
-      job_key: jobKey,
-    });
-
-    const res = await fetch(`${HRFLOW_BASE_URL}/profile/upskilling?${params}`, {
-      headers: authHeaders(),
-    });
-
-    return res.json();
-  },
-
-  /** GET /profiles/searching — List profiles in a source */
-  async listProfiles(options?: { limit?: number; page?: number }) {
+  /** GET /profiles/searching — Search/list profiles in a source */
+  async searchProfiles(options?: {
+    limit?: number;
+    page?: number;
+    text_keywords?: string[];
+  }) {
     const { sourceKey } = getConfig();
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
@@ -128,71 +114,32 @@ export const hrflow = {
       page: String(options?.page ?? 1),
     });
 
+    if (options?.text_keywords?.length) {
+      params.set("text_keywords", JSON.stringify(options.text_keywords));
+    }
+
     const res = await fetch(`${HRFLOW_BASE_URL}/profiles/searching?${params}`, {
       headers: authHeaders(),
     });
 
     return res.json();
   },
+
+  /** GET /jobs/searching — Search/list jobs in the board */
+  async searchJobs(options?: { limit?: number; page?: number }) {
+    const { boardKey } = getConfig();
+    if (!boardKey) throw new Error("Missing HRFLOW_BOARD_KEY");
+
+    const params = new URLSearchParams({
+      board_keys: JSON.stringify([boardKey]),
+      limit: String(options?.limit ?? 10),
+      page: String(options?.page ?? 1),
+    });
+
+    const res = await fetch(`${HRFLOW_BASE_URL}/jobs/searching?${params}`, {
+      headers: authHeaders(),
+    });
+
+    return res.json();
+  },
 };
-
-// --- Types ---
-
-export interface HrFlowProfileInput {
-  info: {
-    full_name: string;
-    first_name?: string;
-    last_name?: string;
-    email: string;
-    phone?: string;
-    location?: { text: string };
-    summary?: string;
-  };
-  reference?: string;
-  experiences?: HrFlowExperience[];
-  educations?: HrFlowEducation[];
-  skills?: HrFlowSkill[];
-  languages?: { name: string; value: string | null }[];
-  tags?: HrFlowTag[];
-}
-
-export interface HrFlowExperience {
-  title: string;
-  company: string;
-  location?: { text: string };
-  date_start?: { iso8601: string };
-  date_end?: { iso8601: string };
-  description?: string;
-}
-
-export interface HrFlowEducation {
-  title: string;
-  school: string;
-  location?: { text: string };
-  date_start?: { iso8601: string };
-  date_end?: { iso8601: string };
-  description?: string;
-}
-
-export interface HrFlowSkill {
-  name: string;
-  type?: string;
-  value?: string | null;
-}
-
-export interface HrFlowTag {
-  name: string;
-  value: string;
-}
-
-export interface HrFlowApiResponse<T = unknown> {
-  code: number;
-  message: string;
-  data: T;
-  meta?: {
-    page: number;
-    maxPage: number;
-    count: number;
-    total: number;
-  };
-}

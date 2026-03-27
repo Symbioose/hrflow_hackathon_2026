@@ -1,55 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ChatMessage } from "@/app/lib/types";
 
-interface Message {
-  id: number;
-  type: "user" | "agent";
-  text: string;
-  time: string;
+interface WhatsAppPanelProps {
+  messages: ChatMessage[];
+  onSend: (question: string) => void;
+  asking: boolean;
+  selectedProfileName: string | null;
 }
 
-const MOCK_MESSAGES: Message[] = [
-  {
-    id: 1,
-    type: "user",
-    text: "Analyse mes candidats Indeed pour Dev Python Senior a Paris",
-    time: "14:32",
-  },
-  {
-    id: 2,
-    type: "agent",
-    text: "Connexion a votre compte Indeed en cours... Je vais analyser toutes les candidatures recues pour le poste Dev Python Senior.",
-    time: "14:32",
-  },
-  {
-    id: 3,
-    type: "agent",
-    text: "47 CVs detectes. Parsing et scoring en cours via HrFlow...",
-    time: "14:33",
-  },
-  {
-    id: 4,
-    type: "agent",
-    text: "Analyse terminee ! Voici le top 3 :\n\n1. Marie Dupont — 92/100\n   6 ans Python, Django, AWS. Paris 11e.\n\n2. Lucas Martin — 87/100\n   4 ans Python, FastAPI, Docker. Bilingue.\n\n3. Sarah Cohen — 84/100\n   5 ans Python, ML, Kubernetes. Teletravail OK.\n\nDetails complets dans le dashboard →",
-    time: "14:35",
-  },
-  {
-    id: 5,
-    type: "user",
-    text: "Marie Dupont a manage une equipe ?",
-    time: "14:36",
-  },
-  {
-    id: 6,
-    type: "agent",
-    text: "D'apres son CV : Oui, Marie a dirige une equipe de 4 developpeurs chez TechCorp (2023-2024). Elle a egalement mene 2 projets transverses avec des equipes de 8+ personnes.",
-    time: "14:36",
-  },
-];
-
-export default function WhatsAppPanel() {
+export default function WhatsAppPanel({ messages, onSend, asking, selectedProfileName }: WhatsAppPanelProps) {
   const [inputValue, setInputValue] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, asking]);
+
+  function handleSend() {
+    const text = inputValue.trim();
+    if (!text || asking) return;
+    setInputValue("");
+    onSend(text);
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -63,22 +38,39 @@ export default function WhatsAppPanel() {
         </div>
         <div>
           <p className="text-[13px] font-semibold text-[var(--text-primary)]">Assistant Recrutement</p>
-          <p className="text-[10px] text-[var(--whatsapp-green)]">En ligne</p>
+          {selectedProfileName ? (
+            <p className="text-[10px] text-[var(--accent-cyan)]">Profil : {selectedProfileName}</p>
+          ) : (
+            <p className="text-[10px] text-[var(--text-muted)]">Selectionnez un profil pour poser des questions</p>
+          )}
         </div>
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3 bg-[var(--bg-deep)]" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(0,212,255,0.02) 0%, transparent 70%)' }}>
-        {MOCK_MESSAGES.map((msg, i) => (
-          <MessageBubble key={msg.id} message={msg} delay={i * 150} />
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 py-4 space-y-3 bg-[var(--bg-deep)]"
+        style={{ backgroundImage: "radial-gradient(circle at 50% 50%, rgba(0,212,255,0.02) 0%, transparent 70%)" }}
+      >
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-[12px] text-[var(--text-muted)] text-center px-6">
+              Selectionnez un candidat dans le panneau de droite, puis posez une question ici.
+            </p>
+          </div>
+        )}
+
+        {messages.map((msg) => (
+          <MessageBubble key={msg.id} message={msg} />
         ))}
 
-        {/* Typing indicator */}
-        <div className="animate-fade-in-left delay-1000 flex gap-1 px-4 py-3 rounded-xl rounded-bl-sm bg-[var(--bg-card)] w-fit max-w-[85%]">
-          <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[var(--text-muted)]" />
-          <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[var(--text-muted)]" />
-          <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[var(--text-muted)]" />
-        </div>
+        {asking && (
+          <div className="flex gap-1 px-4 py-3 rounded-xl rounded-bl-sm bg-[var(--bg-card)] w-fit max-w-[85%]">
+            <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[var(--text-muted)]" />
+            <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[var(--text-muted)]" />
+            <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[var(--text-muted)]" />
+          </div>
+        )}
       </div>
 
       {/* Input area */}
@@ -87,10 +79,20 @@ export default function WhatsAppPanel() {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Posez une question au recruteur IA..."
-          className="flex-1 px-4 py-2.5 rounded-full bg-[var(--bg-card)] border border-white/[0.06] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-cyan)]/30 transition-colors"
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          placeholder={
+            selectedProfileName
+              ? `Question sur ${selectedProfileName}...`
+              : "Selectionnez d'abord un profil..."
+          }
+          disabled={!selectedProfileName || asking}
+          className="flex-1 px-4 py-2.5 rounded-full bg-[var(--bg-card)] border border-white/[0.06] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-cyan)]/30 transition-colors disabled:opacity-50"
         />
-        <button className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--accent-cyan)] hover:bg-[var(--accent-cyan)]/80 transition-colors shadow-[0_0_15px_rgba(0,212,255,0.3)]">
+        <button
+          onClick={handleSend}
+          disabled={!selectedProfileName || asking || !inputValue.trim()}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--accent-cyan)] hover:bg-[var(--accent-cyan)]/80 transition-colors shadow-[0_0_15px_rgba(0,212,255,0.3)] disabled:opacity-40 disabled:shadow-none"
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m22 2-7 20-4-9-9-4z" />
             <path d="M22 2 11 13" />
@@ -101,14 +103,11 @@ export default function WhatsAppPanel() {
   );
 }
 
-function MessageBubble({ message, delay }: { message: Message; delay: number }) {
+function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.type === "user";
 
   return (
-    <div
-      className={`flex ${isUser ? "justify-end animate-fade-in-right" : "justify-start animate-fade-in-left"}`}
-      style={{ animationDelay: `${delay}ms` }}
-    >
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"} animate-fade-in-up`}>
       <div
         className={`max-w-[85%] px-3.5 py-2.5 rounded-xl ${
           isUser
