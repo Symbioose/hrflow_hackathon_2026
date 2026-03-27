@@ -317,13 +317,8 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* CENTER — Agent Feed */}
+        {/* CENTER — Candidates (detailed) */}
         <div className="flex-1 border-r border-white/[0.06] flex flex-col min-w-0">
-          <AgentFeed events={feed} totalProfiles={totalProfiles} cvCount={cvCount} />
-        </div>
-
-        {/* RIGHT — Candidates */}
-        <div className="w-[400px] shrink-0 flex flex-col">
           <CandidatePanel
             profiles={visibleProfiles}
             loading={!pipelineDone && visibleProfiles.length === 0}
@@ -331,6 +326,11 @@ export default function Dashboard() {
             onSelect={handleSelectProfile}
             onAsk={handleAskFromCard}
           />
+        </div>
+
+        {/* RIGHT — Agent Pipeline Feed */}
+        <div className="w-[340px] shrink-0 flex flex-col">
+          <AgentFeed events={feed} totalProfiles={totalProfiles} cvCount={cvCount} />
         </div>
       </div>
     </div>
