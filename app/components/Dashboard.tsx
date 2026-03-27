@@ -7,6 +7,8 @@ import WhatsAppPanel from "./WhatsAppPanel";
 import AgentFeed from "./AgentFeed";
 import CandidatePanel from "./CandidatePanel";
 
+/* ─── Helpers ─────────────────────────────────────────────── */
+
 function feedEvent(
   action: string,
   detail: string,
@@ -32,38 +34,43 @@ function chatMsg(type: "user" | "agent", text: string): ChatMessage {
   };
 }
 
-// Orchestrated pipeline steps with delays (ms from start)
+/* ─── Pipeline demo script ────────────────────────────────── */
+
+const DEMO_JOB = "Developpeur Full-Stack Python / React — CDI Paris";
+
 const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] = [
-  // WhatsApp: recruiter sends request
+  // Recruiter sends request via Telegram
   {
     delay: 500,
     run: (ctx) => {
-      ctx.addMessage(chatMsg("user", "Analyse mes candidats Indeed pour Dev Python Senior a Paris"));
+      ctx.addMessage(chatMsg("user", `Trouve-moi les meilleurs profils pour : ${DEMO_JOB}`));
     },
   },
-  // Agent acknowledges
+  // Agent acknowledges via OpenClaw
   {
     delay: 2000,
     run: (ctx) => {
-      ctx.addMessage(chatMsg("agent", "Bien recu ! Je me connecte a votre compte Indeed pour analyser les candidatures pour le poste Dev Python Senior."));
-      ctx.addFeed(feedEvent("Connexion Indeed", "Authentification via OpenClaw...", "connect", "running"));
+      ctx.addMessage(chatMsg("agent",
+        `Compris ! Je lance l'analyse pour "${DEMO_JOB}".\n\nConnexion a Indeed via OpenClaw...`,
+      ));
+      ctx.addFeed(feedEvent("Connexion Indeed", "Authentification via OpenClaw — compte employeur", "connect", "running"));
     },
   },
-  // Connected to Indeed
+  // Indeed connected
   {
     delay: 4000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "Authentification reussie — compte employeur detecte");
-      ctx.addFeed(feedEvent("Scan candidatures", "Analyse de la boite de reception Indeed...", "connect", "running"));
+      ctx.updateLastFeed("done", "Authentification reussie — acces candidatures");
+      ctx.addFeed(feedEvent("Scan boite de reception", "Recherche des candidatures recentes...", "connect", "running"));
     },
   },
   // CVs detected
   {
     delay: 6000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "47 nouvelles candidatures detectees");
-      ctx.addMessage(chatMsg("agent", "47 CVs detectes sur votre compte Indeed. Lancement du parsing..."));
-      ctx.addFeed(feedEvent("Parsing CV #1-10", "POST /profile/parsing/file — batch 1/5", "parse", "running"));
+      ctx.updateLastFeed("done", "47 candidatures detectees — dernieres 72h");
+      ctx.addMessage(chatMsg("agent", "47 candidatures trouvees sur Indeed. Je lance le parsing HrFlow..."));
+      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 1/5 (10 CVs)", "parse", "running"));
       ctx.setCvCount(10);
     },
   },
@@ -72,7 +79,7 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
     delay: 8000,
     run: (ctx) => {
       ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV #11-20", "POST /profile/parsing/file — batch 2/5", "parse", "running"));
+      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 2/5 (10 CVs)", "parse", "running"));
       ctx.setCvCount(20);
     },
   },
@@ -81,7 +88,7 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
     delay: 9500,
     run: (ctx) => {
       ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV #21-30", "POST /profile/parsing/file — batch 3/5", "parse", "running"));
+      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 3/5 (10 CVs)", "parse", "running"));
       ctx.setCvCount(30);
     },
   },
@@ -90,7 +97,7 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
     delay: 11000,
     run: (ctx) => {
       ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV #31-40", "POST /profile/parsing/file — batch 4/5", "parse", "running"));
+      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 4/5 (10 CVs)", "parse", "running"));
       ctx.setCvCount(40);
     },
   },
@@ -99,26 +106,26 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
     delay: 12500,
     run: (ctx) => {
       ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV #41-47", "POST /profile/parsing/file — batch 5/5", "parse", "running"));
+      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 5/5 (7 CVs)", "parse", "running"));
       ctx.setCvCount(47);
     },
   },
-  // Indexation
+  // Indexation + scoring
   {
     delay: 14000,
     run: (ctx) => {
       ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Indexation profils", "47 profils indexes dans HrFlow Source", "parse"));
-      ctx.addFeed(feedEvent("Scoring IA", "GET /profiles/scoring — Dev Python Senior Paris", "score", "running"));
-      ctx.addMessage(chatMsg("agent", "47 CVs parses et indexes. Scoring IA en cours..."));
+      ctx.addFeed(feedEvent("Indexation HrFlow", "47 profils indexes dans la source", "parse"));
+      ctx.addFeed(feedEvent("Scoring IA", `GET /profiles/scoring — "${DEMO_JOB}"`, "score", "running"));
+      ctx.addMessage(chatMsg("agent", "47 CVs parses. Scoring IA en cours — je classe les profils par pertinence..."));
     },
   },
-  // Scoring done — fetch real profiles & reveal one by one
+  // Scoring done — fetch real profiles with scores
   {
     delay: 17000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "Scoring termine — top 5 identifies");
-      ctx.addFeed(feedEvent("Analyse top 5", "GET /profile/upskilling — generation des explications", "analyze", "running"));
+      ctx.updateLastFeed("done", "Scoring termine — classement par pertinence");
+      ctx.addFeed(feedEvent("Chargement profils", "GET /profiles/searching — top 20", "analyze", "running"));
       ctx.fetchAndRevealProfiles();
     },
   },
@@ -126,27 +133,31 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
   {
     delay: 20000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "Explications generees en francais");
+      ctx.updateLastFeed("done", "Profils charges avec scores");
     },
   },
-  // WhatsApp summary
+  // Summary
   {
     delay: 22000,
     run: (ctx) => {
-      ctx.addFeed(feedEvent("Resume WhatsApp", "Envoi du top 3 au recruteur", "notify"));
+      ctx.addFeed(feedEvent("Synthese Telegram", "Envoi du classement au recruteur", "notify"));
       ctx.sendTopSummary();
     },
   },
-  // Passive sourcing tease
+  // Pipeline done
   {
     delay: 26000,
     run: (ctx) => {
-      ctx.addMessage(chatMsg("agent", "Vivier de 47 candidats analyse. Voulez-vous que je lance un sourcing passif sur GitHub et LinkedIn pour elargir la recherche ?"));
-      ctx.addFeed(feedEvent("Suggestion", "Sourcing passif disponible — en attente de validation", "source"));
+      ctx.addMessage(chatMsg("agent",
+        "Analyse terminee ! Cliquez sur un profil pour voir le detail.\n\nJe peux aussi lancer un sourcing passif GitHub / LinkedIn si vous voulez elargir la recherche.",
+      ));
+      ctx.addFeed(feedEvent("Sourcing passif", "Disponible — en attente de validation recruteur", "source"));
       ctx.setPipelineDone(true);
     },
   },
 ];
+
+/* ─── Pipeline context interface ──────────────────────────── */
 
 interface PipelineContext {
   addFeed: (event: FeedEvent) => void;
@@ -158,9 +169,12 @@ interface PipelineContext {
   setPipelineDone: (done: boolean) => void;
 }
 
+/* ─── Dashboard component ─────────────────────────────────── */
+
 export default function Dashboard() {
   const [profiles, setProfiles] = useState<HrFlowProfile[]>([]);
   const [visibleProfiles, setVisibleProfiles] = useState<HrFlowProfile[]>([]);
+  const [scores, setScores] = useState<Map<string, number>>(new Map());
   const [totalProfiles, setTotalProfiles] = useState(0);
   const [cvCount, setCvCount] = useState(0);
   const [selectedProfile, setSelectedProfile] = useState<HrFlowProfile | null>(null);
@@ -169,6 +183,8 @@ export default function Dashboard() {
   const [asking, setAsking] = useState(false);
   const [pipelineDone, setPipelineDone] = useState(false);
   const pipelineStarted = useRef(false);
+
+  /* ─── State updaters ──────────────────────────────────── */
 
   const addFeed = useCallback((event: FeedEvent) => {
     setFeed((prev) => [...prev, event]);
@@ -189,45 +205,88 @@ export default function Dashboard() {
     setMessages((prev) => [...prev, msg]);
   }, []);
 
-  // Fetch profiles from HrFlow, then reveal one by one
+  /* ─── Fetch profiles (with scoring when available) ────── */
+
   const fetchAndRevealProfiles = useCallback(async () => {
     try {
-      const res = await fetch("/api/hrflow/profiles?limit=20");
-      const data = await res.json();
-      if (data.code === 200) {
-        const fetched: HrFlowProfile[] = data.data.profiles;
-        setProfiles(fetched);
-        setTotalProfiles(data.meta.total);
+      // Try scoring first (needs a job from the board)
+      const scoreMap = new Map<string, number>();
+      let fetched: HrFlowProfile[] = [];
+      let scored = false;
 
-        // Reveal profiles one by one with stagger
-        fetched.slice(0, 10).forEach((profile, i) => {
-          setTimeout(() => {
-            setVisibleProfiles((prev) => [...prev, profile]);
-          }, i * 600);
-        });
+      try {
+        const jobsRes = await fetch("/api/hrflow/jobs?limit=1");
+        const jobsData = await jobsRes.json();
+        const firstJob = jobsData?.data?.jobs?.[0];
+
+        if (firstJob?.key) {
+          const scoreRes = await fetch(`/api/hrflow/score?job_key=${firstJob.key}&limit=20`);
+          const scoreData = await scoreRes.json();
+
+          if (scoreData.code === 200 && scoreData.data?.profiles?.length > 0) {
+            fetched = scoreData.data.profiles;
+            const predictions: [number, number][] = scoreData.data.predictions ?? [];
+            fetched.forEach((p, i) => {
+              const pred = predictions[i];
+              if (pred) {
+                scoreMap.set(p.key, Math.round(pred[1] * 100));
+              }
+            });
+            scored = true;
+          }
+        }
+      } catch {
+        // Scoring unavailable — fall back to search
       }
+
+      // Fallback: plain profile search
+      if (!scored) {
+        const res = await fetch("/api/hrflow/profiles?limit=20");
+        const data = await res.json();
+        if (data.code === 200) {
+          fetched = data.data.profiles;
+        }
+      }
+
+      if (fetched.length === 0) return;
+
+      setProfiles(fetched);
+      setScores(scoreMap);
+      setTotalProfiles(fetched.length);
+
+      // Reveal profiles progressively
+      const toReveal = fetched.slice(0, 10);
+      toReveal.forEach((profile, i) => {
+        setTimeout(() => {
+          setVisibleProfiles((prev) => [...prev, profile]);
+        }, i * 600);
+      });
     } catch {
       addFeed(feedEvent("Erreur", "Impossible de charger les profils", "connect", "error"));
     }
   }, [addFeed]);
 
-  // Send WhatsApp summary of top 3
+  /* ─── WhatsApp/Telegram summary ───────────────────────── */
+
   const sendTopSummary = useCallback(() => {
     const top = profiles.slice(0, 3);
     if (top.length === 0) return;
 
     const lines = top.map((p, i) => {
       const exp = p.experiences?.[0];
-      const skills = (p.skills ?? []).slice(0, 3).map((s) => s.name).join(", ");
-      return `${i + 1}. ${p.info.full_name}\n   ${exp?.title ?? "N/A"} — ${p.info.location?.text ?? "?"}\n   Competences : ${skills || "N/A"}`;
+      const skills = (p.skills ?? []).slice(0, 4).map((s) => s.name).join(", ");
+      const score = scores.get(p.key);
+      const scoreTxt = score != null ? ` (${score}% match)` : "";
+      return `${i + 1}. ${p.info.full_name}${scoreTxt}\n   ${exp?.title ?? "N/A"} — ${p.info.location?.text ?? "?"}\n   ${skills || "N/A"}`;
     });
 
     addMessage(chatMsg("agent",
-      `Analyse terminee ! Voici le top 3 :\n\n${lines.join("\n\n")}\n\nCliquez sur un profil dans le dashboard pour plus de details, ou posez-moi une question.`,
+      `Voici le top 3 pour "${DEMO_JOB}" :\n\n${lines.join("\n\n")}\n\nCliquez sur un profil au centre pour voir le detail complet.`,
     ));
-  }, [profiles, addMessage]);
+  }, [profiles, scores, addMessage]);
 
-  // Run the pipeline sequence on mount
+  /* ─── Pipeline orchestration ──────────────────────────── */
+
   useEffect(() => {
     if (pipelineStarted.current) return;
     pipelineStarted.current = true;
@@ -250,7 +309,8 @@ export default function Dashboard() {
     return () => timeouts.forEach(clearTimeout);
   }, [addFeed, updateLastFeed, addMessage, fetchAndRevealProfiles, sendTopSummary]);
 
-  // Ask a question about the selected profile (real HrFlow API)
+  /* ─── Q&A on selected profile ─────────────────────────── */
+
   const handleAskQuestion = useCallback(async (question: string) => {
     if (!selectedProfile || asking) return;
 
@@ -258,13 +318,7 @@ export default function Dashboard() {
     const profileKey = selectedProfile.key;
 
     addMessage(chatMsg("user", question));
-
-    addFeed(feedEvent(
-      "Q&A profil",
-      `GET /profile/asking — "${question.slice(0, 50)}..."`,
-      "analyze",
-      "running",
-    ));
+    addFeed(feedEvent("Q&A profil", `GET /profile/asking — "${question.slice(0, 50)}..."`, "analyze", "running"));
 
     setAsking(true);
     try {
@@ -286,28 +340,30 @@ export default function Dashboard() {
     }
   }, [selectedProfile, asking, addFeed, updateLastFeed, addMessage]);
 
-  // Select a profile from the candidate panel
+  /* ─── Profile selection ───────────────────────────────── */
+
   const handleSelectProfile = useCallback((profile: HrFlowProfile) => {
     setSelectedProfile(profile);
+    const score = scores.get(profile.key);
+    const scoreTxt = score != null ? `\nScore de matching : ${score}%` : "";
     addMessage(chatMsg("agent",
-      `Profil selectionne : ${profile.info.full_name}\n${profile.experiences?.[0]?.title ?? "Pas de titre"} — ${profile.info.location?.text ?? "?"}\n\nPosez une question sur ce candidat.`,
+      `Profil selectionne : ${profile.info.full_name}\n${profile.experiences?.[0]?.title ?? "Pas de titre"} — ${profile.info.location?.text ?? "?"}${scoreTxt}\n\nPosez une question sur ce candidat.`,
     ));
-  }, [addMessage]);
+  }, [scores, addMessage]);
 
-  // "Poser une question" from card → select + focus chat
   const handleAskFromCard = useCallback((profile: HrFlowProfile) => {
     setSelectedProfile(profile);
-    addMessage(chatMsg("agent",
-      `Profil selectionne : ${profile.info.full_name}\nPosez votre question dans le chat.`,
-    ));
+    addMessage(chatMsg("agent", `Profil selectionne : ${profile.info.full_name}\nPosez votre question dans le chat.`));
   }, [addMessage]);
+
+  /* ─── Render ──────────────────────────────────────────── */
 
   return (
     <div className="flex flex-col h-screen bg-[var(--bg-deep)]">
       <TopBar totalProfiles={totalProfiles} cvCount={cvCount} pipelineDone={pipelineDone} />
 
       <div className="flex flex-1 min-h-0">
-        {/* LEFT — WhatsApp */}
+        {/* LEFT — Chat Telegram / OpenClaw */}
         <div className="w-[320px] shrink-0 border-r border-white/[0.06] flex flex-col">
           <WhatsAppPanel
             messages={messages}
@@ -325,6 +381,7 @@ export default function Dashboard() {
             selectedKey={selectedProfile?.key ?? null}
             onSelect={handleSelectProfile}
             onAsk={handleAskFromCard}
+            scores={scores}
           />
         </div>
 
