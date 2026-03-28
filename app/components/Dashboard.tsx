@@ -418,29 +418,59 @@ export default function Dashboard() {
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
 
-      // Find a job matching the query for SWOT analysis
+      // 1. Find a job matching the query from the board
+      let matchedJobKey: string | null = null;
       try {
-        const jobsRes = await fetch(`/api/hrflow/jobs?limit=50`);
+        const jobsRes = await fetch(`/api/hrflow/jobs?limit=100`);
         const jobsData = await jobsRes.json();
-        const jobs = jobsData?.data?.jobs ?? [];
-        // Find best matching job by checking if keywords appear in the job name
-        const queryLower = searchQueryRef.current.toLowerCase();
-        const kwList = keywords ? keywords.split(",") : [];
-        const matched = jobs.find((j: { name?: string }) => {
-          const name = (j.name ?? "").toLowerCase();
-          return kwList.some((kw: string) => name.includes(kw));
-        });
-        const bestJob = matched ?? jobs[0];
-        if (bestJob?.key) {
-          setJobKey(bestJob.key);
+        const jobs: { key: string; name?: string }[] = jobsData?.data?.jobs ?? [];
+        if (keywords && jobs.length > 0) {
+          const kwList = keywords.split(",");
+          // Score each job: count how many keywords appear in the name
+          let bestScore = 0;
+          for (const j of jobs) {
+            const name = (j.name ?? "").toLowerCase();
+            const score = kwList.filter((kw: string) => name.includes(kw)).length;
+            if (score > bestScore) {
+              bestScore = score;
+              matchedJobKey = j.key;
+            }
+          }
+        }
+        // Fallback to first job if no keyword match
+        if (!matchedJobKey && jobs.length > 0) {
+          matchedJobKey = jobs[0].key;
         }
       } catch {
-        // Job fetch failed — SWOT won't be available
+        // Job fetch failed
       }
 
-      // If we have a search query, use keyword search to get relevant profiles
-      if (keywords) {
-        // Try with all keywords first, then progressively fewer if no results (HrFlow does AND)
+      if (matchedJobKey) {
+        setJobKey(matchedJobKey);
+      }
+
+      // 2. Score profiles against the matched job (AI scoring = best results)
+      if (matchedJobKey) {
+        try {
+          const scoreRes = await fetch(`/api/hrflow/score?job_key=${matchedJobKey}&limit=20&${modeParam}`);
+          const scoreData = await scoreRes.json();
+          if (scoreData.code === 200 && scoreData.data?.profiles?.length > 0) {
+            fetched = scoreData.data.profiles;
+            const predictions: [number, number][] = scoreData.data.predictions ?? [];
+            fetched.forEach((p, i) => {
+              const pred = predictions[i];
+              if (pred) {
+                scoreMap.set(p.key, Math.round(pred[1] * 100));
+              }
+            });
+          }
+        } catch {
+          // Scoring failed — fall through to keyword search
+        }
+      }
+
+      // 3. Fallback: keyword search if scoring gave no results
+      if (fetched.length === 0 && keywords) {
         const kwList = keywords.split(",");
         for (let tryCount = kwList.length; tryCount >= 1 && fetched.length === 0; tryCount--) {
           const tryKw = kwList.slice(0, tryCount).join(",");
@@ -451,38 +481,9 @@ export default function Dashboard() {
           }
         }
         if (fetched.length > 0) {
-          // Generate realistic scores based on search ranking
           fetched.forEach((p, i) => {
             scoreMap.set(p.key, Math.max(52, 96 - i * 4 - Math.floor(Math.random() * 5)));
           });
-        }
-      }
-
-      // No keywords or no results — try scoring against board job
-      if (fetched.length === 0) {
-        try {
-          const jobsRes = await fetch("/api/hrflow/jobs?limit=1");
-          const jobsData = await jobsRes.json();
-          const firstJob = jobsData?.data?.jobs?.[0];
-
-          if (firstJob?.key) {
-            setJobKey(firstJob.key);
-            const scoreRes = await fetch(`/api/hrflow/score?job_key=${firstJob.key}&limit=20&${modeParam}`);
-            const scoreData = await scoreRes.json();
-
-            if (scoreData.code === 200 && scoreData.data?.profiles?.length > 0) {
-              fetched = scoreData.data.profiles;
-              const predictions: [number, number][] = scoreData.data.predictions ?? [];
-              fetched.forEach((p, i) => {
-                const pred = predictions[i];
-                if (pred) {
-                  scoreMap.set(p.key, Math.round(pred[1] * 100));
-                }
-              });
-            }
-          }
-        } catch {
-          // Scoring unavailable
         }
       }
 
