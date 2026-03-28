@@ -111,6 +111,7 @@ En mode expanse :
 - Fiches candidats : stats, skills cliquables, experiences, formations, langues, resume, SWOT
 - **Deploy Vercel** : https://hrflowhackathon2026.vercel.app
 - **Webhook OpenClaw** : bridge temps reel OpenClaw → dashboard (teste et fonctionnel)
+- **Mode Demo / Live** : toggle dans la TopBar — Demo (pipeline scripte) ou Live (events OpenClaw temps reel)
 
 ### A faire — Emile (OpenClaw)
 - Brancher le bot Telegram

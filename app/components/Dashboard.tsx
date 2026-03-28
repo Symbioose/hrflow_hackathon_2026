@@ -172,6 +172,7 @@ interface PipelineContext {
 /* ─── Dashboard component ─────────────────────────────────── */
 
 export default function Dashboard() {
+  const [mode, setMode] = useState<"demo" | "live">("demo");
   const [profiles, setProfiles] = useState<HrFlowProfile[]>([]);
   const [visibleProfiles, setVisibleProfiles] = useState<HrFlowProfile[]>([]);
   const [scores, setScores] = useState<Map<string, number>>(new Map());
@@ -184,6 +185,25 @@ export default function Dashboard() {
   const [pipelineDone, setPipelineDone] = useState(false);
   const [jobKey, setJobKey] = useState<string | null>(null);
   const pipelineStarted = useRef(false);
+
+  const switchMode = useCallback((newMode: "demo" | "live") => {
+    setMode(newMode);
+    setProfiles([]);
+    setVisibleProfiles([]);
+    setScores(new Map());
+    setTotalProfiles(0);
+    setCvCount(0);
+    setSelectedProfile(null);
+    setFeed([]);
+    setMessages([]);
+    setPipelineDone(false);
+    setJobKey(null);
+    pipelineStarted.current = false;
+    if (newMode === "live") {
+      addMessage(chatMsg("agent", "Mode live active. En attente des events OpenClaw..."));
+      addFeed(feedEvent("Mode live", "Dashboard connecte — en attente des events OpenClaw", "connect"));
+    }
+  }, []);
 
   /* ─── State updaters ──────────────────────────────────── */
 
@@ -255,12 +275,16 @@ export default function Dashboard() {
       setProfiles(fetched);
       setScores(scoreMap);
       setTotalProfiles(fetched.length);
+      setVisibleProfiles([]);
 
       // Reveal profiles progressively
       const toReveal = fetched.slice(0, 10);
       toReveal.forEach((profile, i) => {
         setTimeout(() => {
-          setVisibleProfiles((prev) => [...prev, profile]);
+          setVisibleProfiles((prev) => {
+            if (prev.some((p) => p.key === profile.key)) return prev;
+            return [...prev, profile];
+          });
         }, i * 600);
       });
     } catch {
@@ -287,9 +311,13 @@ export default function Dashboard() {
     ));
   }, [profiles, scores, addMessage]);
 
-  /* ─── Pipeline orchestration ──────────────────────────── */
+  /* ─── Pipeline orchestration (demo mode only) ─────────── */
+
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
   useEffect(() => {
+    if (modeRef.current !== "demo") return;
     if (pipelineStarted.current) return;
     pipelineStarted.current = true;
 
@@ -326,16 +354,34 @@ export default function Dashboard() {
           if (evt.channel === "chat" && evt.payload.text) {
             addMessage(chatMsg(evt.payload.type === "user" ? "user" : "agent", evt.payload.text));
           } else if (evt.channel === "feed" && evt.payload.action) {
-            addFeed(feedEvent(
-              evt.payload.action,
-              evt.payload.detail ?? "",
-              evt.payload.feedType ?? "connect",
-              evt.payload.status ?? "done",
-            ));
+            const status = evt.payload.status ?? "done";
+            if (status === "done") {
+              // Try to update the last running event with same action, otherwise add new
+              setFeed((prev) => {
+                const idx = prev.findLastIndex((e) => e.action === evt.payload.action && e.status === "running");
+                if (idx >= 0) {
+                  const updated = [...prev];
+                  updated[idx] = { ...updated[idx], status: "done", detail: evt.payload.detail ?? updated[idx].detail };
+                  return updated;
+                }
+                return [...prev, feedEvent(evt.payload.action!, evt.payload.detail ?? "", evt.payload.feedType as FeedEvent["type"] ?? "connect", "done")];
+              });
+            } else {
+              addFeed(feedEvent(
+                evt.payload.action,
+                evt.payload.detail ?? "",
+                evt.payload.feedType as FeedEvent["type"] ?? "connect",
+                status as FeedEvent["status"],
+              ));
+            }
           } else if (evt.channel === "action" && evt.payload.command === "fetch_profiles") {
             fetchAndRevealProfiles();
           } else if (evt.channel === "action" && evt.payload.command === "send_summary") {
             sendTopSummary();
+          } else if (evt.channel === "action" && evt.payload.command === "set_cv_count") {
+            setCvCount(Number(evt.payload.text) || 0);
+          } else if (evt.channel === "action" && evt.payload.command === "pipeline_done") {
+            setPipelineDone(true);
           }
         }
       } catch { /* polling failure — retry next tick */ }
@@ -396,7 +442,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-[var(--bg-deep)]">
-      <TopBar totalProfiles={totalProfiles} cvCount={cvCount} pipelineDone={pipelineDone} />
+      <TopBar totalProfiles={totalProfiles} cvCount={cvCount} pipelineDone={pipelineDone} mode={mode} onSwitchMode={switchMode} />
 
       <div className="flex flex-1 min-h-0">
         {/* LEFT — Chat Telegram / OpenClaw */}

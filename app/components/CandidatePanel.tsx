@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { HrFlowProfile } from "@/app/lib/types";
 
 /* ─── Props ───────────────────────────────────────────────── */
@@ -296,9 +296,17 @@ function CandidateCard({
   const langCount = profile.languages?.length ?? 0;
   const totalYears = totalExperienceYears(profile);
   const email = profile.info.email;
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (expanded && cardRef.current) {
+      setTimeout(() => cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    }
+  }, [expanded]);
 
   return (
     <div
+      ref={cardRef}
       className={`animate-fade-in-up glass rounded-xl overflow-hidden transition-all duration-300 ${
         selected ? "ring-1 ring-[var(--accent-cyan)]/40 bg-[var(--accent-cyan-dim)]/20" : "glass-hover"
       }`}
@@ -377,8 +385,8 @@ function CandidateCard({
       {showSkillsPreview && !expanded && (
         <div className="px-4 pb-3 animate-slide-down border-t border-white/[0.04]">
           <div className="flex flex-wrap gap-1.5 pt-2.5">
-            {allSkills.slice(0, 12).map((skill) => (
-              <SkillTag key={skill.name} name={skill.name} type={skill.type} />
+            {allSkills.slice(0, 12).map((skill, i) => (
+              <SkillTag key={`${skill.name}-${i}`} name={skill.name} type={skill.type} />
             ))}
             {allSkills.length > 12 && (
               <button
