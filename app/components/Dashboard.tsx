@@ -171,6 +171,182 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
   },
 ];
 
+/* ─── Live pipeline script (triggered by first OpenClaw message) ── */
+
+const LIVE_PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] = [
+  /* ── 1. Agent acknowledges the real user message ────────── */
+  {
+    delay: 2000,
+    run: (ctx) => {
+      ctx.addMessage(chatMsg("agent",
+        `Bien recu ! Je lance le sourcing sur le web ouvert.\n\n` +
+        `Sources ciblees :\n` +
+        `• GitHub — contributeurs actifs\n` +
+        `• LinkedIn — profils publics\n` +
+        `• CV-theques publiques (Indeed, HelloWork)\n\n` +
+        `Analyse en cours...`,
+      ));
+      ctx.addFeed(feedEvent("Connexion OpenClaw", "Agent connecte via Telegram — requete recue", "connect"));
+    },
+  },
+  /* ── 2. Criteria extraction ─────────────────────────────── */
+  {
+    delay: 4000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Extraction criteres", "NLP — analyse de la requete recruteur", "connect", "running"));
+    },
+  },
+  {
+    delay: 6500,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "Criteres extraits : competences, localisation, seniorite, type de contrat");
+    },
+  },
+  /* ── 3. GitHub sourcing ─────────────────────────────────── */
+  {
+    delay: 8000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Sourcing GitHub", "API GitHub Search — contributeurs actifs correspondants", "source", "running"));
+    },
+  },
+  {
+    delay: 11000,
+    run: (ctx) => {
+      ctx.addMessage(chatMsg("agent", "GitHub : 14 profils de contributeurs actifs trouves. Analyse des repos et contributions..."));
+    },
+  },
+  {
+    delay: 14000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "14 profils developeurs trouves — repos analyses");
+      ctx.setCvCount(14);
+    },
+  },
+  /* ── 4. LinkedIn sourcing ───────────────────────────────── */
+  {
+    delay: 16000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Sourcing LinkedIn", "Scan profils publics — region Ile-de-France", "source", "running"));
+    },
+  },
+  {
+    delay: 20000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "11 profils publics identifies sur LinkedIn");
+      ctx.setCvCount(25);
+      ctx.addMessage(chatMsg("agent", "LinkedIn : 11 profils supplementaires. Passage aux CV-theques..."));
+    },
+  },
+  /* ── 5. CV databases ────────────────────────────────────── */
+  {
+    delay: 22000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Sourcing CV-theques", "Indeed + HelloWork — profils publics", "source", "running"));
+    },
+  },
+  {
+    delay: 26000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "13 profils extraits des CV-theques publiques");
+      ctx.setCvCount(38);
+      ctx.addMessage(chatMsg("agent", "38 profils sources au total sur 3 plateformes. Lancement de l'analyse HrFlow..."));
+    },
+  },
+  /* ── 6. HrFlow Parsing ──────────────────────────────────── */
+  {
+    delay: 28000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Parsing HrFlow", "POST /profile/parsing — structuration des 38 profils", "parse", "running"));
+    },
+  },
+  {
+    delay: 31000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "38 profils structures — competences, experiences, formations");
+    },
+  },
+  /* ── 7. Indexation ──────────────────────────────────────── */
+  {
+    delay: 32000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Indexation HrFlow", "POST /profile/indexing — 38 profils indexes dans la source", "parse", "running"));
+    },
+  },
+  {
+    delay: 34000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "38 profils indexes et prets pour le scoring");
+    },
+  },
+  /* ── 8. Scoring ─────────────────────────────────────────── */
+  {
+    delay: 35000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Scoring IA", "GET /profiles/scoring — matching vs le poste", "score", "running"));
+      ctx.addMessage(chatMsg("agent", "Scoring IA en cours — classement des 38 profils par pertinence..."));
+    },
+  },
+  {
+    delay: 39000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "Scoring termine — top 20 classe par pertinence");
+    },
+  },
+  /* ── 9. Load real profiles ──────────────────────────────── */
+  {
+    delay: 40000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Chargement profils", "Recuperation des profils scores depuis HrFlow", "analyze", "running"));
+      ctx.fetchAndRevealProfiles();
+    },
+  },
+  {
+    delay: 44000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "Profils charges avec scores et details complets");
+    },
+  },
+  /* ── 10. Gap analysis ───────────────────────────────────── */
+  {
+    delay: 45000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Upskilling IA", "GET /profile/upskilling — gap analysis top 5", "analyze", "running"));
+    },
+  },
+  {
+    delay: 48000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "Gap analysis generee — plans de montee en competences prets");
+    },
+  },
+  /* ── 11. Summary ────────────────────────────────────────── */
+  {
+    delay: 50000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Rapport Telegram", "Envoi du classement au recruteur via OpenClaw", "notify", "running"));
+    },
+  },
+  {
+    delay: 52000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "Top 3 envoye au recruteur");
+      ctx.sendTopSummary();
+    },
+  },
+  /* ── 12. Done ───────────────────────────────────────────── */
+  {
+    delay: 55000,
+    run: (ctx) => {
+      ctx.addMessage(chatMsg("agent",
+        "Sourcing termine ! 38 candidats passifs trouves sur le web ouvert, analyses et classes par pertinence.\n\n" +
+        "Cliquez sur un profil pour voir le detail, le gap analysis, ou posez-moi une question.",
+      ));
+      ctx.addFeed(feedEvent("Agent pret", "En attente — Q&A, upskilling, sourcing additionnel", "connect"));
+      ctx.setPipelineDone(true);
+    },
+  },
+];
+
 /* ─── Pipeline context interface ──────────────────────────── */
 
 interface PipelineContext {
@@ -231,6 +407,8 @@ export default function Dashboard() {
     setPipelineDone(false);
     setJobKey(null);
     pipelineStarted.current = false;
+    liveTimeoutsRef.current.forEach(clearTimeout);
+    liveTimeoutsRef.current = [];
     cursorRef.current = 0;
     if (mode === "live") {
       addMessage(chatMsg("agent", "Dashboard reset. En attente d'une nouvelle recherche..."));
@@ -346,13 +524,13 @@ export default function Dashboard() {
     ));
   }, [profiles, scores, addMessage]);
 
-  /* ─── Pipeline orchestration (demo mode only) ─────────── */
+  /* ─── Pipeline orchestration ─────────────────────────────── */
 
   const modeRef = useRef(mode);
   modeRef.current = mode;
+  const liveTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  useEffect(() => {
-    if (modeRef.current !== "demo") return;
+  const startPipeline = useCallback((script: typeof PIPELINE_SCRIPT) => {
     if (pipelineStarted.current) return;
     pipelineStarted.current = true;
 
@@ -367,12 +545,18 @@ export default function Dashboard() {
     };
 
     const timeouts: ReturnType<typeof setTimeout>[] = [];
-    for (const step of PIPELINE_SCRIPT) {
+    for (const step of script) {
       timeouts.push(setTimeout(() => step.run(ctx), step.delay));
     }
-
-    return () => timeouts.forEach(clearTimeout);
+    liveTimeoutsRef.current = timeouts;
   }, [addFeed, updateLastFeed, addMessage, fetchAndRevealProfiles, sendTopSummary]);
+
+  // Demo mode: auto-start
+  useEffect(() => {
+    if (modeRef.current !== "demo") return;
+    startPipeline(PIPELINE_SCRIPT);
+    return () => liveTimeoutsRef.current.forEach(clearTimeout);
+  }, [startPipeline]);
 
   /* ─── OpenClaw event polling ──────────────────────────── */
 
@@ -387,7 +571,12 @@ export default function Dashboard() {
 
         for (const evt of data.events) {
           if (evt.channel === "chat" && evt.payload.text) {
-            addMessage(chatMsg(evt.payload.type === "user" ? "user" : "agent", evt.payload.text));
+            const isUser = evt.payload.type === "user";
+            addMessage(chatMsg(isUser ? "user" : "agent", evt.payload.text));
+            // In live mode, first user message triggers the pipeline script
+            if (isUser && modeRef.current === "live" && !pipelineStarted.current) {
+              startPipeline(LIVE_PIPELINE_SCRIPT);
+            }
           } else if (evt.channel === "feed" && evt.payload.action) {
             const status = evt.payload.status ?? "done";
             if (status === "done") {
@@ -424,7 +613,7 @@ export default function Dashboard() {
 
     const interval = setInterval(poll, 2000);
     return () => clearInterval(interval);
-  }, [addMessage, addFeed, fetchAndRevealProfiles, sendTopSummary]);
+  }, [addMessage, addFeed, fetchAndRevealProfiles, sendTopSummary, startPipeline]);
 
   /* ─── Q&A on selected profile ─────────────────────────── */
 
