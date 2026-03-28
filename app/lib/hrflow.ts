@@ -1,10 +1,16 @@
 const HRFLOW_BASE_URL = "https://api.hrflow.ai/v1";
 
-function getConfig() {
+export type HrFlowMode = "demo" | "live";
+
+function getConfig(mode?: HrFlowMode) {
   const apiKey = process.env.HRFLOW_API_KEY;
   const apiEmail = process.env.HRFLOW_API_EMAIL;
-  const sourceKey = process.env.HRFLOW_SOURCE_KEY;
   const boardKey = process.env.HRFLOW_BOARD_KEY;
+
+  // Demo mode → demo source (10k profiles), Live mode → real sourced profiles
+  const sourceKey = mode === "live"
+    ? (process.env.HRFLOW_LIVE_SOURCE_KEY ?? process.env.HRFLOW_SOURCE_KEY)
+    : process.env.HRFLOW_SOURCE_KEY;
 
   if (!apiKey || !apiEmail) {
     throw new Error("Missing HRFLOW_API_KEY or HRFLOW_API_EMAIL in env");
@@ -25,8 +31,8 @@ export const hrflow = {
   config: getConfig,
 
   /** POST /profile/parsing/file — Parse a CV file */
-  async parseCV(file: File, reference?: string) {
-    const { sourceKey } = getConfig();
+  async parseCV(file: File, reference?: string, mode?: HrFlowMode) {
+    const { sourceKey } = getConfig(mode);
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
     const form = new FormData();
@@ -44,8 +50,8 @@ export const hrflow = {
   },
 
   /** POST /profile/indexing — Index a parsed profile */
-  async indexProfile(profile: Record<string, unknown>) {
-    const { sourceKey } = getConfig();
+  async indexProfile(profile: Record<string, unknown>, mode?: HrFlowMode) {
+    const { sourceKey } = getConfig(mode);
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
     const res = await fetch(`${HRFLOW_BASE_URL}/profile/indexing`, {
@@ -58,8 +64,8 @@ export const hrflow = {
   },
 
   /** GET /profiles/scoring — Score profiles against a job */
-  async scoreProfiles(jobKey: string, algorithmKey: string, options?: { limit?: number; page?: number }) {
-    const { sourceKey, boardKey } = getConfig();
+  async scoreProfiles(jobKey: string, algorithmKey: string, options?: { limit?: number; page?: number; mode?: HrFlowMode }) {
+    const { sourceKey, boardKey } = getConfig(options?.mode);
     if (!sourceKey || !boardKey) throw new Error("Missing HRFLOW_SOURCE_KEY or HRFLOW_BOARD_KEY");
 
     const params = new URLSearchParams({
@@ -81,9 +87,9 @@ export const hrflow = {
     return res.json();
   },
 
-  /** GET /profile/asking — Ask questions about a profile (param: questions array) */
-  async askProfile(profileKey: string, questions: string[]) {
-    const { sourceKey } = getConfig();
+  /** GET /profile/asking — Ask questions about a profile */
+  async askProfile(profileKey: string, questions: string[], mode?: HrFlowMode) {
+    const { sourceKey } = getConfig(mode);
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
     const params = new URLSearchParams({
@@ -104,8 +110,9 @@ export const hrflow = {
     limit?: number;
     page?: number;
     text_keywords?: string[];
+    mode?: HrFlowMode;
   }) {
-    const { sourceKey } = getConfig();
+    const { sourceKey } = getConfig(options?.mode);
     if (!sourceKey) throw new Error("Missing HRFLOW_SOURCE_KEY");
 
     const params = new URLSearchParams({
@@ -126,8 +133,8 @@ export const hrflow = {
   },
 
   /** GET /profile/upskilling — Explain profile↔job matching (SWOT analysis) */
-  async upskillProfile(profileKey: string, jobKey: string, algorithmKey: string) {
-    const { sourceKey, boardKey } = getConfig();
+  async upskillProfile(profileKey: string, jobKey: string, algorithmKey: string, mode?: HrFlowMode) {
+    const { sourceKey, boardKey } = getConfig(mode);
     if (!sourceKey || !boardKey) throw new Error("Missing HRFLOW_SOURCE_KEY or HRFLOW_BOARD_KEY");
 
     const params = new URLSearchParams({

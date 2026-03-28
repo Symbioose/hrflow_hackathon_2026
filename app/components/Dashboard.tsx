@@ -263,6 +263,8 @@ export default function Dashboard() {
 
   const fetchAndRevealProfiles = useCallback(async () => {
     try {
+      const currentMode = modeRef.current;
+      const modeParam = `mode=${currentMode}`;
       // Try scoring first (needs a job from the board)
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
@@ -275,7 +277,7 @@ export default function Dashboard() {
 
         if (firstJob?.key) {
           setJobKey(firstJob.key);
-          const scoreRes = await fetch(`/api/hrflow/score?job_key=${firstJob.key}&limit=20`);
+          const scoreRes = await fetch(`/api/hrflow/score?job_key=${firstJob.key}&limit=20&${modeParam}`);
           const scoreData = await scoreRes.json();
 
           if (scoreData.code === 200 && scoreData.data?.profiles?.length > 0) {
@@ -296,7 +298,7 @@ export default function Dashboard() {
 
       // Fallback: plain profile search
       if (!scored) {
-        const res = await fetch("/api/hrflow/profiles?limit=20");
+        const res = await fetch(`/api/hrflow/profiles?limit=20&${modeParam}`);
         const data = await res.json();
         if (data.code === 200) {
           fetched = data.data.profiles;
@@ -437,7 +439,7 @@ export default function Dashboard() {
 
     setAsking(true);
     try {
-      const params = new URLSearchParams({ profile_key: profileKey, question });
+      const params = new URLSearchParams({ profile_key: profileKey, question, mode: modeRef.current });
       const res = await fetch(`/api/hrflow/ask?${params}`);
       const data = await res.json();
 
@@ -498,6 +500,7 @@ export default function Dashboard() {
             onAsk={handleAskFromCard}
             scores={scores}
             jobKey={jobKey}
+            mode={mode}
           />
         </div>
 

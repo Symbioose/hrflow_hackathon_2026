@@ -13,6 +13,7 @@ interface CandidatePanelProps {
   onAsk: (profile: HrFlowProfile) => void;
   scores?: Map<string, number>;
   jobKey?: string | null;
+  mode?: "demo" | "live";
 }
 
 /* ─── Utilities ───────────────────────────────────────────── */
@@ -52,6 +53,7 @@ export default function CandidatePanel({
   onAsk,
   scores,
   jobKey,
+  mode,
 }: CandidatePanelProps) {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [skillsPreviewKey, setSkillsPreviewKey] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export default function CandidatePanel({
     if (upskillData.has(profileKey) || !jobKey) return;
     setUpskillLoading(profileKey);
     try {
-      const res = await fetch(`/api/hrflow/upskill?profile_key=${profileKey}&job_key=${jobKey}`);
+      const res = await fetch(`/api/hrflow/upskill?profile_key=${profileKey}&job_key=${jobKey}&mode=${mode ?? "demo"}`);
       const data = await res.json();
       if (data.code === 200) {
         setUpskillData((prev) => new Map(prev).set(profileKey, data.data));
