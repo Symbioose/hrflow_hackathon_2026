@@ -34,9 +34,35 @@ function chatMsg(type: "user" | "agent", text: string): ChatMessage {
   };
 }
 
+/* ─── Keyword extraction from natural language query ──────── */
+
+const STOP_WORDS = new Set([
+  "je", "tu", "il", "nous", "vous", "ils", "me", "te", "se", "le", "la", "les", "un", "une", "des",
+  "de", "du", "au", "aux", "a", "en", "et", "ou", "mais", "donc", "car", "ni", "que", "qui", "quoi",
+  "ce", "cette", "ces", "mon", "ton", "son", "notre", "votre", "leur", "pour", "par", "sur", "dans",
+  "avec", "sans", "sous", "entre", "vers", "chez", "pas", "ne", "plus", "moins", "tres", "trop",
+  "est", "sont", "suis", "es", "etre", "avoir", "fait", "faire", "dit", "dire",
+  "trouve", "trouve-moi", "trouvez", "cherche", "cherche-moi", "cherchez", "recherche",
+  "source", "source-moi", "sourcez", "donne", "donne-moi", "donnez", "montre", "montre-moi",
+  "moi", "veux", "voudrais", "besoin", "faut", "peux", "peut", "fais",
+  "profils", "profil", "candidats", "candidat", "talents", "talent", "personnes", "gens",
+  "meilleurs", "meilleur", "bons", "bon", "top",
+]);
+
+function extractKeywords(query: string): string {
+  const words = query
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+    .replace(/[^a-z0-9+#\s-]/g, " ") // keep alphanumeric, +, #, -
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !STOP_WORDS.has(w));
+  // HrFlow does AND on keywords — too many = 0 results. Keep max 2 most relevant.
+  return words.slice(0, 2).join(",");
+}
+
 /* ─── Pipeline demo script ────────────────────────────────── */
 
-const DEMO_JOB = "Developpeur Full-Stack Python / React — CDI Paris";
+const DEMO_JOB = "Full-Stack Software Engineer Python / React — Paris";
 
 const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] = [
   /* ── 0. Recruiter request ─────────────────────────────────── */
@@ -449,17 +475,23 @@ export default function Dashboard() {
   const fetchAndRevealProfiles = useCallback(async () => {
     try {
       const modeParam = `mode=demo`;
-      const keywords = searchQueryRef.current;
+      const keywords = extractKeywords(searchQueryRef.current);
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
 
       // If we have a search query, use keyword search to get relevant profiles
       if (keywords) {
-        const keywordsParam = `&keywords=${encodeURIComponent(keywords)}`;
-        const res = await fetch(`/api/hrflow/profiles?limit=20&${modeParam}${keywordsParam}`);
-        const data = await res.json();
-        if (data.code === 200 && data.data?.profiles?.length > 0) {
-          fetched = data.data.profiles;
+        // Try with all keywords first, then progressively fewer if no results (HrFlow does AND)
+        const kwList = keywords.split(",");
+        for (let tryCount = kwList.length; tryCount >= 1 && fetched.length === 0; tryCount--) {
+          const tryKw = kwList.slice(0, tryCount).join(",");
+          const res = await fetch(`/api/hrflow/profiles?limit=20&${modeParam}&keywords=${encodeURIComponent(tryKw)}`);
+          const data = await res.json();
+          if (data.code === 200 && data.data?.profiles?.length > 0) {
+            fetched = data.data.profiles;
+          }
+        }
+        if (fetched.length > 0) {
           // Generate realistic scores based on search ranking
           fetched.forEach((p, i) => {
             scoreMap.set(p.key, Math.max(52, 96 - i * 4 - Math.floor(Math.random() * 5)));
