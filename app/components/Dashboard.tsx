@@ -311,6 +311,40 @@ export default function Dashboard() {
     return () => timeouts.forEach(clearTimeout);
   }, [addFeed, updateLastFeed, addMessage, fetchAndRevealProfiles, sendTopSummary]);
 
+  /* ─── OpenClaw event polling ──────────────────────────── */
+
+  const cursorRef = useRef(0);
+
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/openclaw/events?cursor=${cursorRef.current}`);
+        const data = await res.json();
+        cursorRef.current = data.cursor;
+
+        for (const evt of data.events) {
+          if (evt.channel === "chat" && evt.payload.text) {
+            addMessage(chatMsg(evt.payload.type === "user" ? "user" : "agent", evt.payload.text));
+          } else if (evt.channel === "feed" && evt.payload.action) {
+            addFeed(feedEvent(
+              evt.payload.action,
+              evt.payload.detail ?? "",
+              evt.payload.feedType ?? "connect",
+              evt.payload.status ?? "done",
+            ));
+          } else if (evt.channel === "action" && evt.payload.command === "fetch_profiles") {
+            fetchAndRevealProfiles();
+          } else if (evt.channel === "action" && evt.payload.command === "send_summary") {
+            sendTopSummary();
+          }
+        }
+      } catch { /* polling failure — retry next tick */ }
+    };
+
+    const interval = setInterval(poll, 2000);
+    return () => clearInterval(interval);
+  }, [addMessage, addFeed, fetchAndRevealProfiles, sendTopSummary]);
+
   /* ─── Q&A on selected profile ─────────────────────────── */
 
   const handleAskQuestion = useCallback(async (question: string) => {

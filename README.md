@@ -51,6 +51,11 @@ app/
     upskill/route.ts            GET  — Analyse SWOT profil↔job (forces + gaps)
     profiles/route.ts           GET  — Lister les profils indexes
     jobs/route.ts               GET  — Lister les jobs du board
+  api/openclaw/
+    webhook/route.ts            POST — Recevoir les events OpenClaw (chat, feed, actions)
+    events/route.ts             GET  — Polling des events par le dashboard (cursor-based)
+  lib/
+    eventStore.ts               Store in-memory pour le bridge webhook → dashboard
 ```
 
 ## Dashboard — Layout 3 colonnes
@@ -105,23 +110,17 @@ En mode expanse :
 - Pipeline demo scripte (storytelling anime + vrais appels HrFlow)
 - Fiches candidats : stats, skills cliquables, experiences, formations, langues, resume, SWOT
 - **Deploy Vercel** : https://hrflowhackathon2026.vercel.app
+- **Webhook OpenClaw** : bridge temps reel OpenClaw → dashboard (teste et fonctionnel)
 
 ### A faire — Emile (OpenClaw)
-- Brancher le webhook Telegram/WhatsApp pour recevoir les messages recruteur
+- Brancher le bot Telegram
 - Scraping Indeed/HelloWork via OpenClaw
-- Quand un message arrive → OpenClaw appelle nos endpoints :
-  - `POST /api/hrflow/parse` — parser un CV (accepte un fichier)
-  - `GET /api/hrflow/score?job_key=...&limit=20` — scorer les profils vs un job
-  - `GET /api/hrflow/upskill?profile_key=...&job_key=...` — analyse SWOT forces/gaps d'un profil vs job
-  - `GET /api/hrflow/ask?profile_key=...&questions=...` — Q&A sur un profil
-  - `GET /api/hrflow/profiles?limit=20` — lister les profils
-  - `GET /api/hrflow/jobs?limit=10` — lister les jobs du board
-- Upload CV via Telegram : le recruteur envoie un PDF → OpenClaw appelle `/api/hrflow/parse`
+- **Envoyer les events au dashboard** via `POST /api/openclaw/webhook` (voir CONTEXT.md pour le format complet)
+- Upload CV via Telegram → `POST /api/hrflow/parse`
 
 ### A faire — Matki (frontend/backend)
-- Integrer Ollama/Qwen3 pour generer les summaries dynamiquement (streaming)
-- Recevoir les events OpenClaw en temps reel (remplacer le script demo)
 - Sourcing passif GitHub/LinkedIn (nice-to-have)
+- Remplacer le scenario scripte par le flow reel une fois OpenClaw branche
 
 ## Stack
 
