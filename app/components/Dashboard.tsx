@@ -219,6 +219,25 @@ export default function Dashboard() {
     }
   }, []);
 
+  const handleReset = useCallback(() => {
+    setProfiles([]);
+    setVisibleProfiles([]);
+    setScores(new Map());
+    setTotalProfiles(0);
+    setCvCount(0);
+    setSelectedProfile(null);
+    setFeed([]);
+    setMessages([]);
+    setPipelineDone(false);
+    setJobKey(null);
+    pipelineStarted.current = false;
+    cursorRef.current = 0;
+    if (mode === "live") {
+      addMessage(chatMsg("agent", "Dashboard reset. En attente d'une nouvelle recherche..."));
+      addFeed(feedEvent("Reset", "Pret pour une nouvelle recherche", "connect"));
+    }
+  }, [mode]);
+
   /* ─── State updaters ──────────────────────────────────── */
 
   const addFeed = useCallback((event: FeedEvent) => {
@@ -456,7 +475,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-[var(--bg-deep)]">
-      <TopBar totalProfiles={totalProfiles} cvCount={cvCount} pipelineDone={pipelineDone} mode={mode} onSwitchMode={switchMode} />
+      <TopBar totalProfiles={totalProfiles} cvCount={cvCount} pipelineDone={pipelineDone} mode={mode} onSwitchMode={switchMode} onReset={handleReset} />
 
       <div className="flex flex-1 min-h-0">
         {/* LEFT — Chat Telegram / OpenClaw */}

@@ -6,9 +6,10 @@ interface TopBarProps {
   pipelineDone: boolean;
   mode: "demo" | "live";
   onSwitchMode: (mode: "demo" | "live") => void;
+  onReset?: () => void;
 }
 
-export default function TopBar({ totalProfiles, cvCount, pipelineDone, mode, onSwitchMode }: TopBarProps) {
+export default function TopBar({ totalProfiles, cvCount, pipelineDone, mode, onSwitchMode, onReset }: TopBarProps) {
   return (
     <header className="relative flex items-center justify-between px-6 py-3 border-b border-white/[0.06] bg-[var(--bg-base)]">
       <div className="scan-line absolute inset-0 overflow-hidden pointer-events-none" />
@@ -57,6 +58,14 @@ export default function TopBar({ totalProfiles, cvCount, pipelineDone, mode, onS
             </button>
           ))}
         </div>
+
+        {/* Reset button */}
+        <button
+          onClick={onReset}
+          className="text-[10px] font-medium px-3 py-1.5 rounded-full border border-white/[0.08] bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--accent-rose)] hover:border-[var(--accent-rose)]/30 transition-all cursor-pointer"
+        >
+          Reset
+        </button>
 
         <div className="h-8 w-px bg-white/[0.06]" />
 
