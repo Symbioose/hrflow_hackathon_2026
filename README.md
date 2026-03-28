@@ -98,11 +98,12 @@ En mode expanse :
 3. Classement et affichage des candidats avec score normalise
 4. Feed temps reel tracant chaque etape du pipeline
 
-## Etat d'avancement (28 mars — matin)
+## Etat d'avancement (28 mars — apres-midi)
 
 ### Fonctionnel
 - Dashboard 3 colonnes complet avec theme dark "mission control"
 - **Scoring IA reel** : fetch job → `/profiles/scoring` → scores affiches avec cercles animes
+- **Matching intelligent** : la query recruteur est analysee (NLP), le job le plus pertinent du board est selectionne automatiquement, et les profils sont scores par l'IA contre ce job
 - **Upskilling SWOT reel** : analyse forces/gaps par candidat via `GET /profile/upskilling` → affichage vert/amber anime
 - **Q&A reel** : le recruteur pose une question sur un profil → reponse IA HrFlow
 - **Tri/filtre par score** : 4 modes (ordre, score desc/asc, >= 70%)
@@ -112,16 +113,26 @@ En mode expanse :
 - **Deploy Vercel** : https://hrflowhackathon2026.vercel.app
 - **Webhook OpenClaw** : bridge temps reel OpenClaw → dashboard (teste et fonctionnel)
 - **Mode Demo / Live** : toggle dans la TopBar — Demo (pipeline scripte) ou Live (events OpenClaw temps reel)
+- **Mode Live fonctionnel** : message Telegram → transcription audio → extraction criteres → recherche job matching → scoring IA → affichage profils + SWOT + Q&A
+- **Sources externes graceful** : GitHub/LinkedIn signales comme non configures (erreur dans le feed) au lieu de faux resultats — fallback sur la base HrFlow (10k profils)
+
+### Pipeline Live (bout en bout)
+1. Recruteur envoie un audio/texte sur Telegram (ex: "je cherche un software engineer sur Paris")
+2. OpenClaw transcrit et envoie au dashboard via webhook
+3. Extraction NLP des criteres (competences, localisation, seniorite)
+4. Tentative GitHub/LinkedIn → echec gracieux (tokens non configures)
+5. Recherche du job le plus pertinent dans le board HrFlow (matching par mots-cles)
+6. Scoring IA des profils contre ce job → top 20 classes par pertinence
+7. Affichage progressif des profils avec scores animes
+8. Analyse SWOT disponible sur chaque profil (forces/gaps vs le job matche)
+9. Q&A disponible sur chaque profil
 
 ### A faire — Emile (OpenClaw)
-- Brancher le bot Telegram
 - Scraping Indeed/HelloWork via OpenClaw
-- **Envoyer les events au dashboard** via `POST /api/openclaw/webhook` (voir CONTEXT.md pour le format complet)
 - Upload CV via Telegram → `POST /api/hrflow/parse`
 
 ### A faire — Matki (frontend/backend)
-- Sourcing passif GitHub/LinkedIn (nice-to-have)
-- Remplacer le scenario scripte par le flow reel une fois OpenClaw branche
+- Sourcing passif GitHub/LinkedIn (nice-to-have — tokens a configurer)
 
 ## Stack
 
