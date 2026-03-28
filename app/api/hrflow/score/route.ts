@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hrflow } from "@/app/lib/hrflow";
 
-const ALGORITHM_KEY = process.env.HRFLOW_ALGORITHM_KEY;
-
 /** GET /api/hrflow/score?job_key=...&limit=...&page=... — Score profiles against a job */
 export async function GET(req: NextRequest) {
+  const ALGORITHM_KEY = process.env.HRFLOW_ALGORITHM_KEY;
   if (!ALGORITHM_KEY) {
     return NextResponse.json(
       { error: "Scoring non disponible : HRFLOW_ALGORITHM_KEY manquante. Creer un algorithme dans AI Studio." },
