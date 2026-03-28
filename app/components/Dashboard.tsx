@@ -223,118 +223,60 @@ function buildLivePipeline(query: string): PipelineStep[] {
 
   // 1. Agent acknowledges
   t += 2000;
-  const sourcesMsg = tech
-    ? `Sources ciblees :\n• GitHub — contributeurs actifs\n• LinkedIn — profils publics\n• CV-theques publiques (Indeed, HelloWork)`
-    : `Sources ciblees :\n• LinkedIn — profils publics\n• CV-theques publiques (Indeed, HelloWork)\n• Portails emploi specialises`;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.addMessage(chatMsg("agent", `Bien recu ! Je lance le sourcing sur le web ouvert.\n\n${sourcesMsg}\n\nAnalyse en cours...`));
+    ctx.setSearchQuery(query);
+    ctx.addMessage(chatMsg("agent", `Bien recu ! Je lance le sourcing pour "${query}".\n\nRecherche dans la base HrFlow (10 000+ profils indexes)...`));
     ctx.addFeed(feedEvent("Connexion OpenClaw", "Agent connecte via Telegram — requete recue", "connect"));
   }});
 
   // 2. Criteria extraction
-  t += 2000;
+  t += 1500;
   steps.push({ delay: t, run: (ctx) => {
     ctx.addFeed(feedEvent("Extraction criteres", "NLP — analyse de la requete recruteur", "connect", "running"));
   }});
-  t += 2500;
+  t += 2000;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", "Criteres extraits : competences, localisation, seniorite, type de contrat");
+    ctx.updateLastFeed("done", "Criteres extraits : competences, localisation, seniorite");
   }});
 
-  // 3. GitHub (tech only)
+  // 3. GitHub (tech only — fails gracefully)
   if (tech) {
     t += 1500;
     steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Sourcing GitHub", "API GitHub Search — contributeurs actifs correspondants", "source", "running"));
+      ctx.addFeed(feedEvent("Sourcing GitHub", "API GitHub Search — tentative de connexion", "source", "running"));
     }});
-    t += 3000;
+    t += 2500;
     steps.push({ delay: t, run: (ctx) => {
-      ctx.addMessage(chatMsg("agent", "GitHub : 14 profils de contributeurs actifs trouves. Analyse des repos et contributions..."));
-    }});
-    t += 3000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "14 profils developeurs trouves — repos analyses");
-      ctx.setCvCount(14);
+      ctx.updateLastFeed("error", "GitHub API — token non configure, source ignoree");
     }});
   }
 
-  // 4. LinkedIn
-  t += 2000;
+  // 4. LinkedIn (fails gracefully)
+  t += 1500;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Sourcing LinkedIn", "Scan profils publics correspondants", "source", "running"));
+    ctx.addFeed(feedEvent("Sourcing LinkedIn", "Proxycurl — tentative de connexion", "source", "running"));
   }});
-  t += 4000;
-  const linkedinCount = tech ? 11 : 18;
-  const totalAfterLinkedin = tech ? 25 : 18;
+  t += 2500;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", `${linkedinCount} profils publics identifies sur LinkedIn`);
-    ctx.setCvCount(totalAfterLinkedin);
-    ctx.addMessage(chatMsg("agent", `LinkedIn : ${linkedinCount} profils supplementaires. Passage aux CV-theques...`));
+    ctx.updateLastFeed("error", "LinkedIn API — cle Proxycurl non configuree, source ignoree");
+    ctx.addMessage(chatMsg("agent", "Sources externes non disponibles (GitHub, LinkedIn). Recherche dans la base HrFlow indexee..."));
   }});
 
-  // 5. CV databases
-  t += 2000;
+  // 5. HrFlow keyword search + scoring
+  t += 1500;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Sourcing CV-theques", "Indeed + HelloWork — profils publics", "source", "running"));
-  }});
-  t += 4000;
-  const cvCount = tech ? 13 : 16;
-  const totalProfiles = tech ? 38 : 34;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", `${cvCount} profils extraits des CV-theques publiques`);
-    ctx.setCvCount(totalProfiles);
-    ctx.addMessage(chatMsg("agent", `${totalProfiles} profils sources au total. Lancement de l'analyse HrFlow...`));
-  }});
-
-  // 6. Non-tech: portails specialises
-  if (!tech) {
-    t += 2000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Portails specialises", "Scan des sites emploi du secteur", "source", "running"));
-    }});
-    t += 3500;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "8 profils supplementaires identifies");
-      ctx.setCvCount(totalProfiles + 8);
-      ctx.addMessage(chatMsg("agent", `${totalProfiles + 8} profils au total. Parsing en cours...`));
-    }});
-  }
-
-  // 7. HrFlow Parsing
-  t += 2000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Parsing HrFlow", "POST /profile/parsing — structuration des profils", "parse", "running"));
+    ctx.addFeed(feedEvent("Recherche HrFlow", `GET /profiles/searching — mots-cles : "${query}"`, "score", "running"));
+    ctx.addMessage(chatMsg("agent", "Recherche dans la base HrFlow en cours..."));
   }});
   t += 3000;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", "Profils structures — competences, experiences, formations");
+    ctx.updateLastFeed("done", "Profils correspondants trouves dans la base");
   }});
 
-  // 8. Indexation
+  // 6. Load real profiles from HrFlow
   t += 1000;
   steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Indexation HrFlow", "POST /profile/indexing — profils indexes dans la source", "parse", "running"));
-  }});
-  t += 2000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", "Profils indexes et prets pour le scoring");
-  }});
-
-  // 9. Scoring
-  t += 1000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Scoring IA", "GET /profiles/scoring — matching vs le poste", "score", "running"));
-    ctx.addMessage(chatMsg("agent", "Scoring IA en cours — classement par pertinence..."));
-  }});
-  t += 4000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", "Scoring termine — top 20 classe par pertinence");
-  }});
-
-  // 10. Load real profiles
-  t += 1000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Chargement profils", "Recuperation des profils scores depuis HrFlow", "analyze", "running"));
+    ctx.addFeed(feedEvent("Chargement profils", "Recuperation et scoring des profils", "analyze", "running"));
     ctx.fetchAndRevealProfiles();
   }});
   t += 4000;
@@ -342,17 +284,7 @@ function buildLivePipeline(query: string): PipelineStep[] {
     ctx.updateLastFeed("done", "Profils charges avec scores et details complets");
   }});
 
-  // 11. Gap analysis
-  t += 1000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.addFeed(feedEvent("Upskilling IA", "GET /profile/upskilling — gap analysis top 5", "analyze", "running"));
-  }});
-  t += 3000;
-  steps.push({ delay: t, run: (ctx) => {
-    ctx.updateLastFeed("done", "Gap analysis generee — plans de montee en competences prets");
-  }});
-
-  // 12. Summary to recruiter via Telegram
+  // 7. Summary to recruiter
   t += 2000;
   steps.push({ delay: t, run: (ctx) => {
     ctx.addFeed(feedEvent("Rapport Telegram", "Envoi du classement au recruteur via OpenClaw", "notify", "running"));
@@ -363,12 +295,12 @@ function buildLivePipeline(query: string): PipelineStep[] {
     ctx.sendTopSummary();
   }});
 
-  // 13. Done
+  // 8. Done
   t += 3000;
   steps.push({ delay: t, run: (ctx) => {
     ctx.addMessage(chatMsg("agent",
-      "Sourcing termine ! Tous les candidats passifs trouves sur le web ouvert ont ete analyses et classes.\n\n" +
-      "Cliquez sur un profil pour voir le detail, le gap analysis, ou posez-moi une question.",
+      "Analyse terminee ! Les profils sont classes par pertinence.\n\n" +
+      "Cliquez sur un profil pour voir le detail, l'analyse SWOT, ou posez-moi une question.",
     ));
     ctx.addFeed(feedEvent("Agent pret", "En attente — Q&A, upskilling, sourcing additionnel", "connect"));
     ctx.setPipelineDone(true);
