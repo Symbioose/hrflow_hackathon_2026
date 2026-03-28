@@ -153,7 +153,7 @@ export const hrflow = {
   },
 
   /** GET /jobs/searching — Search/list jobs in the board */
-  async searchJobs(options?: { limit?: number; page?: number }) {
+  async searchJobs(options?: { limit?: number; page?: number; name?: string }) {
     const { boardKey } = getConfig();
     if (!boardKey) throw new Error("Missing HRFLOW_BOARD_KEY");
 
@@ -162,6 +162,10 @@ export const hrflow = {
       limit: String(options?.limit ?? 10),
       page: String(options?.page ?? 1),
     });
+
+    if (options?.name) {
+      params.set("name", options.name);
+    }
 
     const res = await fetch(`${HRFLOW_BASE_URL}/jobs/searching?${params}`, {
       headers: authHeaders(),

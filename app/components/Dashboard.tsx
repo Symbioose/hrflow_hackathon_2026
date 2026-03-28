@@ -418,13 +418,21 @@ export default function Dashboard() {
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
 
-      // Always try to get a jobKey for SWOT analysis
+      // Find a job matching the query for SWOT analysis
       try {
-        const jobsRes = await fetch("/api/hrflow/jobs?limit=1");
+        const jobsRes = await fetch(`/api/hrflow/jobs?limit=50`);
         const jobsData = await jobsRes.json();
-        const firstJob = jobsData?.data?.jobs?.[0];
-        if (firstJob?.key) {
-          setJobKey(firstJob.key);
+        const jobs = jobsData?.data?.jobs ?? [];
+        // Find best matching job by checking if keywords appear in the job name
+        const queryLower = searchQueryRef.current.toLowerCase();
+        const kwList = keywords ? keywords.split(",") : [];
+        const matched = jobs.find((j: { name?: string }) => {
+          const name = (j.name ?? "").toLowerCase();
+          return kwList.some((kw: string) => name.includes(kw));
+        });
+        const bestJob = matched ?? jobs[0];
+        if (bestJob?.key) {
+          setJobKey(bestJob.key);
         }
       } catch {
         // Job fetch failed — SWOT won't be available
