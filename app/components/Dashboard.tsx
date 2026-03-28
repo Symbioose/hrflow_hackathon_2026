@@ -413,7 +413,7 @@ export default function Dashboard() {
   const fetchAndRevealProfiles = useCallback(async () => {
     setProfilesLoading(true);
     try {
-      const modeParam = `mode=${modeRef.current}`;
+      const modeParam = `mode=demo`;
       const keywords = extractKeywords(searchQueryRef.current);
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
@@ -635,7 +635,7 @@ export default function Dashboard() {
 
     setAsking(true);
     try {
-      const params = new URLSearchParams({ profile_key: profileKey, question, mode: modeRef.current });
+      const params = new URLSearchParams({ profile_key: profileKey, question, mode: "demo" });
       const res = await fetch(`/api/hrflow/ask?${params}`);
       const data = await res.json();
 
