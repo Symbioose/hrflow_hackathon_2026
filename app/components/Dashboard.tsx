@@ -408,6 +408,8 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const pipelineStarted = useRef(false);
   const searchQueryRef = useRef("");
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
   const switchMode = useCallback((newMode: "demo" | "live") => {
     setMode(newMode);
@@ -477,10 +479,22 @@ export default function Dashboard() {
 
   const fetchAndRevealProfiles = useCallback(async () => {
     try {
-      const modeParam = `mode=demo`;
+      const modeParam = `mode=${modeRef.current}`;
       const keywords = extractKeywords(searchQueryRef.current);
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
+
+      // Always try to get a jobKey for SWOT analysis
+      try {
+        const jobsRes = await fetch("/api/hrflow/jobs?limit=1");
+        const jobsData = await jobsRes.json();
+        const firstJob = jobsData?.data?.jobs?.[0];
+        if (firstJob?.key) {
+          setJobKey(firstJob.key);
+        }
+      } catch {
+        // Job fetch failed — SWOT won't be available
+      }
 
       // If we have a search query, use keyword search to get relevant profiles
       if (keywords) {
@@ -582,8 +596,6 @@ export default function Dashboard() {
 
   /* ─── Pipeline orchestration ─────────────────────────────── */
 
-  const modeRef = useRef(mode);
-  modeRef.current = mode;
   const liveTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const startPipeline = useCallback((script: typeof PIPELINE_SCRIPT) => {
