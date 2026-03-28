@@ -65,7 +65,7 @@ export default function CandidatePanel({
     if (upskillData.has(profileKey) || !jobKey) return;
     setUpskillLoading(profileKey);
     try {
-      const res = await fetch(`/api/hrflow/upskill?profile_key=${profileKey}&job_key=${jobKey}&mode=${mode ?? "demo"}`);
+      const res = await fetch(`/api/hrflow/upskill?profile_key=${profileKey}&job_key=${jobKey}&mode=demo`);
       const data = await res.json();
       if (data.code === 200) {
         setUpskillData((prev) => new Map(prev).set(profileKey, data.data));
