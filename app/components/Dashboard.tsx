@@ -402,8 +402,6 @@ export default function Dashboard() {
     setTotalProfiles(0);
     setCvCount(0);
     setSelectedProfile(null);
-    setFeed([]);
-    setMessages([]);
     setPipelineDone(false);
     setJobKey(null);
     pipelineStarted.current = false;
@@ -411,8 +409,11 @@ export default function Dashboard() {
     liveTimeoutsRef.current = [];
     cursorRef.current = 0;
     if (mode === "live") {
-      addMessage(chatMsg("agent", "Dashboard reset. En attente d'une nouvelle recherche..."));
-      addFeed(feedEvent("Reset", "Pret pour une nouvelle recherche", "connect"));
+      setMessages([chatMsg("agent", "Dashboard reset. En attente d'une nouvelle recherche...")]);
+      setFeed([feedEvent("Reset", "Pret pour une nouvelle recherche", "connect")]);
+    } else {
+      setMessages([]);
+      setFeed([]);
     }
   }, [mode]);
 
