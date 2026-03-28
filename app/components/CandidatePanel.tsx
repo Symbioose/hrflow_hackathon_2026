@@ -12,6 +12,7 @@ interface CandidatePanelProps {
   onSelect: (profile: HrFlowProfile) => void;
   onAsk: (profile: HrFlowProfile) => void;
   scores?: Map<string, number>;
+  jobKey?: string | null;
 }
 
 /* ─── Utilities ───────────────────────────────────────────── */
@@ -50,10 +51,26 @@ export default function CandidatePanel({
   onSelect,
   onAsk,
   scores,
+  jobKey,
 }: CandidatePanelProps) {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [skillsPreviewKey, setSkillsPreviewKey] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<"default" | "score-desc" | "score-asc" | "high-only">("default");
+  const [upskillData, setUpskillData] = useState<Map<string, Record<string, unknown>>>(new Map());
+  const [upskillLoading, setUpskillLoading] = useState<string | null>(null);
+
+  const handleUpskill = async (profileKey: string) => {
+    if (upskillData.has(profileKey) || !jobKey) return;
+    setUpskillLoading(profileKey);
+    try {
+      const res = await fetch(`/api/hrflow/upskill?profile_key=${profileKey}&job_key=${jobKey}`);
+      const data = await res.json();
+      if (data.code === 200) {
+        setUpskillData((prev) => new Map(prev).set(profileKey, data.data));
+      }
+    } catch { /* silently fail */ }
+    setUpskillLoading(null);
+  };
 
   const toggleSkillsPreview = (key: string) => {
     setSkillsPreviewKey(skillsPreviewKey === key ? null : key);
@@ -137,6 +154,10 @@ export default function CandidatePanel({
             onToggleSkills={() => toggleSkillsPreview(profile.key)}
             onSelect={() => onSelect(profile)}
             onAsk={() => onAsk(profile)}
+            onUpskill={() => handleUpskill(profile.key)}
+            upskill={upskillData.get(profile.key) ?? null}
+            upskillLoading={upskillLoading === profile.key}
+            hasJobKey={!!jobKey}
             delay={i * 80}
           />
         ))}
@@ -240,6 +261,10 @@ function CandidateCard({
   onToggleSkills,
   onSelect,
   onAsk,
+  onUpskill,
+  upskill,
+  upskillLoading,
+  hasJobKey,
   delay,
 }: {
   profile: HrFlowProfile;
@@ -252,6 +277,10 @@ function CandidateCard({
   onToggleSkills: () => void;
   onSelect: () => void;
   onAsk: () => void;
+  onUpskill: () => void;
+  upskill: Record<string, unknown> | null;
+  upskillLoading: boolean;
+  hasJobKey: boolean;
   delay: number;
 }) {
   const name = profile.info.full_name || "Sans nom";
@@ -473,12 +502,41 @@ function CandidateCard({
             </div>
           )}
 
+          {/* Upskilling — AI matching explanation */}
+          {hasJobKey && (
+            <div>
+              {!upskill && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onUpskill(); }}
+                  disabled={upskillLoading}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-lg bg-gradient-to-r from-[var(--accent-purple)]/10 to-[var(--accent-cyan)]/10 border border-[var(--accent-purple)]/20 text-[var(--accent-purple)] text-[11px] font-medium hover:from-[var(--accent-purple)]/20 hover:to-[var(--accent-cyan)]/20 transition-all disabled:opacity-60 cursor-pointer"
+                >
+                  {upskillLoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-[var(--accent-purple)] border-t-transparent animate-spin-slow" />
+                      Analyse IA en cours...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+                      </svg>
+                      Analyser le matching IA
+                    </>
+                  )}
+                </button>
+              )}
+              {upskill && <UpskillSection data={upskill} />}
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onAsk(); }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] text-[11px] font-medium hover:bg-[var(--accent-cyan)]/20 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] text-[11px] font-medium hover:bg-[var(--accent-cyan)]/20 transition-colors cursor-pointer"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -488,7 +546,7 @@ function CandidateCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onSelect(); }}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[11px] font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
                 selected
                   ? "bg-[var(--accent-cyan)]/20 border border-[var(--accent-cyan)]/30 text-[var(--accent-cyan)]"
                   : "bg-white/[0.04] border border-white/[0.06] text-[var(--text-secondary)] hover:bg-white/[0.08]"
@@ -583,6 +641,103 @@ function ExperienceRow({
         )}
         {exp.description && (
           <p className="text-[10px] text-[var(--text-muted)] mt-1 leading-relaxed line-clamp-2">{exp.description}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Upskill SWOT display ───────────────────────────────── */
+
+interface SwotItem {
+  name: string;
+  description: string;
+}
+
+function UpskillSection({ data }: { data: Record<string, unknown> }) {
+  const strengths = (data.strengths ?? []) as SwotItem[];
+  const weaknesses = (data.weaknesses ?? []) as SwotItem[];
+
+  if (strengths.length === 0 && weaknesses.length === 0) {
+    return (
+      <div className="px-3 py-3 rounded-lg bg-[var(--accent-purple-dim)] border border-[var(--accent-purple)]/20 animate-slide-down">
+        <p className="text-[11px] text-[var(--text-muted)]">Aucune analyse disponible pour ce profil.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl overflow-hidden border border-[var(--accent-purple)]/20 bg-gradient-to-br from-[var(--accent-purple-dim)] to-transparent animate-slide-down">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--accent-purple)]/10 bg-[var(--accent-purple)]/5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" strokeWidth="2" strokeLinecap="round">
+          <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+        </svg>
+        <p className="text-[11px] font-semibold text-[var(--accent-purple)]">Analyse SWOT du matching</p>
+        <span className="ml-auto text-[9px] font-mono text-[var(--text-muted)]">
+          {strengths.length} forces · {weaknesses.length} gaps
+        </span>
+      </div>
+
+      <div className="px-4 py-3 space-y-4">
+        {/* Strengths */}
+        {strengths.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="w-2 h-2 rounded-full bg-[var(--accent-emerald)]" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-emerald)]">
+                Points forts ({strengths.length})
+              </p>
+            </div>
+            <div className="space-y-2">
+              {strengths.map((s, i) => (
+                <div
+                  key={s.name}
+                  className="flex gap-2.5 px-3 py-2.5 rounded-lg bg-[var(--accent-emerald)]/5 border border-[var(--accent-emerald)]/10 animate-fade-in-up"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" strokeWidth="2" strokeLinecap="round" className="shrink-0 mt-0.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium text-[var(--accent-emerald)]">{s.name}</p>
+                    <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed mt-0.5">{s.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Weaknesses */}
+        {weaknesses.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="w-2 h-2 rounded-full bg-[var(--accent-amber)]" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-amber)]">
+                Gaps a combler ({weaknesses.length})
+              </p>
+            </div>
+            <div className="space-y-2">
+              {weaknesses.map((w, i) => (
+                <div
+                  key={w.name}
+                  className="flex gap-2.5 px-3 py-2.5 rounded-lg bg-[var(--accent-amber)]/5 border border-[var(--accent-amber)]/10 animate-fade-in-up"
+                  style={{ animationDelay: `${(strengths.length + i) * 100}ms` }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" strokeWidth="2" strokeLinecap="round" className="shrink-0 mt-0.5">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium text-[var(--accent-amber)]">{w.name}</p>
+                    <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed mt-0.5">{w.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

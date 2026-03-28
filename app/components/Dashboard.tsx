@@ -182,6 +182,7 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [asking, setAsking] = useState(false);
   const [pipelineDone, setPipelineDone] = useState(false);
+  const [jobKey, setJobKey] = useState<string | null>(null);
   const pipelineStarted = useRef(false);
 
   /* ─── State updaters ──────────────────────────────────── */
@@ -220,6 +221,7 @@ export default function Dashboard() {
         const firstJob = jobsData?.data?.jobs?.[0];
 
         if (firstJob?.key) {
+          setJobKey(firstJob.key);
           const scoreRes = await fetch(`/api/hrflow/score?job_key=${firstJob.key}&limit=20`);
           const scoreData = await scoreRes.json();
 
@@ -382,6 +384,7 @@ export default function Dashboard() {
             onSelect={handleSelectProfile}
             onAsk={handleAskFromCard}
             scores={scores}
+            jobKey={jobKey}
           />
         </div>
 

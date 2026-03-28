@@ -48,6 +48,7 @@ app/
     parse/route.ts              POST — Upload et parse un CV
     score/route.ts              GET  — Score profils vs job (scoring IA)
     ask/route.ts                GET  — Q&A sur un profil
+    upskill/route.ts            GET  — Analyse SWOT profil↔job (forces + gaps)
     profiles/route.ts           GET  — Lister les profils indexes
     jobs/route.ts               GET  — Lister les jobs du board
 ```
@@ -74,7 +75,16 @@ En mode expanse :
 - **Parcours professionnel** : timeline avec duree calculee, entreprise, lieu, description
 - **Formations** : ecole, diplome, dates
 - **Resume** complet du profil
+- **Analyse SWOT** : bouton "Analyser le matching IA" → forces (vert) + gaps (amber) avec reveal anime via `GET /profile/upskilling`
 - **Actions** : poser une question (Q&A), selectionner pour le chat
+
+### Tri et filtre
+
+4 boutons dans le header candidats (visibles quand le scoring est actif) :
+- **Ordre** — ordre d'arrivee par defaut
+- **Score ↓** — meilleur score en premier
+- **Score ↑** — pire score en premier
+- **>= 70%** — filtre uniquement les bons matchs (avec compteur X/total)
 
 ### Pipeline de scoring
 
@@ -83,15 +93,18 @@ En mode expanse :
 3. Classement et affichage des candidats avec score normalise
 4. Feed temps reel tracant chaque etape du pipeline
 
-## Etat d'avancement (nuit du 27 mars)
+## Etat d'avancement (28 mars — matin)
 
 ### Fonctionnel
 - Dashboard 3 colonnes complet avec theme dark "mission control"
 - **Scoring IA reel** : fetch job → `/profiles/scoring` → scores affiches avec cercles animes
+- **Upskilling SWOT reel** : analyse forces/gaps par candidat via `GET /profile/upskilling` → affichage vert/amber anime
 - **Q&A reel** : le recruteur pose une question sur un profil → reponse IA HrFlow
-- **5 endpoints API** prets : parse, score, ask, profiles, jobs
+- **Tri/filtre par score** : 4 modes (ordre, score desc/asc, >= 70%)
+- **6 endpoints API** prets : parse, score, ask, upskill, profiles, jobs
 - Pipeline demo scripte (storytelling anime + vrais appels HrFlow)
-- Fiches candidats : stats, skills cliquables, experiences, formations, langues, resume
+- Fiches candidats : stats, skills cliquables, experiences, formations, langues, resume, SWOT
+- **Deploy Vercel** : https://hrflowhackathon2026.vercel.app
 
 ### A faire — Emile (OpenClaw)
 - Brancher le webhook Telegram/WhatsApp pour recevoir les messages recruteur
@@ -99,6 +112,7 @@ En mode expanse :
 - Quand un message arrive → OpenClaw appelle nos endpoints :
   - `POST /api/hrflow/parse` — parser un CV (accepte un fichier)
   - `GET /api/hrflow/score?job_key=...&limit=20` — scorer les profils vs un job
+  - `GET /api/hrflow/upskill?profile_key=...&job_key=...` — analyse SWOT forces/gaps d'un profil vs job
   - `GET /api/hrflow/ask?profile_key=...&questions=...` — Q&A sur un profil
   - `GET /api/hrflow/profiles?limit=20` — lister les profils
   - `GET /api/hrflow/jobs?limit=10` — lister les jobs du board

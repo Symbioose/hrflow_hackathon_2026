@@ -125,6 +125,26 @@ export const hrflow = {
     return res.json();
   },
 
+  /** GET /profile/upskilling — Explain profile↔job matching (SWOT analysis) */
+  async upskillProfile(profileKey: string, jobKey: string, algorithmKey: string) {
+    const { sourceKey, boardKey } = getConfig();
+    if (!sourceKey || !boardKey) throw new Error("Missing HRFLOW_SOURCE_KEY or HRFLOW_BOARD_KEY");
+
+    const params = new URLSearchParams({
+      source_key: sourceKey,
+      profile_key: profileKey,
+      board_key: boardKey,
+      job_key: jobKey,
+      algorithm_key: algorithmKey,
+    });
+
+    const res = await fetch(`${HRFLOW_BASE_URL}/profile/upskilling?${params}`, {
+      headers: authHeaders(),
+    });
+
+    return res.json();
+  },
+
   /** GET /jobs/searching — Search/list jobs in the board */
   async searchJobs(options?: { limit?: number; page?: number }) {
     const { boardKey } = getConfig();
