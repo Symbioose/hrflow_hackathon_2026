@@ -441,8 +441,8 @@ export default function Dashboard() {
 
   const fetchAndRevealProfiles = useCallback(async () => {
     try {
-      const currentMode = modeRef.current;
-      const modeParam = `mode=${currentMode}`;
+      // Always fetch from demo source — live source is populated by OpenClaw over time
+      const modeParam = `mode=demo`;
       // Try scoring first (needs a job from the board)
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
