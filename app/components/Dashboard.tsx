@@ -56,8 +56,9 @@ function extractKeywords(query: string): string {
     .replace(/[^a-z0-9+#\s-]/g, " ") // keep alphanumeric, +, #, -
     .split(/\s+/)
     .filter((w) => w.length > 1 && !STOP_WORDS.has(w));
-  // HrFlow does AND on keywords — too many = 0 results. Keep max 2 most relevant.
-  return words.slice(0, 2).join(",");
+  // HrFlow does AND on keywords — too many = 0 results. Keep max 3.
+  // Progressive retry in fetchAndRevealProfiles handles the case where 3 gives 0 results.
+  return words.slice(0, 3).join(",");
 }
 
 /* ─── Pipeline demo script ────────────────────────────────── */
