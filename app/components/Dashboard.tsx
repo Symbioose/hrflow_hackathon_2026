@@ -39,119 +39,133 @@ function chatMsg(type: "user" | "agent", text: string): ChatMessage {
 const DEMO_JOB = "Developpeur Full-Stack Python / React — CDI Paris";
 
 const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] = [
-  // Recruiter sends request via Telegram
+  /* ── 0. Recruiter request ─────────────────────────────────── */
   {
     delay: 500,
     run: (ctx) => {
-      ctx.addMessage(chatMsg("user", `Trouve-moi les meilleurs profils pour : ${DEMO_JOB}`));
+      ctx.addMessage(chatMsg("user",
+        `Source-moi des profils pour : ${DEMO_JOB}\n\nJe veux des talents passifs — pas que des gens qui ont postule.`,
+      ));
     },
   },
-  // Agent acknowledges via OpenClaw
+  /* ── 1. Agent acknowledges ────────────────────────────────── */
   {
-    delay: 2000,
+    delay: 2500,
     run: (ctx) => {
       ctx.addMessage(chatMsg("agent",
-        `Compris ! Je lance l'analyse pour "${DEMO_JOB}".\n\nConnexion a Indeed via OpenClaw...`,
+        `Compris ! Je lance le sourcing sur le web ouvert pour "${DEMO_JOB}".\n\n` +
+        `Sources ciblees :\n` +
+        `• GitHub — contributeurs Python actifs a Paris\n` +
+        `• LinkedIn — profils publics Full-Stack\n` +
+        `• CV-theques publiques (Indeed, HelloWork)\n\n` +
+        `C'est parti...`,
       ));
-      ctx.addFeed(feedEvent("Connexion Indeed", "Authentification via OpenClaw — compte employeur", "connect", "running"));
+      ctx.addFeed(feedEvent("Initialisation agent", "Analyse de la requete recruteur — extraction criteres", "connect", "running"));
     },
   },
-  // Indeed connected
+  /* ── 2. Criteria extracted ────────────────────────────────── */
   {
-    delay: 4000,
+    delay: 4500,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "Authentification reussie — acces candidatures");
-      ctx.addFeed(feedEvent("Scan boite de reception", "Recherche des candidatures recentes...", "connect", "running"));
+      ctx.updateLastFeed("done", "Criteres : Python, React, Full-Stack, CDI, Paris, 3+ ans XP");
+      ctx.addFeed(feedEvent("Sourcing GitHub", "Recherche contributeurs Python — repos 500+ stars — localisation Paris", "source", "running"));
     },
   },
-  // CVs detected
+  /* ── 3. GitHub sourcing ───────────────────────────────────── */
   {
-    delay: 6000,
+    delay: 7000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "47 candidatures detectees — dernieres 72h");
-      ctx.addMessage(chatMsg("agent", "47 candidatures trouvees sur Indeed. Je lance le parsing HrFlow..."));
-      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 1/5 (10 CVs)", "parse", "running"));
-      ctx.setCvCount(10);
+      ctx.updateLastFeed("done", "14 profils developeurs trouves sur GitHub");
+      ctx.setCvCount(14);
+      ctx.addMessage(chatMsg("agent", "GitHub : 14 profils de contributeurs Python actifs trouves a Paris. Passage a LinkedIn..."));
+      ctx.addFeed(feedEvent("Sourcing LinkedIn", "Scan profils publics — Dev Python / React — region Ile-de-France", "source", "running"));
     },
   },
-  // Batch 2
+  /* ── 4. LinkedIn sourcing ─────────────────────────────────── */
   {
-    delay: 8000,
+    delay: 10000,
     run: (ctx) => {
-      ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 2/5 (10 CVs)", "parse", "running"));
-      ctx.setCvCount(20);
+      ctx.updateLastFeed("done", "11 profils publics identifies sur LinkedIn");
+      ctx.setCvCount(25);
+      ctx.addMessage(chatMsg("agent", "LinkedIn : 11 profils publics supplementaires. Scan des CV-theques en cours..."));
+      ctx.addFeed(feedEvent("Sourcing CV-theques", "Scan Indeed + HelloWork — profils publics Python/React Paris", "source", "running"));
     },
   },
-  // Batch 3
-  {
-    delay: 9500,
-    run: (ctx) => {
-      ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 3/5 (10 CVs)", "parse", "running"));
-      ctx.setCvCount(30);
-    },
-  },
-  // Batch 4
-  {
-    delay: 11000,
-    run: (ctx) => {
-      ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 4/5 (10 CVs)", "parse", "running"));
-      ctx.setCvCount(40);
-    },
-  },
-  // Batch 5
+  /* ── 5. CV databases sourcing ─────────────────────────────── */
   {
     delay: 12500,
     run: (ctx) => {
-      ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Parsing CV", "POST /profile/parsing/file — lot 5/5 (7 CVs)", "parse", "running"));
-      ctx.setCvCount(47);
+      ctx.updateLastFeed("done", "13 profils extraits des CV-theques publiques");
+      ctx.setCvCount(38);
+      ctx.addMessage(chatMsg("agent",
+        "38 profils sources au total sur 3 plateformes.\n\n" +
+        "Lancement du pipeline HrFlow — parsing + analyse...",
+      ));
     },
   },
-  // Indexation + scoring
+  /* ── 6. HrFlow Parsing ────────────────────────────────────── */
   {
     delay: 14000,
     run: (ctx) => {
-      ctx.updateLastFeed("done");
-      ctx.addFeed(feedEvent("Indexation HrFlow", "47 profils indexes dans la source", "parse"));
-      ctx.addFeed(feedEvent("Scoring IA", `GET /profiles/scoring — "${DEMO_JOB}"`, "score", "running"));
-      ctx.addMessage(chatMsg("agent", "47 CVs parses. Scoring IA en cours — je classe les profils par pertinence..."));
+      ctx.addFeed(feedEvent("Parsing HrFlow", "POST /profile/parsing — structuration des 38 profils web", "parse", "running"));
     },
   },
-  // Scoring done — fetch real profiles with scores
+  {
+    delay: 16000,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "38 profils structures — competences, experiences, formations extraites");
+      ctx.addFeed(feedEvent("Indexation HrFlow", "POST /profile/indexing — 38 profils indexes", "parse"));
+    },
+  },
+  /* ── 7. HrFlow Scoring ────────────────────────────────────── */
   {
     delay: 17000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "Scoring termine — classement par pertinence");
-      ctx.addFeed(feedEvent("Chargement profils", "GET /profiles/searching — top 20", "analyze", "running"));
-      ctx.fetchAndRevealProfiles();
+      ctx.addFeed(feedEvent("Scoring IA", `GET /profiles/scoring — matching vs "${DEMO_JOB}"`, "score", "running"));
+      ctx.addMessage(chatMsg("agent", "Profils indexes. Scoring IA en cours — classement par pertinence vs le poste..."));
     },
   },
-  // Analysis done
+  /* ── 8. Scoring done — fetch real HrFlow profiles ─────────── */
   {
     delay: 20000,
     run: (ctx) => {
-      ctx.updateLastFeed("done", "Profils charges avec scores");
+      ctx.updateLastFeed("done", "Scoring termine — top 20 classe par pertinence");
+      ctx.addFeed(feedEvent("Analyse profils", "Chargement des profils scores", "analyze", "running"));
+      ctx.fetchAndRevealProfiles();
     },
   },
-  // Summary
+  /* ── 9. Profiles loaded ───────────────────────────────────── */
   {
-    delay: 22000,
+    delay: 23000,
     run: (ctx) => {
-      ctx.addFeed(feedEvent("Synthese Telegram", "Envoi du classement au recruteur", "notify"));
+      ctx.updateLastFeed("done", "Profils charges avec scores et details");
+      ctx.addFeed(feedEvent("Upskilling IA", "GET /profile/upskilling — gap analysis sur le top 5", "analyze", "running"));
+    },
+  },
+  /* ── 10. Upskilling done ──────────────────────────────────── */
+  {
+    delay: 25500,
+    run: (ctx) => {
+      ctx.updateLastFeed("done", "Gap analysis generee — plans de montee en competences");
+    },
+  },
+  /* ── 11. Summary to recruiter ─────────────────────────────── */
+  {
+    delay: 27000,
+    run: (ctx) => {
+      ctx.addFeed(feedEvent("Rapport Telegram", "Envoi du top 3 au recruteur", "notify"));
       ctx.sendTopSummary();
     },
   },
-  // Pipeline done
+  /* ── 12. Pipeline complete ────────────────────────────────── */
   {
-    delay: 26000,
+    delay: 30000,
     run: (ctx) => {
       ctx.addMessage(chatMsg("agent",
-        "Analyse terminee ! Cliquez sur un profil pour voir le detail.\n\nJe peux aussi lancer un sourcing passif GitHub / LinkedIn si vous voulez elargir la recherche.",
+        "Sourcing termine ! 38 candidats passifs trouves sur le web ouvert, analyses et classes.\n\n" +
+        "Cliquez sur un profil pour voir le detail complet, le gap analysis, ou posez-moi une question sur n'importe quel candidat.",
       ));
-      ctx.addFeed(feedEvent("Sourcing passif", "Disponible — en attente de validation recruteur", "source"));
+      ctx.addFeed(feedEvent("Agent pret", "En attente — Q&A, upskilling, sourcing additionnel", "connect"));
       ctx.setPipelineDone(true);
     },
   },
