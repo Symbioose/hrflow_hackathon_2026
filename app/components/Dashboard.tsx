@@ -336,6 +336,7 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [asking, setAsking] = useState(false);
   const [pipelineDone, setPipelineDone] = useState(false);
+  const [profilesLoading, setProfilesLoading] = useState(false);
   const [jobKey, setJobKey] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const pipelineStarted = useRef(false);
@@ -410,6 +411,7 @@ export default function Dashboard() {
   /* ─── Fetch profiles (with scoring when available) ────── */
 
   const fetchAndRevealProfiles = useCallback(async () => {
+    setProfilesLoading(true);
     try {
       const modeParam = `mode=${modeRef.current}`;
       const keywords = extractKeywords(searchQueryRef.current);
@@ -504,6 +506,8 @@ export default function Dashboard() {
       });
     } catch {
       addFeed(feedEvent("Erreur", "Impossible de charger les profils", "connect", "error"));
+    } finally {
+      setProfilesLoading(false);
     }
   }, [addFeed]);
 
@@ -686,7 +690,7 @@ export default function Dashboard() {
         <div className="flex-1 border-r border-white/[0.06] flex flex-col min-w-0">
           <CandidatePanel
             profiles={visibleProfiles}
-            loading={!pipelineDone && visibleProfiles.length === 0}
+            loading={profilesLoading || (!pipelineDone && visibleProfiles.length === 0)}
             selectedKey={selectedProfile?.key ?? null}
             onSelect={handleSelectProfile}
             onAsk={handleAskFromCard}
