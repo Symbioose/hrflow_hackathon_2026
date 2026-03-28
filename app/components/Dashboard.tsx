@@ -43,6 +43,7 @@ const PIPELINE_SCRIPT: { delay: number; run: (ctx: PipelineContext) => void }[] 
   {
     delay: 500,
     run: (ctx) => {
+      ctx.setSearchQuery(DEMO_JOB);
       ctx.addMessage(chatMsg("user",
         `Source-moi des profils pour : ${DEMO_JOB}\n\nJe veux des talents passifs — pas que des gens qui ont postule.`,
       ));
@@ -357,6 +358,7 @@ interface PipelineContext {
   fetchAndRevealProfiles: () => void;
   sendTopSummary: () => void;
   setPipelineDone: (done: boolean) => void;
+  setSearchQuery: (q: string) => void;
 }
 
 /* ─── Dashboard component ─────────────────────────────────── */
@@ -374,7 +376,9 @@ export default function Dashboard() {
   const [asking, setAsking] = useState(false);
   const [pipelineDone, setPipelineDone] = useState(false);
   const [jobKey, setJobKey] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const pipelineStarted = useRef(false);
+  const searchQueryRef = useRef("");
 
   const switchMode = useCallback((newMode: "demo" | "live") => {
     setMode(newMode);
@@ -407,6 +411,8 @@ export default function Dashboard() {
     pipelineStarted.current = false;
     liveTimeoutsRef.current.forEach(clearTimeout);
     liveTimeoutsRef.current = [];
+    searchQueryRef.current = "";
+    setSearchQuery("");
     cursorRef.current = 0;
     if (mode === "live") {
       setMessages([chatMsg("agent", "Dashboard reset. En attente d'une nouvelle recherche...")]);
@@ -444,6 +450,7 @@ export default function Dashboard() {
     try {
       // Always fetch from demo source — live source is populated by OpenClaw over time
       const modeParam = `mode=demo`;
+      const keywords = searchQueryRef.current;
       // Try scoring first (needs a job from the board)
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
@@ -475,9 +482,10 @@ export default function Dashboard() {
         // Scoring unavailable — fall back to search
       }
 
-      // Fallback: plain profile search
+      // Fallback: keyword search on profiles
       if (!scored) {
-        const res = await fetch(`/api/hrflow/profiles?limit=20&${modeParam}`);
+        const keywordsParam = keywords ? `&keywords=${encodeURIComponent(keywords)}` : "";
+        const res = await fetch(`/api/hrflow/profiles?limit=20&${modeParam}${keywordsParam}`);
         const data = await res.json();
         if (data.code === 200) {
           fetched = data.data.profiles;
@@ -543,6 +551,7 @@ export default function Dashboard() {
       fetchAndRevealProfiles,
       sendTopSummary,
       setPipelineDone,
+      setSearchQuery: (q: string) => { searchQueryRef.current = q; setSearchQuery(q); },
     };
 
     const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -576,6 +585,8 @@ export default function Dashboard() {
             addMessage(chatMsg(isUser ? "user" : "agent", evt.payload.text));
             // In live mode, first user message triggers the pipeline script
             if (isUser && modeRef.current === "live" && !pipelineStarted.current) {
+              searchQueryRef.current = evt.payload.text;
+              setSearchQuery(evt.payload.text);
               startPipeline(LIVE_PIPELINE_SCRIPT);
             }
           } else if (evt.channel === "feed" && evt.payload.action) {
