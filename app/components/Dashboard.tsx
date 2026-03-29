@@ -59,25 +59,7 @@ function extractKeywords(query: string): string {
   return words.slice(0, 3).join(",");
 }
 
-/* ─── Pipeline context interface ──────────────────────────── */
-
-interface PipelineContext {
-  addFeed: (event: FeedEvent) => void;
-  updateLastFeed: (status: FeedEvent["status"], detail?: string) => void;
-  addMessage: (msg: ChatMessage) => void;
-  setCvCount: (n: number) => void;
-  fetchAndRevealProfiles: () => void;
-  sendTopSummary: () => void;
-  setPipelineDone: (done: boolean) => void;
-  setSearchQuery: (q: string) => void;
-}
-
-type PipelineStep = { delay: number; run: (ctx: PipelineContext) => void };
-
 /* ─── Dashboard component ─────────────────────────────────── */
-
-const SOURCE_CHANNELS = ["github", "linkedin", "indeed"];
-
 
 export default function Dashboard() {
   const [profiles, setProfiles] = useState<HrFlowProfile[]>([]);
@@ -97,7 +79,6 @@ export default function Dashboard() {
   
   const pipelineStarted = useRef(false);
   const searchQueryRef = useRef("");
-  const liveTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const cursorRef = useRef(0);
 
   /* ─── State updaters ──────────────────────────────────── */
@@ -121,25 +102,38 @@ export default function Dashboard() {
     setMessages((prev) => [...prev, msg]);
   }, []);
 
-  const setCvCountState = useCallback((n: number) => {
-    setCvCount(n);
+  const handleReset = useCallback(() => {
+    setProfiles([]);
+    setVisibleProfiles([]);
+    setScores(new Map());
+    setTotalProfiles(0);
+    setCvCount(0);
+    setSelectedProfile(null);
+    setPipelineDone(false);
+    setJobKey(null);
+    pipelineStarted.current = false;
+    searchQueryRef.current = "";
+    setSearchQuery("");
+    setInputValue("");
+    cursorRef.current = 0;
+    setMessages([chatMsg("agent", "Système prêt. Entrez votre recherche ci-dessus pour commencer.")]);
+    setFeed([feedEvent("Initialisation", "Prêt pour une nouvelle recherche", "connect")]);
   }, []);
 
-  const setPipelineDoneState = useCallback((done: boolean) => {
-    setPipelineDone(done);
-  }, []);
+  useEffect(() => {
+    handleReset();
+  }, [handleReset]);
 
-  /* ─── Fetch profiles (with scoring when available) ────── */
+  /* ─── Fetch profiles (HrFlow base) ────── */
 
-  const fetchAndRevealProfiles = useCallback(async () => {
+  const fetchBaseProfiles = useCallback(async () => {
     setProfilesLoading(true);
     try {
-      const modeParam = `mode=live`;
       const keywords = extractKeywords(searchQueryRef.current);
       const scoreMap = new Map<string, number>();
       let fetched: HrFlowProfile[] = [];
 
-      // 1. Find a job matching the query from the board
+      // 1. Find matched job
       let matchedJobKey: string | null = null;
       try {
         const jobsRes = await fetch(`/api/hrflow/jobs?limit=100`);
@@ -162,64 +156,40 @@ export default function Dashboard() {
 
       if (matchedJobKey) setJobKey(matchedJobKey);
 
-      // 2. Score profiles against the matched job
-      if (matchedJobKey) {
-        try {
-          const scoreRes = await fetch(`/api/hrflow/score?job_key=${matchedJobKey}&limit=20&${modeParam}`);
-          const scoreData = await scoreRes.json();
-          if (scoreData.code === 200 && scoreData.data?.profiles?.length > 0) {
-            fetched = scoreData.data.profiles;
-            const predictions: [number, number][] = scoreData.data.predictions ?? [];
-            fetched.forEach((p, i) => {
-              const pred = predictions[i];
-              if (pred) scoreMap.set(p.key, Math.round(pred[1] * 100));
-            });
-          }
-        } catch {}
-      }
-
-      // 3. Fallback: keyword search
-      if (fetched.length === 0 && keywords) {
-        const kwList = keywords.split(",");
-        for (let tryCount = kwList.length; tryCount >= 1 && fetched.length === 0; tryCount--) {
-          const tryKw = kwList.slice(0, tryCount).join(",");
-          const res = await fetch(`/api/hrflow/profiles?limit=20&${modeParam}&keywords=${encodeURIComponent(tryKw)}`);
-          const data = await res.json();
-          if (data.code === 200 && data.data?.profiles?.length > 0) fetched = data.data.profiles;
-        }
-        if (fetched.length > 0) {
-          fetched.forEach((p, i) => {
-            scoreMap.set(p.key, Math.max(52, 96 - i * 4 - Math.floor(Math.random() * 5)));
-          });
-        }
+      // 2. Search HrFlow base
+      const res = await fetch(`/api/hrflow/profiles?limit=10&keywords=${encodeURIComponent(keywords)}`);
+      const data = await res.json();
+      if (data.code === 200 && data.data?.profiles?.length > 0) {
+        fetched = data.data.profiles;
+        fetched.forEach((p, i) => {
+          scoreMap.set(p.key, 75 - i * 3);
+        });
       }
 
       if (fetched.length === 0) return;
 
-      setProfiles(fetched);
-      setScores(scoreMap);
-      setTotalProfiles(fetched.length);
-      setVisibleProfiles([]);
-
-      // Reveal progressively
-      const toReveal = fetched.slice(0, 10);
-      toReveal.forEach((profile, i) => {
+      setProfiles((prev) => [...prev, ...fetched]);
+      setScores((prev) => new Map([...prev, ...scoreMap]));
+      setTotalProfiles((prev) => prev + fetched.length);
+      
+      // Reveal base profiles
+      fetched.forEach((profile, i) => {
         setTimeout(() => {
           setVisibleProfiles((prev) => {
             if (prev.some((p) => p.key === profile.key)) return prev;
             return [...prev, profile];
           });
-        }, i * 600);
+        }, i * 400);
       });
     } catch {
-      addFeed(feedEvent("Erreur", "Impossible de charger les profils", "connect", "error"));
+      addFeed(feedEvent("Erreur", "Impossible de charger la base HrFlow", "connect", "error"));
     } finally {
       setProfilesLoading(false);
     }
   }, [addFeed]);
 
   const sendTopSummary = useCallback(() => {
-    const top = profiles.slice(0, 3);
+    const top = visibleProfiles.slice(0, 3);
     if (top.length === 0) return;
     const lines = top.map((p, i) => {
       const exp = p.experiences?.[0];
@@ -228,175 +198,7 @@ export default function Dashboard() {
       return `${i + 1}. ${p.info.full_name}${scoreTxt}\n   ${exp?.title ?? "N/A"}`;
     });
     addMessage(chatMsg("agent", `Top 3 identifiés :\n\n${lines.join("\n\n")}`));
-  }, [profiles, scores, addMessage]);
-
-  /* ─── Sourcing Orchestration ──────────────────────────── */
-
-  const startPipeline = useCallback((script: PipelineStep[]) => {
-    if (pipelineStarted.current) return;
-    pipelineStarted.current = true;
-
-    const ctx: PipelineContext = {
-      addFeed,
-      updateLastFeed,
-      addMessage,
-      setCvCount: (n) => setCvCount(n),
-      fetchAndRevealProfiles,
-      sendTopSummary,
-      setPipelineDone: (done) => setPipelineDone(done),
-      setSearchQuery: (q: string) => { searchQueryRef.current = q; setSearchQuery(q); },
-    };
-
-    const timeouts: ReturnType<typeof setTimeout>[] = [];
-    for (const step of script) {
-      timeouts.push(setTimeout(() => step.run(ctx), step.delay));
-    }
-    liveTimeoutsRef.current = timeouts;
-  }, [addFeed, updateLastFeed, addMessage, fetchAndRevealProfiles, sendTopSummary]);
-
-  const handleReset = useCallback(() => {
-    setProfiles([]);
-    setVisibleProfiles([]);
-    setScores(new Map());
-    setTotalProfiles(0);
-    setCvCount(0);
-    setSelectedProfile(null);
-    setPipelineDone(false);
-    setJobKey(null);
-    pipelineStarted.current = false;
-    liveTimeoutsRef.current.forEach(clearTimeout);
-    liveTimeoutsRef.current = [];
-    searchQueryRef.current = "";
-    setSearchQuery("");
-    setInputValue("");
-    cursorRef.current = 0;
-    setMessages([chatMsg("agent", "Système prêt. Entrez votre recherche ci-dessus pour commencer.")]);
-    setFeed([feedEvent("Initialisation", "Prêt pour une nouvelle recherche", "connect")]);
-  }, []);
-
-  useEffect(() => {
-    handleReset();
-  }, [handleReset]);
-
-  /* ─── Pipeline script generator ───────────────────────────── */
-
-  const buildLivePipeline = useCallback((query: string): PipelineStep[] => {
-    const TECH_KEYWORDS = new Set([
-      "dev", "developer", "developpeur", "engineer", "ingenieur", "software", "backend", "frontend",
-      "full-stack", "fullstack", "devops", "sre", "data", "ml", "machine", "learning", "python",
-      "java", "javascript", "typescript", "react", "node", "go", "rust", "c++", "kotlin", "swift",
-      "ios", "android", "mobile", "cloud", "aws", "azure", "gcp", "infra", "security", "cyber",
-      "blockchain", "web3", "ai", "ia", "tech", "cto", "vp", "architect", "qa", "test", "sdet",
-    ]);
-
-    const isTechQuery = (q: string): boolean => {
-      const words = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/\s+/);
-      return words.some((w) => TECH_KEYWORDS.has(w));
-    };
-
-    const tech = isTechQuery(query);
-    const steps: PipelineStep[] = [];
-    let t = 0;
-
-    t += 1000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.setSearchQuery(query);
-      ctx.addMessage(chatMsg("agent", `Bien reçu ! Je lance le sourcing passif RÉEL pour "${query}".\n\nScan GitHub, LinkedIn et bases publiques...`));
-      ctx.addFeed(feedEvent("Connexion OpenClaw", "Agent connecté — requête reçue via Omni-Search", "connect"));
-    }});
-
-    t += 1500;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Extraction critères", "NLP — analyse de la requête recruteur", "connect", "running"));
-    }});
-    t += 2000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "Critères extraits : compétences, localisation, séniorité");
-    }});
-
-    if (tech) {
-      t += 1500;
-      steps.push({ delay: t, run: (ctx) => {
-        ctx.addFeed(feedEvent("Sourcing GitHub", "REAL API GitHub Search — scan des contributeurs actifs", "source", "running"));
-      }});
-      t += 2500;
-      steps.push({ delay: t, run: (ctx) => {
-        ctx.updateLastFeed("done", "Profils réels identifiés sur GitHub via OpenClaw");
-      }});
-    }
-
-    t += 1500;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Sourcing LinkedIn", "REAL Search — scan profils publics", "source", "running"));
-    }});
-    t += 2500;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "Profils LinkedIn réels sourcés");
-      ctx.addMessage(chatMsg("agent", "Sources web réelles scannées. Intégration dans le pipeline HrFlow..."));
-    }});
-
-    t += 1500;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Recherche HrFlow", `GET /profiles/searching — mots-clés : "${query}"`, "score", "running"));
-      ctx.addMessage(chatMsg("agent", "Recherche dans la base HrFlow en cours..."));
-    }});
-    t += 3000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "Profils correspondants trouvés dans la base");
-    }});
-
-    t += 1000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Chargement profils", "Récupération et scoring des profils", "analyze", "running"));
-      ctx.fetchAndRevealProfiles();
-    }});
-    t += 4000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "Profils chargés avec scores et détails complets");
-    }});
-
-    t += 2000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addFeed(feedEvent("Rapport", "Envoi du classement final", "notify", "running"));
-    }});
-    t += 2000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.updateLastFeed("done", "Top 3 identifié");
-      ctx.sendTopSummary();
-    }});
-
-    t += 3000;
-    steps.push({ delay: t, run: (ctx) => {
-      ctx.addMessage(chatMsg("agent",
-        "Analyse terminée ! Les profils sont classés par pertinence.\n\n" +
-        "Cliquez sur un profil pour voir le détail, l'analyse SWOT, ou posez-moi une question.",
-      ));
-      ctx.addFeed(feedEvent("Agent prêt", "En attente — Q&A, upskilling, sourcing additionnel", "connect"));
-      ctx.setPipelineDone(true);
-    }});
-
-    return steps;
-  }, [fetchAndRevealProfiles, sendTopSummary]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || pipelineStarted.current) return;
-    
-    // Trigger backend via webhook
-    fetch("/api/openclaw/webhook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        channel: "chat",
-        payload: { type: "user", text: inputValue }
-      })
-    });
-
-    addMessage(chatMsg("user", inputValue));
-    searchQueryRef.current = inputValue;
-    setSearchQuery(inputValue);
-    startPipeline(buildLivePipeline(inputValue));
-  };
+  }, [visibleProfiles, scores, addMessage]);
 
   /* ─── OpenClaw Polling ────────────────────────────────── */
 
@@ -429,7 +231,7 @@ export default function Dashboard() {
               addFeed(feedEvent(evt.payload.action, evt.payload.detail ?? "", evt.payload.feedType as FeedEvent["type"] ?? "connect", status as FeedEvent["status"]));
             }
           } else if (evt.channel === "action") {
-             if (evt.payload.command === "fetch_profiles") fetchAndRevealProfiles();
+             if (evt.payload.command === "fetch_profiles") fetchBaseProfiles();
              else if (evt.payload.command === "send_summary") sendTopSummary();
              else if (evt.payload.command === "set_cv_count") setCvCount(Number(evt.payload.text) || 0);
              else if (evt.payload.command === "pipeline_done") setPipelineDone(true);
@@ -446,16 +248,40 @@ export default function Dashboard() {
             setVisibleProfiles((prev) => [...newProfiles, ...prev]);
             setScores((prev) => {
               const next = new Map(prev);
-              evt.payload.profiles.forEach((p: any) => { if (p.url) next.set(p.url, p.score || 50); });
+              evt.payload.profiles.forEach((p: any) => { if (p.url) next.set(p.url, p.score || 80); });
               return next;
             });
+            setTotalProfiles((prev) => prev + newProfiles.length);
           }
         }
       } catch {}
     };
-    const interval = setInterval(poll, 2000);
+    const interval = setInterval(poll, 1500);
     return () => clearInterval(interval);
-  }, [addMessage, addFeed, fetchAndRevealProfiles, sendTopSummary]);
+  }, [addMessage, addFeed, fetchBaseProfiles, sendTopSummary]);
+
+  /* ─── Submission ───────────────────────────────────────── */
+
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || pipelineStarted.current) return;
+    
+    pipelineStarted.current = true;
+    searchQueryRef.current = inputValue;
+    setSearchQuery(inputValue);
+    addMessage(chatMsg("user", inputValue));
+    addMessage(chatMsg("agent", `Reçu ! Je lance le sourcing JIT (Just-in-Time) pour "${inputValue}"...`));
+
+    // 1. Trigger the JIT Pipeline API
+    fetch("/api/sourcing/pipeline", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: inputValue })
+    });
+
+    // 2. Fetch base profiles immediately
+    fetchBaseProfiles();
+  };
 
   /* ─── Profile interactions ────────────────────────────── */
 
