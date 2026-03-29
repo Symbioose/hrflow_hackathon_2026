@@ -76,6 +76,9 @@ type PipelineStep = { delay: number; run: (ctx: PipelineContext) => void };
 
 /* ─── Dashboard component ─────────────────────────────────── */
 
+const SOURCE_CHANNELS = ["github", "linkedin", "indeed"];
+
+
 export default function Dashboard() {
   const [profiles, setProfiles] = useState<HrFlowProfile[]>([]);
   const [visibleProfiles, setVisibleProfiles] = useState<HrFlowProfile[]>([]);
