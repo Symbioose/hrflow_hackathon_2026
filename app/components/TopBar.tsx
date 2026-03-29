@@ -4,12 +4,10 @@ interface TopBarProps {
   totalProfiles: number;
   cvCount: number;
   pipelineDone: boolean;
-  mode: "demo" | "live";
-  onSwitchMode: (mode: "demo" | "live") => void;
   onReset?: () => void;
 }
 
-export default function TopBar({ totalProfiles, cvCount, pipelineDone, mode, onSwitchMode, onReset }: TopBarProps) {
+export default function TopBar({ totalProfiles, cvCount, pipelineDone, onReset }: TopBarProps) {
   return (
     <header className="relative flex items-center justify-between px-6 py-3 border-b border-white/[0.06] bg-[var(--bg-base)]">
       <div className="scan-line absolute inset-0 overflow-hidden pointer-events-none" />
@@ -40,31 +38,12 @@ export default function TopBar({ totalProfiles, cvCount, pipelineDone, mode, onS
 
         <div className="ml-2 h-8 w-px bg-white/[0.06]" />
 
-        {/* Mode toggle */}
-        <div className="flex items-center rounded-full border border-white/[0.08] bg-[var(--bg-card)] p-0.5">
-          {(["demo", "live"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => onSwitchMode(m)}
-              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-all cursor-pointer ${
-                mode === m
-                  ? m === "live"
-                    ? "bg-[var(--accent-emerald)] text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                    : "bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)]"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-              }`}
-            >
-              {m === "demo" ? "Demo" : "Live"}
-            </button>
-          ))}
-        </div>
-
         {/* Reset button */}
         <button
           onClick={onReset}
-          className="text-[10px] font-medium px-3 py-1.5 rounded-full border border-white/[0.08] bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--accent-rose)] hover:border-[var(--accent-rose)]/30 transition-all cursor-pointer"
+          className="text-[10px] font-medium px-4 py-1.5 rounded-full border border-white/[0.08] bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--accent-rose)] hover:border-[var(--accent-rose)]/30 transition-all cursor-pointer"
         >
-          Reset
+          Reset Session
         </button>
 
         <div className="h-8 w-px bg-white/[0.06]" />
