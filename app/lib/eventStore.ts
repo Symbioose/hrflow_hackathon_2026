@@ -3,7 +3,7 @@
  * Supports both polling (getEventsSince) and push (subscribe) for SSE.
  */
 
-import type { SourcedProfile } from "@/app/lib/sourcing";
+import type { SourcedProfile } from "@/app/lib/types";
 
 export interface OpenClawEvent {
   id: number;
