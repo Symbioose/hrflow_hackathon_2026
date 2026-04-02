@@ -1196,6 +1196,186 @@ function CTASection() {
 }
 
 /* ═══════════════════════════════════════════
+   Live Search Demo — Typing effect + results
+   ═══════════════════════════════════════════ */
+
+function LiveSearchDemo() {
+  const query = "Senior Python developer, Paris, ML experience, open to CDI"
+  const [typed, setTyped] = useState("")
+  const [showResults, setShowResults] = useState(false)
+  const [started, setStarted] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current; if (!el) return
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting && !started) { setStarted(true); obs.unobserve(el) } }, { threshold: 0.4 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [started])
+
+  useEffect(() => {
+    if (!started) return
+    let i = 0
+    const interval = setInterval(() => {
+      i++
+      setTyped(query.slice(0, i))
+      if (i >= query.length) {
+        clearInterval(interval)
+        setTimeout(() => setShowResults(true), 600)
+      }
+    }, 40)
+    return () => clearInterval(interval)
+  }, [started])
+
+  const candidates = [
+    { name: "Sophie Martin", role: "ML Engineer · 7 yrs · Paris", score: 94, tags: ["Python", "ML", "CDI"] },
+    { name: "Lucas Moreau", role: "Data Scientist · 5 yrs · Paris", score: 89, tags: ["Python", "Data", "CDI"] },
+    { name: "Camille Petit", role: "Python Dev · 6 yrs · Lyon", score: 85, tags: ["Python", "Backend"] },
+  ]
+
+  return (
+    <section className="py-24 md:py-32" style={{ backgroundColor: NAVY }}>
+      <div ref={ref} className="mx-auto max-w-4xl px-8">
+        <Reveal>
+          <div className="text-center mb-12">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-4" style={{ color: CORAL }}>Live Demo</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2rem, 4vw, 3rem)" }}>
+              See it <span style={{ color: CORAL, fontStyle: "italic" }}>work.</span>
+            </h2>
+          </div>
+        </Reveal>
+
+        {/* Search box with typing */}
+        <div style={{ backgroundColor: `${WHITE}06`, borderRadius: "16px", border: `1px solid ${WHITE}08`, overflow: "hidden" }}>
+          <div className="px-6 py-5 flex items-center gap-3" style={{ borderBottom: `1px solid ${WHITE}06` }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={CORAL} strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+            <span className="font-mono text-sm" style={{ color: WHITE }}>
+              {typed}<span className="animate-pulse" style={{ color: CORAL }}>|</span>
+            </span>
+          </div>
+
+          {/* Results */}
+          <div className="p-5 space-y-3" style={{ minHeight: 200 }}>
+            {showResults ? (
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-2 h-2" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
+                  <span className="font-mono text-xs" style={{ color: SUCCESS }}>Found 12 candidates in 4.2s</span>
+                </div>
+                {candidates.map((c, i) => (
+                  <div
+                    key={c.name}
+                    className="p-4 flex items-center gap-4 transition-all duration-500"
+                    style={{
+                      backgroundColor: `${WHITE}05`,
+                      borderRadius: "12px",
+                      border: i === 0 ? `1px solid ${CORAL}30` : `1px solid ${WHITE}06`,
+                      opacity: 1,
+                      animation: `fadeSlideIn 0.5s ease-out ${i * 150}ms both`,
+                    }}
+                  >
+                    <Avatar name={c.name} size={40} bg={i === 0 ? CORAL : `${WHITE}15`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm" style={{ color: `${WHITE}85` }}>{c.name}</div>
+                      <div className="text-xs mt-0.5" style={{ color: `${WHITE}35` }}>{c.role}</div>
+                      <div className="flex gap-1.5 mt-2">
+                        {c.tags.map(t => (
+                          <span key={t} className="px-2 py-0.5 font-mono text-[9px] font-bold" style={{ backgroundColor: `${SUCCESS}15`, color: SUCCESS, borderRadius: "6px" }}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono font-bold text-lg" style={{ color: c.score > 90 ? SUCCESS : CORAL }}>{c.score}%</div>
+                      <div className="text-[9px] font-mono uppercase" style={{ color: `${WHITE}30` }}>match</div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : started ? (
+              <div className="flex items-center justify-center h-40 gap-3">
+                <div className="w-5 h-5 border-2 border-t-transparent animate-spin" style={{ borderColor: `${CORAL} transparent ${CORAL}30 ${CORAL}30`, borderRadius: "50%" }} />
+                <span className="font-mono text-xs" style={{ color: `${WHITE}35` }}>Searching across 3 sources...</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-40">
+                <span className="font-mono text-xs" style={{ color: `${WHITE}20` }}>Type a search to see results...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   FAQ — Accordion
+   ═══════════════════════════════════════════ */
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div
+      className="cursor-pointer transition-all duration-200"
+      style={{ borderBottom: `1px solid ${INK}08` }}
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex items-center justify-between py-6 px-2">
+        <h3 className="font-semibold text-base pr-8" style={{ color: INK }}>{q}</h3>
+        <div
+          className="w-8 h-8 flex-shrink-0 flex items-center justify-center transition-transform duration-300"
+          style={{ backgroundColor: open ? `${CORAL}10` : `${INK}05`, borderRadius: "8px", transform: open ? "rotate(45deg)" : "rotate(0deg)" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={open ? CORAL : MUTED} strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 5v14" /><path d="M5 12h14" />
+          </svg>
+        </div>
+      </div>
+      <div
+        className="overflow-hidden transition-all duration-300"
+        style={{ maxHeight: open ? "200px" : "0px", opacity: open ? 1 : 0 }}
+      >
+        <p className="px-2 pb-6 text-sm leading-relaxed" style={{ color: MUTED }}>{a}</p>
+      </div>
+    </div>
+  )
+}
+
+function FAQSection() {
+  const faqs = [
+    { q: "How does PTI find passive candidates?", a: "PTI uses AI agents to search across GitHub repositories, LinkedIn profiles, Indeed listings, and our 10,000+ indexed CV database simultaneously. It discovers talent that never applies to job boards." },
+    { q: "What is SWOT analysis for candidates?", a: "Each candidate receives a Strengths, Weaknesses, Opportunities, and Threats analysis generated by AI. This gives recruiters transparent reasoning behind every match score, not just a number." },
+    { q: "How fast are the results?", a: "Most searches return ranked candidates in under 5 seconds. The JIT pipeline processes each candidate in real time — no stale databases or overnight batch jobs." },
+    { q: "Can I search in natural language?", a: "Yes! Just describe who you need in plain language — 'Senior Python dev in Paris with ML experience' — and the AI agent parses your intent and searches intelligently across all sources." },
+    { q: "What scoring algorithm is used?", a: "PTI uses HrFlow.ai's proprietary matching algorithm that scores candidates 0–100% based on skills, experience, location, availability, and job fit. Every score is explainable." },
+    { q: "Is my data secure?", a: "All data is processed securely. CV parsing and indexing happens through HrFlow.ai's enterprise-grade infrastructure. We do not store raw profiles — only structured, anonymizable data." },
+  ]
+
+  return (
+    <section className="py-28 md:py-36" style={{ backgroundColor: WHITE }}>
+      <div className="mx-auto max-w-3xl px-8">
+        <Reveal>
+          <div className="text-center mb-14">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>FAQ</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
+              Your questions, <span style={{ color: CORAL, fontStyle: "italic" }}>answered.</span>
+            </h2>
+          </div>
+        </Reveal>
+        <div>
+          {faqs.map((faq, i) => (
+            <Reveal key={faq.q} delay={i * 50}>
+              <FAQItem q={faq.q} a={faq.a} />
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
    Footer
    ═══════════════════════════════════════════ */
 
@@ -1253,10 +1433,12 @@ export default function LandingPage() {
       <MetricsBar />
       <ProblemSection />
       <FeaturesSection />
+      <LiveSearchDemo />
       <DemoSection />
       <PipelineSection />
       <TestimonialsSection />
       <StackSection />
+      <FAQSection />
       <CTASection />
       <Footer />
     </div>
