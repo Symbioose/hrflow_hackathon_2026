@@ -15,6 +15,14 @@ import { pushEvent, type OpenClawEvent } from "@/app/lib/eventStore";
  * All other formats unchanged.
  */
 export async function POST(req: NextRequest) {
+  const secret = process.env.OPENCLAW_WEBHOOK_SECRET;
+  if (secret) {
+    const provided = req.headers.get("x-openclaw-secret");
+    if (provided !== secret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   try {
     const body = await req.json();
 

@@ -14,8 +14,8 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     summary:
       "Data Scientist spécialisée en NLP et Computer Vision. Contributrice active open-source avec 12 repos GitHub cumulant +200 stars. Expériences chez Criteo et BNP Paribas. Forte culture produit.",
     sources: [
-      { type: "github", url: "https://github.com", label: "github.com/s.marchand" },
-      { type: "linkedin", url: "https://linkedin.com", label: "linkedin.com/in/s.marchand" },
+      { type: "github", url: "https://github.com/s-marchand", label: "github.com/s.marchand" },
+      { type: "linkedin", url: "https://linkedin.com/in/s-marchand", label: "linkedin.com/in/s.marchand" },
     ],
     skills: ["Python", "PyTorch", "NLP", "scikit-learn", "SQL", "Docker", "Spark", "MLflow"],
     experiences: [
@@ -53,8 +53,8 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     summary:
       "Expert Kubernetes et Terraform, contributeur actif sur r/devops (+3k karma). A migré l'infrastructure de 3 scale-ups françaises vers GCP. Passionné d'automation et de GitOps.",
     sources: [
-      { type: "github", url: "https://github.com", label: "github.com/k.belhadj" },
-      { type: "reddit", url: "https://reddit.com", label: "reddit.com/u/karim_devops" },
+      { type: "github", url: "https://github.com/k-belhadj", label: "github.com/k.belhadj" },
+      { type: "reddit", url: "https://reddit.com/u/karim_devops", label: "reddit.com/u/karim_devops" },
     ],
     skills: ["Kubernetes", "Terraform", "GCP", "ArgoCD", "CI/CD", "Python", "Prometheus", "Helm"],
     experiences: [
@@ -91,9 +91,9 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     summary:
       "Dev full-stack React/Node.js, 8 projets open-source sur GitHub, active sur r/reactjs. Side project SaaS avec +1 200 utilisateurs actifs. Forte sensibilité UX.",
     sources: [
-      { type: "github", url: "https://github.com", label: "github.com/emma.dupont" },
-      { type: "linkedin", url: "https://linkedin.com", label: "linkedin.com/in/emma.dupont" },
-      { type: "reddit", url: "https://reddit.com", label: "reddit.com/u/emma_codes" },
+      { type: "github", url: "https://github.com/emma-dupont", label: "github.com/emma.dupont" },
+      { type: "linkedin", url: "https://linkedin.com/in/emma-dupont", label: "linkedin.com/in/emma.dupont" },
+      { type: "reddit", url: "https://reddit.com/u/emma_codes", label: "reddit.com/u/emma_codes" },
     ],
     skills: ["React", "TypeScript", "Node.js", "PostgreSQL", "Next.js", "Docker", "Tailwind CSS"],
     experiences: [

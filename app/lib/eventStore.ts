@@ -57,7 +57,13 @@ export function pushEvent(
     events = events.slice(-MAX_EVENTS);
   }
   // Notify SSE subscribers immediately
-  subscribers.forEach((fn) => fn(event));
+  subscribers.forEach((fn) => {
+    try {
+      fn(event);
+    } catch {
+      subscribers.delete(fn);
+    }
+  });
   return event;
 }
 
