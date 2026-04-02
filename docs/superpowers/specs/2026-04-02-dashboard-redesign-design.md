@@ -101,6 +101,19 @@ Chaque agent :
 4. Quand les données arrivent via webhook : check vert ✓ + agent disparaît avec `pop-out`
 5. Un compteur "+N profils trouvés" s'incrémente à chaque batch reçu
 
+**Ligne terminal sous chaque agent :**
+
+Sous le sprite de chaque agent, une ligne de texte monospace style terminal qui change toutes les ~1.2s selon l'état :
+
+```
+GitHub  → "> Connexion..."  →  "> Lecture des repos..."  →  "> Analyse des commits..."  →  "> Score calculé ✓"
+LinkedIn → "> Authentification..."  →  "> Scan des profils..."  →  "> Extraction skills..."  →  "> 12 profils trouvés ✓"
+Reddit  → "> Connexion subreddit..."  →  "> Parsing des posts..."  →  "> Identification auteurs..."  →  "> Analyse complète ✓"
+Internet → "> Crawling web..."  →  "> Indexation résultats..."  →  "> Profils détectés..."  →  "> Done ✓"
+```
+
+Implémentation : tableau de messages par source, `setInterval` 1200ms, cycling via index. Couleur : `INK/60` → `CORAL` sur le message final `✓`. Font : `font-mono text-[11px]`.
+
 **Implémentation technique :**
 - Pas de librairie externe — CSS pur avec sprite sheets SVG inline + `animation: steps(4)`
 - Les agents sont des composants React (`<PixelAgent source="github" state="working" />`)
