@@ -12,7 +12,10 @@ export async function POST(req: NextRequest) {
     // Trigger the pipeline. 
     // In a serverless env, we'd normally use a background job or stream.
     // For the hackathon dashboard, we trigger events back to the webhook to update the UI.
-    const webhookUrl = new URL("/api/openclaw/webhook", req.url).toString();
+    const base = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+    const webhookUrl = new URL("/api/openclaw/webhook", base).toString();
 
     const onEvent = async (event: any) => {
       await fetch(webhookUrl, {
