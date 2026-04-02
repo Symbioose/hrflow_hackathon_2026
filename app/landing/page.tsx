@@ -1,23 +1,145 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, useReducedMotion } from "framer-motion"
+import { useEffect, useRef, useState, useCallback, type ReactNode } from "react"
+import { DitheringShader } from "@/components/ui/dithering-shader"
 import dynamic from "next/dynamic"
-import {
-  Globe2,
-  BarChart3,
-  Zap,
-  MessageSquare,
-  Search,
-  Database,
-  Layers,
-  Trophy,
-} from "lucide-react"
+const GlobeCanvas = dynamic(() => import("@/components/ui/globe"), { ssr: false })
 
-const Globe = dynamic(() => import("@/components/ui/globe"), { ssr: false })
+/* ═══════════════════════════════════════════════════
+   DESIGN SYSTEM — Elevated Pixel Editorial v2
+
+   - Coral as accent, not flood
+   - Deep navy (#0B1226) as strong contrast sections
+   - Generous whitespace, rounded cards, pixel CTAs
+   - Animated counters, avatars, rich visuals
+   - Full-width feature visuals
+   ═══════════════════════════════════════════════════ */
+
+const CORAL = "#FF6B6B"
+const CORAL_DARK = "#E85555"
+const CORAL_DEEP = "#CC4444"
+const CORAL_GLOW = "#FF6B6B25"
+const CREAM = "#FFF5F0"
+const CREAM_MID = "#F5EDE6"
+const INK = "#1a1a2e"
+const NAVY = "#0B1226"
+const MUTED = "#6b7280"
+const WHITE = "#FFFFFF"
+const SUCCESS = "#10b981"
+
+const serif = "var(--font-display), 'Georgia', serif"
 
 /* ═══════════════════════════════════════════
-   Scroll Reveal Helper
+   Animated Counter
+   ═══════════════════════════════════════════ */
+
+function AnimatedNumber({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [display, setDisplay] = useState(0)
+  const [started, setStarted] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !started) {
+          setStarted(true)
+          obs.unobserve(el)
+        }
+      },
+      { threshold: 0.3 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [started])
+
+  useEffect(() => {
+    if (!started) return
+    const duration = 1200
+    const steps = 40
+    const increment = value / steps
+    let current = 0
+    let step = 0
+    const interval = setInterval(() => {
+      step++
+      const progress = step / steps
+      const eased = 1 - Math.pow(1 - progress, 3)
+      current = Math.round(value * eased)
+      setDisplay(current)
+      if (step >= steps) {
+        setDisplay(value)
+        clearInterval(interval)
+      }
+    }, duration / steps)
+    return () => clearInterval(interval)
+  }, [started, value])
+
+  return (
+    <span ref={ref}>
+      {prefix}{display}{suffix}
+    </span>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Pixel Button — sharp identity on CTAs only
+   ═══════════════════════════════════════════ */
+
+function PixelBtn({
+  href,
+  children,
+  variant = "coral",
+  className = "",
+  size = "md",
+}: {
+  href: string
+  children: ReactNode
+  variant?: "coral" | "dark" | "white" | "outline"
+  className?: string
+  size?: "sm" | "md" | "lg"
+}) {
+  const sizes = {
+    sm: "px-5 py-2.5 text-xs",
+    md: "px-8 py-4 text-sm",
+    lg: "px-10 py-5 text-base",
+  }
+
+  const bg =
+    variant === "coral" ? CORAL
+    : variant === "dark" ? INK
+    : variant === "outline" ? "transparent"
+    : WHITE
+
+  const fg =
+    variant === "white" ? INK
+    : variant === "outline" ? INK
+    : CREAM
+
+  const shadow =
+    variant === "coral" ? CORAL_DEEP
+    : variant === "outline" ? `${INK}20`
+    : variant === "dark" ? "#000"
+    : `${INK}15`
+
+  return (
+    <a
+      href={href}
+      className={`inline-block font-mono font-bold uppercase tracking-wider transition-all duration-100 select-none cursor-pointer active:shadow-none active:translate-x-[4px] active:translate-y-[4px] ${sizes[size]} ${className}`}
+      style={{
+        backgroundColor: bg,
+        color: fg,
+        boxShadow: `4px 4px 0 0 ${shadow}`,
+        border: variant === "outline" ? `2px solid ${INK}` : "none",
+      }}
+    >
+      {children}
+    </a>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Scroll Reveal
    ═══════════════════════════════════════════ */
 
 function Reveal({
@@ -25,149 +147,745 @@ function Reveal({
   delay = 0,
   className = "",
 }: {
-  children: React.ReactNode
+  children: ReactNode
   delay?: number
   className?: string
 }) {
-  const prefersReduced = useReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
+  const [vis, setVis] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let t: ReturnType<typeof setTimeout>
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          if (delay) t = setTimeout(() => setVis(true), delay)
+          else setVis(true)
+          obs.unobserve(el)
+        }
+      },
+      { threshold: 0.08 }
+    )
+    obs.observe(el)
+    return () => {
+      obs.disconnect()
+      clearTimeout(t)
+    }
+  }, [delay])
 
   return (
-    <motion.div
-      initial={prefersReduced ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={prefersReduced ? { duration: 0 } : { duration: 0.5, delay }}
-      className={className}
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        vis ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      } ${className}`}
     >
       {children}
-    </motion.div>
+    </div>
   )
 }
 
 /* ═══════════════════════════════════════════
-   Section 1: Navigation
+   Grain Overlay
+   ═══════════════════════════════════════════ */
+
+function Grain() {
+  return (
+    <div
+      className="fixed inset-0 z-[100] pointer-events-none"
+      style={{
+        opacity: 0.03,
+        backgroundImage:
+          "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+      }}
+    />
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Avatar placeholder
+   ═══════════════════════════════════════════ */
+
+function Avatar({ name, size = 40, bg = CORAL }: { name: string; size?: number; bg?: string }) {
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2)
+  return (
+    <div
+      className="flex items-center justify-center font-mono font-bold text-white flex-shrink-0"
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: bg,
+        borderRadius: "50%",
+        fontSize: size * 0.35,
+      }}
+    >
+      {initials}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Navigation
    ═══════════════════════════════════════════ */
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 50)
-    window.addEventListener("scroll", handler, { passive: true })
-    return () => window.removeEventListener("scroll", handler)
+    const h = () => setScrolled(window.scrollY > 50)
+    window.addEventListener("scroll", h, { passive: true })
+    return () => window.removeEventListener("scroll", h)
   }, [])
 
   return (
-    <nav
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-xl border-b border-slate-200"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <a href="/landing" className="font-bold text-xl text-slate-900">
+    <nav className="fixed top-0 inset-x-0 z-50">
+      <div
+        className="mx-auto max-w-7xl flex items-center justify-between px-8 py-5 transition-all duration-300"
+        style={{
+          backgroundColor: scrolled ? `${WHITE}ee` : "transparent",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          borderBottom: scrolled ? `1px solid ${INK}08` : "1px solid transparent",
+        }}
+      >
+        <a href="/landing" className="font-mono font-bold text-2xl tracking-tight" style={{ color: CORAL }}>
           Claw4HR
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 ml-0.5 -translate-y-2" />
         </a>
-
-        {/* Center links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
-          <a href="#features" className="hover:text-slate-900 transition-colors">
-            Features
-          </a>
-          <a href="#pipeline" className="hover:text-slate-900 transition-colors">
-            How it works
-          </a>
-          <a href="#integrations" className="hover:text-slate-900 transition-colors">
-            Integrations
-          </a>
-        </div>
-
-        {/* CTA */}
-        <a
-          href="/"
-          className="bg-indigo-600 text-white rounded-lg px-5 py-2.5 text-sm font-semibold hover:bg-indigo-700 transition"
+        <div
+          className="hidden md:flex items-center gap-10 text-sm font-mono uppercase tracking-widest"
+          style={{ color: MUTED, fontSize: "11px" }}
         >
-          Start Sourcing
-        </a>
+          <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Fonctionnalit&eacute;s</a>
+          <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">D&eacute;mo</a>
+          <a href="#pipeline" className="hover:text-[#1a1a2e] transition-colors">Pipeline</a>
+          <a href="#stack" className="hover:text-[#1a1a2e] transition-colors">Stack</a>
+        </div>
+        <div className="flex items-center gap-3">
+          <PixelBtn href="#demo" variant="outline" size="sm">Voir la D&eacute;mo</PixelBtn>
+          <PixelBtn href="/" variant="coral" size="sm">Acc&egrave;s Dashboard &rarr;</PixelBtn>
+        </div>
       </div>
     </nav>
   )
 }
 
 /* ═══════════════════════════════════════════
-   Section 2: Hero
+   Hero
    ═══════════════════════════════════════════ */
 
 function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
-      {/* Globe background */}
-      <div className="absolute inset-0 z-0 opacity-60">
-        <Globe />
+    <section className="relative min-h-screen flex items-center overflow-hidden" style={{ backgroundColor: WHITE }}>
+      <div className="absolute inset-0 opacity-20">
+        <DitheringShader
+          shape="wave"
+          type="8x8"
+          colorBack="#FFFFFF"
+          colorFront="#FF6B6B"
+          width={1920}
+          height={1080}
+          pxSize={3}
+          speed={0.3}
+          style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+        />
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 h-48" style={{ background: `linear-gradient(to top, ${WHITE}, transparent)` }} />
+
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-8 pt-32 pb-20">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Badge */}
+          <div
+            className="inline-flex items-center gap-2.5 px-5 py-2.5 mb-10 font-mono text-xs uppercase tracking-[0.15em] animate-fade-in-up"
+            style={{
+              animationDelay: "0.15s", animationFillMode: "both",
+              backgroundColor: `${CORAL}10`, border: `1.5px solid ${CORAL}30`, color: CORAL,
+              borderRadius: "100px",
+            }}
+          >
+            <span className="w-2 h-2 animate-pulse-dot" style={{ backgroundColor: CORAL, borderRadius: "50%" }} />
+            Hackathon HrFlow.ai 2026
+          </div>
+
+          {/* Headline */}
+          <h1 className="animate-fade-in-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
+            <span className="block leading-[0.92] tracking-[-0.03em]" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
+              Arr&ecirc;tez de chercher.
+            </span>
+            <span className="block leading-[0.92] tracking-[-0.03em] mt-2" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
+              Commencez &agrave; <span style={{ color: CORAL, fontStyle: "italic" }}>trouver.</span>
+            </span>
+          </h1>
+
+          <p className="mt-8 text-xl leading-relaxed max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s", animationFillMode: "both", color: MUTED }}>
+            Un agent IA qui d&eacute;couvre, enrichit et &eacute;value les meilleurs talents passifs sur GitHub, LinkedIn et Indeed — en temps r&eacute;el.
+          </p>
+
+          {/* CTAs */}
+          <div className="mt-10 flex items-center justify-center gap-4 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+            <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
+            <PixelBtn href="#demo" variant="outline" size="lg">Voir la D&eacute;mo</PixelBtn>
+          </div>
+
+          {/* Social proof */}
+          <div className="mt-14 flex items-center justify-center gap-8 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.9s", animationFillMode: "both" }}>
+            <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${MUTED}90` }}>Propuls&eacute; par</span>
+            {["HrFlow.ai", "OpenClaw", "Ollama"].map((name) => (
+              <span key={name} className="font-mono font-bold text-sm tracking-tight" style={{ color: `${INK}60` }}>{name}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Screenshot — large, immersive */}
+        <div className="mt-20 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
+          <div className="relative overflow-hidden" style={{ borderRadius: "12px", backgroundColor: NAVY, boxShadow: `0 50px 100px -30px ${INK}40, 0 0 0 1px ${WHITE}10` }}>
+            {/* Browser chrome */}
+            <div className="flex items-center gap-2 px-5 py-3.5" style={{ backgroundColor: NAVY, borderBottom: `1px solid ${WHITE}08` }}>
+              <div className="flex gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#ff5f57" }} />
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#febc2e" }} />
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#28c840" }} />
+              </div>
+              <div className="ml-4 flex-1 h-7 flex items-center px-4 font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}35`, borderRadius: "6px" }}>
+                app.claw4hr.ai/dashboard
+              </div>
+            </div>
+            {/* Dashboard mockup */}
+            <div className="aspect-[16/9] relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${NAVY}, #111827)` }}>
+              <div className="w-full h-full p-6 grid grid-cols-[240px_1fr_300px] gap-4" style={{ opacity: 0.95 }}>
+                {/* Sidebar */}
+                <div className="flex flex-col gap-3">
+                  <div className="h-10 flex items-center px-4 font-mono text-sm font-bold" style={{ color: CORAL }}>Claw4HR</div>
+                  <div className="h-9 flex items-center px-3 gap-2" style={{ backgroundColor: `${CORAL}12`, borderRadius: "8px" }}>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: `${CORAL}40` }} />
+                    <div className="h-2 w-16" style={{ backgroundColor: `${CORAL}50`, borderRadius: "4px" }} />
+                  </div>
+                  {[1, 2, 3].map(n => (
+                    <div key={n} className="h-9 flex items-center px-3 gap-2" style={{ borderRadius: "8px" }}>
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: `${WHITE}08` }} />
+                      <div className="h-2" style={{ width: `${50 + n * 10}px`, backgroundColor: `${WHITE}08`, borderRadius: "4px" }} />
+                    </div>
+                  ))}
+                  <div className="mt-auto p-3" style={{ backgroundColor: `${WHITE}04`, borderRadius: "8px" }}>
+                    <div className="flex items-center gap-2">
+                      <Avatar name="You" size={28} bg={`${WHITE}15`} />
+                      <div className="h-2 w-16" style={{ backgroundColor: `${WHITE}10`, borderRadius: "4px" }} />
+                    </div>
+                  </div>
+                </div>
+                {/* Center — candidates */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="h-3 w-40" style={{ backgroundColor: `${WHITE}15`, borderRadius: "4px" }} />
+                    <div className="h-8 px-4 flex items-center font-mono text-xs" style={{ backgroundColor: CORAL, color: WHITE, borderRadius: "6px" }}>
+                      + Nouvelle Recherche
+                    </div>
+                  </div>
+                  {[
+                    { name: "Sophie Martin", role: "Ingénieure ML, 7 ans", score: 94 },
+                    { name: "Lucas Moreau", role: "Data Scientist, 5 ans", score: 89 },
+                    { name: "Camille Petit", role: "Dev Python, 6 ans", score: 85 },
+                    { name: "Hugo Lambert", role: "Chercheur IA, 4 ans", score: 81 },
+                  ].map((c, i) => (
+                    <div
+                      key={c.name}
+                      className="p-4 flex items-center gap-4 transition-all"
+                      style={{
+                        backgroundColor: i === 0 ? `${CORAL}08` : `${WHITE}04`,
+                        borderRadius: "10px",
+                        border: i === 0 ? `1px solid ${CORAL}20` : `1px solid ${WHITE}06`,
+                      }}
+                    >
+                      <Avatar name={c.name} size={36} bg={i === 0 ? CORAL : `${WHITE}15`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold truncate" style={{ color: `${WHITE}80` }}>{c.name}</div>
+                        <div className="text-[10px] mt-0.5 truncate" style={{ color: `${WHITE}35` }}>{c.role}</div>
+                      </div>
+                      {/* Score badge */}
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-16 overflow-hidden" style={{ backgroundColor: `${WHITE}08`, borderRadius: "4px" }}>
+                          <div className="h-full" style={{ width: `${c.score}%`, backgroundColor: c.score > 90 ? SUCCESS : CORAL, borderRadius: "4px" }} />
+                        </div>
+                        <span className="font-mono font-bold text-xs" style={{ color: c.score > 90 ? SUCCESS : CORAL }}>{c.score}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Right — detail panel */}
+                <div className="flex flex-col gap-3 p-4" style={{ backgroundColor: `${WHITE}04`, borderRadius: "10px" }}>
+                  <div className="flex items-center gap-3 pb-3" style={{ borderBottom: `1px solid ${WHITE}06` }}>
+                    <Avatar name="Sophie Martin" size={44} bg={CORAL} />
+                    <div>
+                      <div className="text-sm font-semibold" style={{ color: `${WHITE}85` }}>Sophie Martin</div>
+                      <div className="text-[10px]" style={{ color: `${WHITE}35` }}>ML Engineer &middot; Paris</div>
+                    </div>
+                  </div>
+                  {/* SWOT mini */}
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {[
+                      { l: "S", c: SUCCESS, items: ["Python 8 ans", "Expert ML"] },
+                      { l: "W", c: CORAL, items: ["Pas de React"] },
+                      { l: "O", c: "#3b82f6", items: ["Ouvert au CDI"] },
+                      { l: "T", c: "#f59e0b", items: ["Forte demande"] },
+                    ].map(s => (
+                      <div key={s.l} className="p-2.5" style={{ backgroundColor: `${WHITE}04`, borderRadius: "8px" }}>
+                        <span className="text-[10px] font-mono font-bold" style={{ color: s.c }}>{s.l}</span>
+                        {s.items.map(item => (
+                          <div key={item} className="text-[9px] mt-1" style={{ color: `${WHITE}30` }}>{item}</div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-auto flex gap-2">
+                    <div className="h-9 flex-1 flex items-center justify-center font-mono text-xs font-bold" style={{ backgroundColor: CORAL, color: WHITE, borderRadius: "6px" }}>
+                      Contact
+                    </div>
+                    <div className="h-9 flex-1 flex items-center justify-center font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}40`, borderRadius: "6px" }}>
+                      Sauver
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Glow effect under screenshot */}
+          <div className="mx-auto w-3/4 h-16 -mt-4" style={{ background: `radial-gradient(ellipse at center, ${CORAL}15, transparent 70%)` }} />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Metrics — Animated counters
+   ═══════════════════════════════════════════ */
+
+function MetricsBar() {
+  const metrics = [
+    { value: 10000, suffix: "+", label: "Profils indexés" },
+    { value: 3, suffix: "+", label: "Sources de données" },
+    { value: 5, prefix: "<", suffix: "s", label: "Temps de réponse" },
+    { value: 94, suffix: "%", label: "Précision du matching" },
+  ]
+
+  return (
+    <section className="py-20 relative" style={{ backgroundColor: CREAM }}>
+      <div className="mx-auto max-w-6xl px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+          {metrics.map((m, i) => (
+            <Reveal key={m.label} delay={i * 100}>
+              <div className="text-center">
+                <div className="font-mono font-bold tracking-tight" style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)", color: CORAL }}>
+                  <AnimatedNumber value={m.value} suffix={m.suffix} prefix={m.prefix} />
+                </div>
+                <div className="mt-2 font-mono text-xs uppercase tracking-[0.15em]" style={{ color: MUTED }}>
+                  {m.label}
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Problem — with visual contrast
+   ═══════════════════════════════════════════ */
+
+function ProblemSection() {
+  return (
+    <section className="py-28 md:py-36" style={{ backgroundColor: WHITE }}>
+      <div className="mx-auto max-w-6xl px-8">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          <Reveal>
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] mb-6" style={{ color: CORAL }}>Le Probl&egrave;me</p>
+              <h2 className="leading-[1.08] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2rem, 4vw, 3.2rem)", color: INK }}>
+                Vos meilleurs talents <span style={{ fontStyle: "italic", color: CORAL }}>n&apos;ont jamais postul&eacute;.</span>
+              </h2>
+              <p className="mt-6 text-lg leading-relaxed" style={{ color: MUTED }}>
+                Les meilleurs candidats sont passifs — ils ne sont pas sur les job boards. Sourcer sur GitHub, LinkedIn et Indeed &agrave; la main prend des semaines. Quand vous les trouvez, ils sont d&eacute;j&agrave; partis.
+              </p>
+              <div className="mt-8 w-16 h-1" style={{ backgroundColor: CORAL }} />
+            </div>
+          </Reveal>
+
+          <Reveal delay={200}>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { icon: "150+", title: "CVs par poste", desc: "Les recruteurs se noient dans le volume et passent à côté des meilleurs", accent: false },
+                { icon: "72%", title: "Talents passifs", desc: "La majorité des meilleurs candidats ne postulent jamais", accent: false },
+                { icon: "3 sem.", title: "Sourcing manuel", desc: "Temps perdu à chercher sur plusieurs plateformes", accent: false },
+                { icon: "< 5s", title: "Avec Claw4HR", desc: "Le sourcing IA livre des résultats classés instantanément", accent: true },
+              ].map((card) => (
+                <div
+                  key={card.title}
+                  className="p-6 transition-all duration-200 hover:-translate-y-1"
+                  style={{
+                    backgroundColor: card.accent ? `${CORAL}06` : CREAM,
+                    border: card.accent ? `2px solid ${CORAL}20` : `1px solid ${INK}06`,
+                    boxShadow: card.accent ? `4px 4px 0 0 ${CORAL}15` : `4px 4px 0 0 ${INK}06`,
+                    borderRadius: "12px",
+                  }}
+                >
+                  <div className="font-mono font-bold text-2xl mb-3" style={{ color: card.accent ? CORAL : INK }}>{card.icon}</div>
+                  <p className="font-semibold text-sm mb-1" style={{ color: INK }}>{card.title}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Feature Visuals — BIGGER, richer
+   ═══════════════════════════════════════════ */
+
+function SourcesVisual() {
+  const sources = [
+    { name: "GitHub", letter: "GH", sub: "Repos & activité développeur", bg: "#24292e", count: "2.4k profils" },
+    { name: "LinkedIn", letter: "in", sub: "Profils professionnels", bg: "#0A66C2", count: "5.1k profils" },
+    { name: "Indeed", letter: "IN", sub: "Candidatures", bg: "#2164F3", count: "1.8k profils" },
+    { name: "HrFlow", letter: "H", sub: "CVs indexés", bg: CORAL, count: "10k+ profils" },
+  ]
+  return (
+    <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
+      {/* Header bar */}
+      <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
+          <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Agrégation multi-sources</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
+          <span className="text-xs font-mono" style={{ color: SUCCESS }}>Live</span>
+        </div>
+      </div>
+      {/* Sources grid */}
+      <div className="p-6 grid grid-cols-2 gap-4">
+        {sources.map((s) => (
+          <div key={s.name} className="p-5 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-11 h-11 flex items-center justify-center text-white font-mono font-bold text-sm" style={{ backgroundColor: s.bg, borderRadius: "10px" }}>{s.letter}</div>
+              <span className="text-[10px] font-mono" style={{ color: MUTED }}>{s.count}</span>
+            </div>
+            <p className="font-semibold text-sm" style={{ color: INK }}>{s.name}</p>
+            <p className="text-xs mt-0.5" style={{ color: MUTED }}>{s.sub}</p>
+          </div>
+        ))}
+      </div>
+      {/* Bottom: converging indicator */}
+      <div className="px-8 py-4 flex items-center gap-3" style={{ backgroundColor: `${CORAL}06`, borderTop: `1px solid ${INK}06` }}>
+        <div className="flex -space-x-2">
+          {["#24292e", "#0A66C2", "#2164F3", CORAL].map((c, i) => (
+            <div key={i} className="w-6 h-6 flex items-center justify-center text-white text-[8px] font-bold border-2 border-white" style={{ backgroundColor: c, borderRadius: "50%" }}>
+              {["GH", "in", "IN", "H"][i]}
+            </div>
+          ))}
+        </div>
+        <span className="text-xs" style={{ color: MUTED }}>Toutes les sources convergent en un seul pipeline classé</span>
+      </div>
+    </div>
+  )
+}
+
+function ScoreVisual() {
+  return (
+    <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
+      {/* Profile header */}
+      <div className="px-8 py-6 flex items-center gap-4" style={{ borderBottom: `1px solid ${INK}06` }}>
+        <Avatar name="Sophie Martin" size={52} bg={CORAL} />
+        <div className="flex-1">
+          <div className="font-semibold text-base" style={{ color: INK }}>Sophie Martin</div>
+          <div className="text-sm" style={{ color: MUTED }}>Ing&eacute;nieure ML Senior &middot; Paris &middot; 7 ans d&apos;exp.</div>
+        </div>
+        <div className="text-right">
+          <div className="font-mono font-bold text-2xl" style={{ color: CORAL }}>87%</div>
+          <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: MUTED }}>Match</div>
+        </div>
+      </div>
+      {/* Score ring + SWOT */}
+      <div className="p-8 flex items-start gap-8">
+        <div className="relative w-32 h-32 flex-shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" stroke={`${INK}08`} strokeWidth="6" fill="none" />
+            <circle cx="50" cy="50" r="40" stroke={CORAL} strokeWidth="6" fill="none" strokeDasharray="251.33" strokeDashoffset="33" strokeLinecap="round" />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-2xl font-mono font-bold" style={{ color: INK }}>87%</span>
+          </div>
+        </div>
+        <div className="flex-1 grid grid-cols-2 gap-3">
+          {[
+            { label: "Forces", color: SUCCESS, items: ["Expert Python — 8 ans", "ML / Deep Learning"] },
+            { label: "Faiblesses", color: CORAL, items: ["Pas d'exp. frontend"] },
+            { label: "Opportunités", color: "#3b82f6", items: ["Ouvert au CDI", "Paris"] },
+            { label: "Menaces", color: "#f59e0b", items: ["Forte demande marché"] },
+          ].map(s => (
+            <div key={s.label} className="p-3" style={{ backgroundColor: WHITE, borderRadius: "10px", border: `1px solid ${INK}06` }}>
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="w-2 h-2" style={{ backgroundColor: s.color, borderRadius: "50%" }} />
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold" style={{ color: s.color }}>{s.label}</span>
+              </div>
+              {s.items.map(item => (
+                <div key={item} className="text-xs leading-relaxed" style={{ color: INK }}>{item}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PipelineFlowVisual() {
+  const steps = [
+    { letter: "X", name: "X-Ray", desc: "Découvrir les profils", status: "Fait", color: SUCCESS },
+    { letter: "E", name: "Enrich", desc: "Ajouter le contexte", status: "Fait", color: SUCCESS },
+    { letter: "I", name: "Index", desc: "Structurer les données", status: "En cours", color: "#3b82f6" },
+    { letter: "S", name: "Score", desc: "Classer les candidats", status: "En attente", color: MUTED },
+  ]
+  return (
+    <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
+      {/* Status bar */}
+      <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
+        <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Statut du Pipeline</span>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 animate-pulse" style={{ backgroundColor: "#3b82f6", borderRadius: "50%" }} />
+          <span className="font-mono text-xs" style={{ color: "#3b82f6" }}>Traitement de 12 profils...</span>
+        </div>
+      </div>
+      {/* Progress bar */}
+      <div className="px-8 pt-5">
+        <div className="h-2 w-full overflow-hidden" style={{ backgroundColor: `${INK}06`, borderRadius: "4px" }}>
+          <div className="h-full transition-all duration-1000" style={{ width: "62%", background: `linear-gradient(90deg, ${SUCCESS}, #3b82f6)`, borderRadius: "4px" }} />
+        </div>
+      </div>
+      {/* Steps */}
+      <div className="p-6 grid grid-cols-4 gap-3">
+        {steps.map((s, i) => (
+          <div key={s.name} className="relative">
+            <div className="p-4 text-center" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${s.color}20` }}>
+              <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center font-mono font-bold text-sm text-white" style={{ backgroundColor: s.color === MUTED ? `${INK}15` : s.color, borderRadius: "12px" }}>
+                {s.letter}
+              </div>
+              <p className="font-mono font-bold text-xs" style={{ color: INK }}>{s.name}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: MUTED }}>{s.desc}</p>
+              <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5" style={{ backgroundColor: `${s.color}10`, borderRadius: "100px" }}>
+                {s.status === "En cours" && <div className="w-1.5 h-1.5 animate-pulse" style={{ backgroundColor: s.color, borderRadius: "50%" }} />}
+                <span className="text-[9px] font-mono font-bold uppercase" style={{ color: s.color }}>{s.status}</span>
+              </div>
+            </div>
+            {i < steps.length - 1 && (
+              <div className="absolute top-1/2 -right-2 w-4 text-center font-mono" style={{ color: `${INK}20`, transform: "translateY(-50%)" }}>&rarr;</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ChatVisual() {
+  return (
+    <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
+      {/* Chat header */}
+      <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
+          <div>
+            <span className="font-semibold text-sm" style={{ color: INK }}>Claw4HR Assistant</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
+              <span className="text-[10px]" style={{ color: SUCCESS }}>En ligne</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Messages */}
+      <div className="p-6 space-y-5">
+        {/* User */}
+        <div className="flex items-start gap-3">
+          <Avatar name="HR Manager" size={36} bg={INK} />
+          <div className="flex-1">
+            <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>You</div>
+            <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
+              Trouvez-moi des développeurs Python senior à Paris, disponibles en CDI, avec de l&apos;expérience en machine learning.
+            </div>
+          </div>
+        </div>
+        {/* AI */}
+        <div className="flex items-start gap-3">
+          <Avatar name="AI" size={36} bg={CORAL} />
+          <div className="flex-1">
+            <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>Claw4HR</div>
+            <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
+              Trouvé <strong>12 candidats</strong> sur 3 sources en 4.2s.
+              <div className="mt-3 flex items-center gap-3 p-3" style={{ backgroundColor: CREAM, borderRadius: "8px" }}>
+                <Avatar name="Sophie Martin" size={32} bg={CORAL} />
+                <div className="flex-1">
+                  <div className="text-xs font-semibold" style={{ color: INK }}>Sophie Martin</div>
+                  <div className="text-[10px]" style={{ color: MUTED }}>Ingénieure ML, 7 ans Python, Paris</div>
+                </div>
+                <span className="font-mono font-bold text-sm" style={{ color: CORAL }}>94%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Typing */}
+        <div className="flex items-center gap-3 pl-12">
+          <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: WHITE, borderRadius: "12px" }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} className="w-2 h-2 animate-pulse" style={{ backgroundColor: `${CORAL}50`, animationDelay: `${i * 200}ms`, borderRadius: "50%" }} />
+            ))}
+          </div>
+          <span className="text-xs font-mono" style={{ color: `${MUTED}80` }}>Génération de l&apos;analyse SWOT...</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Features — Full-width visuals, stacked
+   ═══════════════════════════════════════════ */
+
+const features = [
+  {
+    num: "01",
+    tag: "Multi-Source",
+    title: "Cherchez partout.\nTrouvez n'importe qui.",
+    desc: "Interrogez GitHub, LinkedIn, Indeed et plus de 10 000 profils indexés simultanément. Notre agent IA se connecte à toutes les sources de talents.",
+    visual: <SourcesVisual />,
+    bg: CREAM,
+  },
+  {
+    num: "02",
+    tag: "AI Scoring",
+    title: "Chaque candidat.\nClassé & expliqué.",
+    desc: "L'algorithme propriétaire de HrFlow.ai note chaque candidat de 0 à 100%. L'analyse SWOT rend chaque match transparent — forces, lacunes et raisonnement.",
+    visual: <ScoreVisual />,
+    bg: WHITE,
+  },
+  {
+    num: "03",
+    tag: "JIT Pipeline",
+    title: "Temps réel.\nPas les données d'hier.",
+    desc: "X-Ray découvre. Enrich révèle le contexte. Index structure les données. Score classe les candidats. Chaque étape en temps réel.",
+    visual: <PipelineFlowVisual />,
+    bg: CREAM,
+  },
+  {
+    num: "04",
+    tag: "Natural Language",
+    title: "Décrivez simplement\nqui vous cherchez.",
+    desc: "Tapez une description de poste ou demandez en langage naturel. L'agent comprend votre intention et livre des résultats classés.",
+    visual: <ChatVisual />,
+    bg: WHITE,
+  },
+]
+
+function FeaturesSection() {
+  return (
+    <section id="features">
+      {features.map((f, i) => (
+        <div key={f.num} className="py-24 md:py-32" style={{ backgroundColor: f.bg }}>
+          <div className="mx-auto max-w-6xl px-8">
+            <Reveal>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="font-mono font-bold text-xs px-3 py-1" style={{ backgroundColor: `${CORAL}10`, color: CORAL, borderRadius: "100px" }}>{f.num}</span>
+                <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>{f.tag}</span>
+              </div>
+              <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-16 items-start">
+                <div className="lg:sticky lg:top-32">
+                  <h3 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.1] whitespace-pre-line" style={{ color: INK }}>{f.title}</h3>
+                  <p className="mt-5 text-base md:text-lg leading-relaxed max-w-lg" style={{ color: MUTED }}>{f.desc}</p>
+                  <div className="mt-6 w-12 h-1" style={{ backgroundColor: CORAL }} />
+                </div>
+                <div>{f.visual}</div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   Demo / Video — Dark, immersive
+   ═══════════════════════════════════════════ */
+
+function DemoSection() {
+  return (
+    <section id="demo" className="py-28 md:py-36 relative overflow-hidden" style={{ backgroundColor: NAVY }}>
+      <div className="absolute inset-0 opacity-20">
+        <DitheringShader
+          shape="warp"
+          type="8x8"
+          colorBack="#0B1226"
+          colorFront="#FF6B6B"
+          width={1920}
+          height={1080}
+          pxSize={4}
+          speed={0.2}
+          style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+        />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-        {/* Badge */}
+      <div className="relative z-10 mx-auto max-w-6xl px-8">
         <Reveal>
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 rounded-full px-4 py-1.5 text-sm font-medium mb-8">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 landing-pulse" />
-            AI-Powered Talent Sourcing
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Voyez-le en Action</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
+              De la description de poste aux <span style={{ fontStyle: "italic", color: CORAL }}>candidats classés</span> en quelques secondes.
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed" style={{ color: `${WHITE}60` }}>
+              Regardez comment Claw4HR transforme une simple description de poste en un pipeline de candidats scorés, enrichis et prêts à contacter.
+            </p>
           </div>
         </Reveal>
 
-        {/* Headline */}
-        <Reveal delay={0.1}>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-tight">
-            Source talent from
-            <br />
-            <span className="text-indigo-600">everywhere.</span>
-            <br />
-            <span className="text-indigo-600">Instantly.</span>
-          </h1>
-        </Reveal>
+        <Reveal delay={200}>
+          <div className="relative aspect-video max-w-4xl mx-auto overflow-hidden cursor-pointer group" style={{ borderRadius: "16px", border: `1px solid ${WHITE}10`, background: `linear-gradient(135deg, ${NAVY}, #1a1a3e, ${NAVY})` }}>
+            {/* Fake screenshot background — faded dashboard */}
+            <div className="absolute inset-0 opacity-30">
+              <div className="w-full h-full p-8 grid grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="rounded-lg" style={{ backgroundColor: `${WHITE}05` }} />
+                ))}
+              </div>
+            </div>
 
-        {/* Subtitle */}
-        <Reveal delay={0.2}>
-          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mt-6">
-            Claw4HR connects to GitHub, LinkedIn, Indeed and more — finding,
-            scoring, and ranking passive candidates in real-time with AI.
-          </p>
-        </Reveal>
-
-        {/* CTA row */}
-        <Reveal delay={0.3}>
-          <div className="flex gap-4 justify-center mt-10 flex-wrap">
-            <a
-              href="/"
-              className="bg-indigo-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/25"
-            >
-              Start Sourcing
-            </a>
-            <a
-              href="#pipeline"
-              className="border-2 border-slate-200 px-8 py-3.5 rounded-xl font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition"
-            >
-              See How It Works
-            </a>
+            {/* Play button */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+              <div className="w-20 h-20 flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{ backgroundColor: CORAL, borderRadius: "50%", boxShadow: `0 0 0 16px ${CORAL}15, 0 0 0 32px ${CORAL}08` }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                  <polygon points="9,5 20,12 9,19" />
+                </svg>
+              </div>
+              <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}50` }}>Regarder la démo de 2 min</span>
+            </div>
           </div>
         </Reveal>
 
-        {/* Trust metrics */}
-        <Reveal delay={0.4}>
-          <div className="flex gap-8 md:gap-12 justify-center mt-16 flex-wrap">
+        {/* Stats row */}
+        <Reveal delay={400}>
+          <div className="mt-14 grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
             {[
-              { value: "800M+", label: "Profiles Indexed" },
-              { value: "6+", label: "Data Sources" },
-              { value: "<2min", label: "Time to Results" },
-              { value: "GDPR", label: "Compliant" },
-            ].map((item) => (
-              <div key={item.label} className="text-center">
-                <div className="text-2xl font-bold text-slate-900">{item.value}</div>
-                <div className="text-sm text-slate-500">{item.label}</div>
+              { val: "4.2s", desc: "Temps moyen de requête" },
+              { val: "4 étapes", desc: "Pipeline automatisé" },
+              { val: "Zéro", desc: "Sourcing manuel" },
+            ].map(s => (
+              <div key={s.desc}>
+                <div className="font-mono font-bold text-xl" style={{ color: CORAL }}>{s.val}</div>
+                <div className="mt-1 text-xs font-mono uppercase tracking-wider" style={{ color: `${WHITE}35` }}>{s.desc}</div>
               </div>
             ))}
           </div>
@@ -178,185 +896,46 @@ function Hero() {
 }
 
 /* ═══════════════════════════════════════════
-   Section 3: Problem Statement
-   ═══════════════════════════════════════════ */
-
-function ProblemSection() {
-  const stats = [
-    {
-      number: "13h",
-      suffix: "/week",
-      desc: "Average time recruiters spend manually sourcing candidates",
-    },
-    {
-      number: "80%",
-      suffix: "",
-      desc: "Of top candidates are passive — they never apply to job postings",
-    },
-    {
-      number: "<2min",
-      suffix: "",
-      desc: "Claw4HR's average time to deliver first ranked results",
-    },
-  ]
-
-  return (
-    <section className="bg-white py-24">
-      <div className="mx-auto max-w-6xl px-6">
-        <Reveal>
-          <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">
-            The Problem
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight max-w-3xl">
-            Recruiters spend 80% of their time sourcing. We cut that to zero.
-          </h2>
-        </Reveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-          {stats.map((stat, i) => (
-            <Reveal key={stat.number} delay={i * 0.1}>
-              <div className="bg-slate-50 rounded-2xl p-8 text-center">
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-indigo-600">
-                    {stat.number}
-                  </span>
-                  {stat.suffix && (
-                    <span className="text-lg text-slate-400">{stat.suffix}</span>
-                  )}
-                </div>
-                <p className="text-sm text-slate-500 mt-3">{stat.desc}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Section 4: Features Grid
-   ═══════════════════════════════════════════ */
-
-function FeaturesSection() {
-  const features = [
-    {
-      icon: Globe2,
-      title: "Multi-Source Intelligence",
-      desc: "Search GitHub, LinkedIn, Indeed, and more from a single query. Our AI aggregates profiles across platforms to find talent that never applies.",
-    },
-    {
-      icon: BarChart3,
-      title: "AI Scoring & Matching",
-      desc: "Every candidate scored 0\u2013100% with SWOT analysis. Not keywords \u2014 real semantic skill understanding powered by HrFlow.ai.",
-    },
-    {
-      icon: Zap,
-      title: "Just-in-Time Pipeline",
-      desc: "X-Ray, Enrich, Index, Score \u2014 our 4-step pipeline processes candidates in real-time. No stale data, no batch jobs.",
-    },
-    {
-      icon: MessageSquare,
-      title: "Natural Language Search",
-      desc: "Describe your ideal candidate in plain English. Our NLP engine understands context, intent, and nuance.",
-    },
-  ]
-
-  return (
-    <section id="features" className="bg-slate-50 py-24">
-      <div className="mx-auto max-w-6xl px-6">
-        <Reveal>
-          <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">
-            Features
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-            Everything you need to find the best talent.
-          </h2>
-        </Reveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-          {features.map((f, i) => (
-            <Reveal key={f.title} delay={i * 0.1}>
-              <div className="bg-white rounded-2xl p-8 border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mb-5">
-                  <f.icon className="w-6 h-6 text-indigo-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900">{f.title}</h3>
-                <p className="text-slate-500 mt-2 leading-relaxed">{f.desc}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Section 5: Pipeline (How It Works)
+   Pipeline — Coral accent section
    ═══════════════════════════════════════════ */
 
 function PipelineSection() {
   const steps = [
-    {
-      num: "01",
-      icon: Search,
-      title: "X-Ray",
-      desc: "Discover passive talent across GitHub, LinkedIn, and Indeed via intelligent web search.",
-    },
-    {
-      num: "02",
-      icon: Database,
-      title: "Enrich",
-      desc: "Complete profiles with public data \u2014 repos, contributions, work history.",
-    },
-    {
-      num: "03",
-      icon: Layers,
-      title: "Index",
-      desc: "Parse and structure with HrFlow.ai into a searchable knowledge base.",
-    },
-    {
-      num: "04",
-      icon: Trophy,
-      title: "Score",
-      desc: "AI scoring 0\u2013100% using semantic skill matching. SWOT analysis included.",
-    },
+    { letter: "X", name: "X-Ray", desc: "Découverte de talents passifs sur GitHub, LinkedIn, Indeed via l'orchestration OpenClaw." },
+    { letter: "E", name: "Enrich", desc: "Révélation du contexte professionnel complet via Proxycurl et l'analyse d'activité GitHub." },
+    { letter: "I", name: "Index", desc: "Analyse et structuration des CVs avec HrFlow.ai en base de connaissances exploitable." },
+    { letter: "S", name: "Score", desc: "Scoring IA 0–100% avec l'algorithme propriétaire de matching de HrFlow." },
   ]
 
   return (
-    <section id="pipeline" className="bg-slate-900 text-white py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="pipeline" className="py-28 md:py-36 relative overflow-hidden" style={{ backgroundColor: CORAL }}>
+      <div className="absolute inset-0 opacity-15">
+        <DitheringShader shape="warp" type="8x8" colorBack="#FF6B6B" colorFront="#CC4444" width={1920} height={1080} pxSize={4} speed={0.2} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-8">
         <Reveal>
-          <p className="text-sm font-semibold text-indigo-400 uppercase tracking-wider mb-4">
-            How It Works
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-            From search to shortlist in 4 steps
-          </h2>
-          <p className="text-slate-400 mt-4 max-w-2xl">
-            Our Just-in-Time pipeline processes candidates the moment they are
-            discovered. Every step automated, every result ranked.
-          </p>
+          <div className="text-center max-w-3xl mx-auto">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5 text-white/50">Pipeline</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
+              Quatre &eacute;tapes. <span style={{ fontStyle: "italic" }}>Z&eacute;ro travail manuel.</span>
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-white/70 max-w-xl mx-auto">
+              Notre pipeline Just-in-Time traite les candidats d&egrave;s qu&apos;ils sont d&eacute;couverts. Temps r&eacute;el, toujours frais.
+            </p>
+          </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-16">
-          {steps.map((step, i) => (
-            <Reveal key={step.num} delay={i * 0.1}>
-              <div className="relative bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <span className="text-sm font-mono text-indigo-400 mb-3 block">
-                  {step.num}
-                </span>
-                <step.icon className="w-6 h-6 text-indigo-400 mb-3" />
-                <h3 className="text-lg font-semibold text-white">{step.title}</h3>
-                <p className="text-sm text-slate-400 mt-2">{step.desc}</p>
-
-                {/* Connector arrow */}
-                {i < steps.length - 1 && (
-                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-slate-600 text-lg">
-                    &rarr;
-                  </div>
-                )}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {steps.map((s, i) => (
+            <Reveal key={s.name} delay={i * 100}>
+              <div className="p-7 h-full transition-all duration-200 hover:-translate-y-2" style={{ backgroundColor: WHITE, borderRadius: "14px", boxShadow: `0 20px 40px -10px ${CORAL_DEEP}50` }}>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-12 h-12 flex items-center justify-center font-mono font-bold text-base text-white" style={{ backgroundColor: CORAL, borderRadius: "12px" }}>{s.letter}</div>
+                  <span className="text-xs font-mono" style={{ color: MUTED }}>&Eacute;tape 0{i + 1}</span>
+                </div>
+                <h3 className="font-bold text-xl mb-3" style={{ color: INK }}>{s.name}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{s.desc}</p>
               </div>
             </Reveal>
           ))}
@@ -367,72 +946,68 @@ function PipelineSection() {
 }
 
 /* ═══════════════════════════════════════════
-   Section 6: Integrations
+   Testimonials — with avatars, human feel
    ═══════════════════════════════════════════ */
 
-function IntegrationsSection() {
-  const integrations = [
+function TestimonialsSection() {
+  const testimonials = [
     {
-      letter: "H",
-      bg: "bg-indigo-500",
-      name: "HrFlow.ai",
-      desc: "CV parsing, indexing & AI scoring",
+      quote: "Nous avons réduit notre temps de présélection de 2 semaines à 30 minutes. L'analyse SWOT donne confiance à toute l'équipe.",
+      name: "Marie Dupont",
+      role: "Directrice Acquisition de Talents",
+      company: "Tech Corp",
+      bg: CORAL,
     },
     {
-      letter: "O",
-      bg: "bg-violet-500",
-      name: "OpenClaw",
-      desc: "AI orchestration & Telegram",
+      quote: "La recherche multi-sources est révolutionnaire. On trouve des développeurs sur GitHub qu'on n'aurait jamais découverts manuellement.",
+      name: "Thomas Bernard",
+      role: "Recruteur Senior",
+      company: "Scale Studio",
+      bg: "#3b82f6",
     },
     {
-      letter: "GH",
-      bg: "bg-slate-800",
-      name: "GitHub",
-      desc: "Developer profile discovery",
-    },
-    {
-      letter: "in",
-      bg: "bg-blue-600",
-      name: "LinkedIn",
-      desc: "Professional profile enrichment",
-    },
-    {
-      letter: "IN",
-      bg: "bg-blue-500",
-      name: "Indeed",
-      desc: "Job board intelligence",
-    },
-    {
-      letter: "Q",
-      bg: "bg-emerald-500",
-      name: "Ollama",
-      desc: "Local LLM \u2014 Qwen3 14B",
+      quote: "Enfin, un outil de sourcing qui explique POURQUOI un candidat correspond — pas juste qu'il a matché des mots-clés.",
+      name: "Camille Leroy",
+      role: "VP People",
+      company: "DataFlow Labs",
+      bg: "#7C3AED",
     },
   ]
 
   return (
-    <section id="integrations" className="bg-white py-24">
-      <div className="mx-auto max-w-6xl px-6">
+    <section className="py-28 md:py-36" style={{ backgroundColor: CREAM }}>
+      <div className="mx-auto max-w-7xl px-8">
         <Reveal>
-          <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">
-            Integrations
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-            Connects to your entire stack
-          </h2>
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Ce que disent les recruteurs</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
+              Con&ccedil;u pour ceux qui <span style={{ color: CORAL, fontStyle: "italic" }}>recrutent.</span>
+            </h2>
+          </div>
         </Reveal>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-16">
-          {integrations.map((item, i) => (
-            <Reveal key={item.name} delay={i * 0.05}>
-              <div className="bg-slate-50 rounded-2xl p-6 hover:bg-slate-100 transition">
-                <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm mb-3 ${item.bg}`}
-                >
-                  {item.letter}
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((t, i) => (
+            <Reveal key={t.name} delay={i * 120}>
+              <div className="p-8 h-full flex flex-col transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "16px", border: `1px solid ${INK}06`, boxShadow: `0 4px 24px -4px ${INK}08` }}>
+                {/* Stars */}
+                <div className="flex gap-1 mb-5">
+                  {[...Array(5)].map((_, j) => (
+                    <svg key={j} width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b">
+                      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                    </svg>
+                  ))}
                 </div>
-                <p className="font-semibold text-slate-900">{item.name}</p>
-                <p className="text-sm text-slate-500 mt-1">{item.desc}</p>
+                <p className="text-base leading-relaxed flex-1" style={{ color: INK }}>
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="mt-8 pt-6 flex items-center gap-3" style={{ borderTop: `1px solid ${INK}06` }}>
+                  <Avatar name={t.name} size={44} bg={t.bg} />
+                  <div>
+                    <p className="font-semibold text-sm" style={{ color: INK }}>{t.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: MUTED }}>{t.role} &middot; {t.company}</p>
+                  </div>
+                </div>
               </div>
             </Reveal>
           ))}
@@ -443,43 +1018,83 @@ function IntegrationsSection() {
 }
 
 /* ═══════════════════════════════════════════
-   Section 7: Final CTA
+   Stack / Integrations
+   ═══════════════════════════════════════════ */
+
+function StackSection() {
+  const items = [
+    { name: "HrFlow.ai", desc: "Parsing CV, indexation & moteur de scoring IA", letter: "H", bg: CORAL },
+    { name: "OpenClaw", desc: "Orchestration multi-agents & bot Telegram", letter: "O", bg: "#7C3AED" },
+    { name: "GitHub", desc: "Activité développeur & analyse de repos", letter: "GH", bg: "#24292e" },
+    { name: "LinkedIn", desc: "Enrichissement de profils professionnels", letter: "in", bg: "#0A66C2" },
+    { name: "Indeed", desc: "Scraping job boards & découverte de candidats", letter: "IN", bg: "#2164F3" },
+    { name: "Ollama", desc: "Inférence LLM locale — Qwen3 14B", letter: "Q", bg: "#10b981" },
+  ]
+
+  return (
+    <section id="stack" className="py-28 md:py-36" style={{ backgroundColor: WHITE }}>
+      <div className="mx-auto max-w-7xl px-8">
+        <Reveal>
+          <div className="text-center max-w-3xl mx-auto">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Integrations</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
+              Construit sur <span style={{ color: CORAL, fontStyle: "italic" }}>les meilleurs.</span>
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed" style={{ color: MUTED }}>
+              Claw4HR connecte les meilleurs outils de recrutement, d&apos;IA et de plateformes d&eacute;veloppeur en un seul pipeline.
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 gap-5">
+          {items.map((x, i) => (
+            <Reveal key={x.name} delay={i * 60}>
+              <div className="p-7 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: CREAM, borderRadius: "14px", border: `1px solid ${INK}06` }}>
+                <div className="w-13 h-13 flex items-center justify-center text-white font-mono font-bold text-sm mb-5" style={{ backgroundColor: x.bg, borderRadius: "12px", width: 52, height: 52 }}>{x.letter}</div>
+                <p className="font-semibold text-lg" style={{ color: INK }}>{x.name}</p>
+                <p className="text-sm mt-1.5 leading-relaxed" style={{ color: MUTED }}>{x.desc}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   CTA — Dark, aspirational
    ═══════════════════════════════════════════ */
 
 function CTASection() {
   return (
-    <section className="relative bg-gradient-to-br from-indigo-600 to-indigo-800 py-24 overflow-hidden">
-      {/* Globe silhouette */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <Globe />
+    <section className="relative py-32 md:py-44 overflow-hidden" style={{ backgroundColor: NAVY }}>
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <GlobeCanvas />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 text-center">
+      <div className="relative z-10 text-center px-8 max-w-3xl mx-auto">
         <Reveal>
-          <h2 className="text-3xl md:text-4xl font-bold text-white">
-            Start sourcing smarter today
+          <h2 className="leading-[0.95] tracking-[-0.03em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.8rem, 5.5vw, 5rem)" }}>
+            Pr&ecirc;t &agrave; trouver les talents<br />
+            <span style={{ fontStyle: "italic", color: CORAL }}>avant qu&apos;ils ne postulent ?</span>
           </h2>
-          <p className="text-indigo-200 mt-4 max-w-lg mx-auto">
-            Join the next generation of recruiters who let AI do the heavy
-            lifting. Source, score, and engage top talent in minutes.
+        </Reveal>
+        <Reveal delay={150}>
+          <p className="mt-6 text-lg max-w-lg mx-auto leading-relaxed" style={{ color: `${WHITE}60` }}>
+            Rejoignez les recruteurs qui sourcent, scorent et engagent les meilleurs talents passifs — en temps r&eacute;el, propuls&eacute; par l&apos;IA.
           </p>
         </Reveal>
-
-        <Reveal delay={0.15}>
-          <div className="flex gap-4 justify-center mt-10 flex-wrap">
-            <a
-              href="/"
-              className="bg-white text-indigo-600 px-8 py-3.5 rounded-xl font-semibold hover:bg-indigo-50 transition"
-            >
-              Try Claw4HR
-            </a>
-            <a
-              href="#features"
-              className="border border-white/30 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-white/10 transition"
-            >
-              View Documentation
-            </a>
+        <Reveal delay={300}>
+          <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
+            <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
+            <PixelBtn href="#demo" variant="white" size="lg">Voir la D&eacute;mo</PixelBtn>
           </div>
+        </Reveal>
+        <Reveal delay={400}>
+          <p className="mt-8 font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}25` }}>
+            Gratuit &agrave; essayer &middot; Sans carte bancaire
+          </p>
         </Reveal>
       </div>
     </section>
@@ -487,25 +1102,45 @@ function CTASection() {
 }
 
 /* ═══════════════════════════════════════════
-   Section 8: Footer
+   Footer
    ═══════════════════════════════════════════ */
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 py-12 bg-white">
-      <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-lg text-slate-900">
-            Claw4HR
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 ml-0.5 -translate-y-2" />
-          </span>
-          <span className="text-sm text-slate-500">
-            Passive Talent Intelligence
-          </span>
+    <footer className="py-16" style={{ backgroundColor: CREAM, borderTop: `1px solid ${INK}06` }}>
+      <div className="mx-auto max-w-7xl px-8">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-8">
+          <div>
+            <span className="font-mono font-bold text-xl tracking-tight" style={{ color: CORAL }}>
+              Claw4HR
+            </span>
+            <p className="mt-2 text-sm max-w-xs" style={{ color: MUTED }}>
+              Intelligence de Talents Passifs — Sourcing IA qui trouve les candidats qui ne postulent jamais.
+            </p>
+          </div>
+          <div className="flex gap-12">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Produit</p>
+              <div className="space-y-2">
+                {[{label: "Fonctionnalités", href: "features"}, {label: "Pipeline", href: "pipeline"}, {label: "Démo", href: "demo"}, {label: "Stack", href: "stack"}].map(link => (
+                  <a key={link.href} href={`#${link.href}`} className="block text-sm transition-colors hover:text-[#1a1a2e]" style={{ color: MUTED }}>{link.label}</a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Construit avec</p>
+              <div className="space-y-2">
+                {["HrFlow.ai", "OpenClaw", "Ollama", "Next.js"].map(link => (
+                  <span key={link} className="block text-sm" style={{ color: MUTED }}>{link}</span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-slate-400 text-center md:text-right">
-          Built for HrFlow.ai Hackathon 2026 — Powered by HrFlow.ai & OpenClaw
-        </p>
+        <div className="mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderTop: `1px solid ${INK}06` }}>
+          <p className="text-sm" style={{ color: `${MUTED}80` }}>Conçu pour le Hackathon HrFlow.ai 2026</p>
+          <p className="text-sm" style={{ color: `${MUTED}80` }}>Propulsé par HrFlow.ai & OpenClaw</p>
+        </div>
       </div>
     </footer>
   )
@@ -517,13 +1152,17 @@ function Footer() {
 
 export default function LandingPage() {
   return (
-    <div className="bg-white text-slate-900">
+    <div style={{ backgroundColor: WHITE, color: INK }}>
+      <Grain />
       <Nav />
       <Hero />
+      <MetricsBar />
       <ProblemSection />
       <FeaturesSection />
+      <DemoSection />
       <PipelineSection />
-      <IntegrationsSection />
+      <TestimonialsSection />
+      <StackSection />
       <CTASection />
       <Footer />
     </div>

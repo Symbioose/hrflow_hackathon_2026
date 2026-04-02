@@ -1,25 +1,16 @@
-import { Inter } from "next/font/google";
-import type { Metadata } from "next";
+import { Instrument_Serif } from "next/font/google"
 
-const inter = Inter({
+const displayFont = Instrument_Serif({
+  weight: "400",
   subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-export const metadata: Metadata = {
-  title: "Claw4HR — Source Talent From Everywhere. Instantly.",
-  description:
-    "AI-powered passive talent sourcing. Search GitHub, LinkedIn, Indeed and more — score and rank candidates in real-time.",
-};
+  style: ["normal", "italic"],
+  variable: "--font-display",
+})
 
 export default function LandingLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  return (
-    <div className={`${inter.variable} font-sans`}>
-      {children}
-    </div>
-  );
+  return <div className={displayFont.variable}>{children}</div>
 }
