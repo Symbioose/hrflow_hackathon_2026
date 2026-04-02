@@ -174,3 +174,52 @@ body {
   background: rgba(26, 34, 53, 0.8);
   border-color: var(--border-medium);
 }
+
+/* === LANDING PAGE === */
+
+@keyframes landing-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes landing-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes landing-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.landing-fade-up {
+  animation: landing-fade-up 0.6s ease-out both;
+}
+
+.landing-fade-in {
+  animation: landing-fade-in 0.5s ease-out both;
+}
+
+.landing-pulse {
+  animation: landing-pulse 2s ease-in-out infinite;
+}
+
+.landing-float {
+  animation: landing-float 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-fade-up,
+  .landing-fade-in,
+  .landing-pulse,
+  .landing-float {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
