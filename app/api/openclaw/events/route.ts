@@ -14,7 +14,8 @@ import { getEventsSince } from "@/app/lib/eventStore";
  * }
  */
 export async function GET(req: NextRequest) {
-  const cursor = parseInt(req.nextUrl.searchParams.get("cursor") ?? "0", 10);
+  const raw = parseInt(req.nextUrl.searchParams.get("cursor") ?? "0", 10);
+  const cursor = Number.isFinite(raw) && raw >= 0 ? raw : 0;
   const result = getEventsSince(cursor);
   return NextResponse.json(result);
 }
