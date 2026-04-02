@@ -121,14 +121,14 @@ export default function PixelAgent({ source, state }: PixelAgentProps) {
       setMsgIndex((i) => (i + 1) % config.messages.length);
     }, 1200);
     return () => clearInterval(t);
-  }, [state, config.messages.length]);
+  }, [state, source, config.messages.length]);
 
   // Walk animation frame toggle every 200ms
   useEffect(() => {
     if (state !== "running") return;
     const t = setInterval(() => setWalking((w) => !w), 200);
     return () => clearInterval(t);
-  }, [state]);
+  }, [state, source]);
 
   const terminalText =
     state === "done" ? "> Terminé ✓"
