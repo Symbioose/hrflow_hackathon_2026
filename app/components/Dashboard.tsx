@@ -103,20 +103,29 @@ export default function Dashboard() {
 
     if (!res.ok) {
       // OpenClaw not available — demo fallback
+      console.log("[Demo] Fallback activated, loading demo profiles...");
       setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
 
       (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
         setTimeout(() => {
+          console.log(`[Demo] Agent ${src} done`);
           setAgentStatuses((prev) => ({ ...prev, [src]: "done" }));
         }, 2000 + i * 1500);
       });
 
       demoCleanupRef.current?.();
       demoCleanupRef.current = streamDemoProfiles((p) => {
+        console.log("[Demo] Profile received:", p.name, "profiles count will be:", profiles.length + 1);
         setProfiles((prev) => {
-          if (prev.some((x) => x.key === p.key)) return prev;
-          return [...prev, p];
+          if (prev.some((x) => x.key === p.key)) {
+            console.log("[Demo] Profile duplicate, skipping");
+            return prev;
+          }
+          const next = [...prev, p];
+          console.log("[Demo] Profile added, total:", next.length);
+          return next;
         });
+        console.log("[Demo] Setting view to results");
         setView("results");
       }, 1400);
     }
