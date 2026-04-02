@@ -4,56 +4,42 @@ import { pushEvent, type OpenClawEvent } from "@/app/lib/eventStore";
 /**
  * POST /api/openclaw/webhook — Receive events from OpenClaw
  *
- * Body (single event):
- * {
- *   "channel": "chat" | "feed" | "action",
- *   "payload": {
- *     "type": "user" | "agent",     // for chat
- *     "text": "message text",        // for chat
- *     "action": "Parsing CV",        // for feed
- *     "detail": "lot 1/5",           // for feed
- *     "status": "running",           // for feed: "done" | "running" | "error"
- *     "feedType": "parse",           // for feed: "connect" | "parse" | "score" | "source" | "analyze" | "notify"
- *     "command": "fetch_profiles"    // for action: triggers dashboard behavior
- *   }
- * }
+ * Supported channels: "chat" | "feed" | "action" | "profile"
  *
- * Body (batch):
- * { "events": [ ...array of events above... ] }
+ * Profile example:
+ * {"channel":"profile","payload":{"profile":{...SourcedProfile...}}}
  *
- * Examples:
+ * Batch profiles shorthand:
+ * {"profiles":[{...SourcedProfile...}, ...]}
  *
- * Chat message from recruiter via Telegram:
- * curl -X POST .../api/openclaw/webhook \
- *   -H "Content-Type: application/json" \
- *   -d '{"channel":"chat","payload":{"type":"user","text":"Trouve-moi des devs Python"}}'
- *
- * Agent response:
- * curl -X POST .../api/openclaw/webhook \
- *   -H "Content-Type: application/json" \
- *   -d '{"channel":"chat","payload":{"type":"agent","text":"Je lance l analyse..."}}'
- *
- * Feed event:
- * curl -X POST .../api/openclaw/webhook \
- *   -H "Content-Type: application/json" \
- *   -d '{"channel":"feed","payload":{"action":"Parsing CV","detail":"10 CVs traites","status":"done","feedType":"parse"}}'
- *
- * Trigger scoring:
- * curl -X POST .../api/openclaw/webhook \
- *   -H "Content-Type: application/json" \
- *   -d '{"channel":"action","payload":{"command":"fetch_profiles"}}'
+ * All other formats unchanged.
  */
 export async function POST(req: NextRequest) {
+  const secret = process.env.OPENCLAW_WEBHOOK_SECRET;
+  if (secret) {
+    const provided = req.headers.get("x-openclaw-secret");
+    if (provided !== secret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   try {
     const body = await req.json();
 
-    // Support batch mode
+    // Batch profiles shorthand: {"profiles": [...]}
+    if (Array.isArray(body.profiles)) {
+      const created = body.profiles.map((profile: unknown) =>
+        pushEvent("profile", { profile: profile as OpenClawEvent["payload"]["profile"] }),
+      );
+      return NextResponse.json({ code: 200, message: "OK", count: created.length });
+    }
+
+    // Standard single or batch events
     const items: { channel: OpenClawEvent["channel"]; payload: OpenClawEvent["payload"] }[] =
       body.events ?? [body];
 
     const created = items.map((item) => pushEvent(item.channel, item.payload));
-
-    return NextResponse.json({ code: 200, message: "OK", count: created.length }, { status: 200 });
+    return NextResponse.json({ code: 200, message: "OK", count: created.length });
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
