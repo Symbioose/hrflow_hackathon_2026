@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback, type ReactNode } from "react"
 import { DitheringShader } from "@/components/ui/dithering-shader"
+import dynamic from "next/dynamic"
+const GlobeCanvas = dynamic(() => import("@/components/ui/globe"), { ssr: false })
 
 /* ═══════════════════════════════════════════════════
    DESIGN SYSTEM — Elevated Pixel Editorial v2
@@ -26,78 +28,6 @@ const WHITE = "#FFFFFF"
 const SUCCESS = "#10b981"
 
 const serif = "var(--font-display), 'Georgia', serif"
-
-/* ═══════════════════════════════════════════
-   SVG Icons
-   ═══════════════════════════════════════════ */
-
-function IconGitHub({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-    </svg>
-  )
-}
-
-function IconLinkedIn({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-    </svg>
-  )
-}
-
-function IconIndeed({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <path d="M11.566 21.882v-8.203c0-1.403.32-2.479 1.136-3.478C14.135 8.47 16.288 7.82 18.479 8.12c.197.025.37.074.543.111V3.476A11.998 11.998 0 0012 0C5.373 0 0 5.373 0 12s5.373 12 12 12c2.291 0 4.432-.646 6.252-1.762v-5.478c-1.835 2.27-4.536 3.613-7.458 3.368-.668-.067-.98-.273-1.043-.535-.043-.17.024-.482.166-.711h1.649z" />
-    </svg>
-  )
-}
-
-function IconHrFlow({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 00-3-3.87" />
-      <path d="M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  )
-}
-
-function IconOpenClaw({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-      <path d="M2 17l10 5 10-5" />
-      <path d="M2 12l10 5 10-5" />
-    </svg>
-  )
-}
-
-function IconOllama({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2a4 4 0 014 4v1a4 4 0 01-8 0V6a4 4 0 014-4z" />
-      <path d="M6 10v3a6 6 0 0012 0v-3" />
-      <path d="M8 22v-3" />
-      <path d="M16 22v-3" />
-      <circle cx="9" cy="9" r="0.5" fill={color} />
-      <circle cx="15" cy="9" r="0.5" fill={color} />
-    </svg>
-  )
-}
-
-const ICONS: Record<string, (props: { size?: number; color?: string }) => ReactNode> = {
-  GitHub: IconGitHub,
-  LinkedIn: IconLinkedIn,
-  Indeed: IconIndeed,
-  HrFlow: IconHrFlow,
-  "HrFlow.ai": IconHrFlow,
-  OpenClaw: IconOpenClaw,
-  Ollama: IconOllama,
-}
 
 /* ═══════════════════════════════════════════
    Animated Counter
@@ -320,20 +250,20 @@ function Nav() {
         }}
       >
         <a href="/landing" className="font-mono font-bold text-2xl tracking-tight" style={{ color: CORAL }}>
-          PTI<span style={{ color: INK }}>.</span>
+          Claw4HR
         </a>
         <div
           className="hidden md:flex items-center gap-10 text-sm font-mono uppercase tracking-widest"
           style={{ color: MUTED, fontSize: "11px" }}
         >
-          <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Features</a>
-          <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">Demo</a>
+          <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Fonctionnalités</a>
+          <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">Démo</a>
           <a href="#pipeline" className="hover:text-[#1a1a2e] transition-colors">Pipeline</a>
           <a href="#stack" className="hover:text-[#1a1a2e] transition-colors">Stack</a>
         </div>
         <div className="flex items-center gap-3">
-          <PixelBtn href="#demo" variant="outline" size="sm">Watch Demo</PixelBtn>
-          <PixelBtn href="/" variant="coral" size="sm">Request Access &rarr;</PixelBtn>
+          <PixelBtn href="#demo" variant="outline" size="sm">Voir la Démo</PixelBtn>
+          <PixelBtn href="/" variant="coral" size="sm">Accès Dashboard &rarr;</PixelBtn>
         </div>
       </div>
     </nav>
@@ -374,33 +304,32 @@ function Hero() {
             }}
           >
             <span className="w-2 h-2 animate-pulse-dot" style={{ backgroundColor: CORAL, borderRadius: "50%" }} />
-            Built for HrFlow.ai Hackathon 2026
+            Hackathon HrFlow.ai 2026
           </div>
 
           {/* Headline */}
           <h1 className="animate-fade-in-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <span className="block leading-[0.92] tracking-[-0.03em]" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Stop searching.
+              Arrêtez de chercher.
             </span>
             <span className="block leading-[0.92] tracking-[-0.03em] mt-2" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Start <span style={{ color: CORAL, fontStyle: "italic" }}>finding.</span>
+              Commencez à <span style={{ color: CORAL, fontStyle: "italic" }}>trouver.</span>
             </span>
           </h1>
 
           <p className="mt-8 text-xl leading-relaxed max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s", animationFillMode: "both", color: MUTED }}>
-            An AI-powered sourcing agent that discovers, enriches, and scores
-            top passive talent across GitHub, LinkedIn, and Indeed — in real time.
+            Un agent IA qui découvre, enrichit et évalue les meilleurs talents passifs sur GitHub, LinkedIn et Indeed — en temps réel.
           </p>
 
           {/* CTAs */}
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
-            <PixelBtn href="/" variant="coral" size="lg">Launch Dashboard &rarr;</PixelBtn>
-            <PixelBtn href="#demo" variant="outline" size="lg">Watch Demo</PixelBtn>
+            <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
+            <PixelBtn href="#demo" variant="outline" size="lg">Voir la Démo</PixelBtn>
           </div>
 
           {/* Social proof */}
           <div className="mt-14 flex items-center justify-center gap-8 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.9s", animationFillMode: "both" }}>
-            <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${MUTED}90` }}>Powered by</span>
+            <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${MUTED}90` }}>Propulsé par</span>
             {["HrFlow.ai", "OpenClaw", "Ollama"].map((name) => (
               <span key={name} className="font-mono font-bold text-sm tracking-tight" style={{ color: `${INK}60` }}>{name}</span>
             ))}
@@ -418,7 +347,7 @@ function Hero() {
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#28c840" }} />
               </div>
               <div className="ml-4 flex-1 h-7 flex items-center px-4 font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}35`, borderRadius: "6px" }}>
-                app.pti.ai/dashboard
+                app.claw4hr.ai/dashboard
               </div>
             </div>
             {/* Dashboard mockup */}
@@ -426,7 +355,7 @@ function Hero() {
               <div className="w-full h-full p-6 grid grid-cols-[240px_1fr_300px] gap-4" style={{ opacity: 0.95 }}>
                 {/* Sidebar */}
                 <div className="flex flex-col gap-3">
-                  <div className="h-10 flex items-center px-4 font-mono text-sm font-bold" style={{ color: CORAL }}>PTI.</div>
+                  <div className="h-10 flex items-center px-4 font-mono text-sm font-bold" style={{ color: CORAL }}>Claw4HR</div>
                   <div className="h-9 flex items-center px-3 gap-2" style={{ backgroundColor: `${CORAL}12`, borderRadius: "8px" }}>
                     <div className="w-4 h-4 rounded" style={{ backgroundColor: `${CORAL}40` }} />
                     <div className="h-2 w-16" style={{ backgroundColor: `${CORAL}50`, borderRadius: "4px" }} />
@@ -449,14 +378,14 @@ function Hero() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="h-3 w-40" style={{ backgroundColor: `${WHITE}15`, borderRadius: "4px" }} />
                     <div className="h-8 px-4 flex items-center font-mono text-xs" style={{ backgroundColor: CORAL, color: WHITE, borderRadius: "6px" }}>
-                      + New Search
+                      + Nouvelle Recherche
                     </div>
                   </div>
                   {[
-                    { name: "Sophie Martin", role: "ML Engineer, 7 yrs", score: 94 },
-                    { name: "Lucas Moreau", role: "Data Scientist, 5 yrs", score: 89 },
-                    { name: "Camille Petit", role: "Python Dev, 6 yrs", score: 85 },
-                    { name: "Hugo Lambert", role: "AI Researcher, 4 yrs", score: 81 },
+                    { name: "Sophie Martin", role: "Ingénieure ML, 7 ans", score: 94 },
+                    { name: "Lucas Moreau", role: "Data Scientist, 5 ans", score: 89 },
+                    { name: "Camille Petit", role: "Dev Python, 6 ans", score: 85 },
+                    { name: "Hugo Lambert", role: "Chercheur IA, 4 ans", score: 81 },
                   ].map((c, i) => (
                     <div
                       key={c.name}
@@ -494,10 +423,10 @@ function Hero() {
                   {/* SWOT mini */}
                   <div className="grid grid-cols-2 gap-2 mt-1">
                     {[
-                      { l: "S", c: SUCCESS, items: ["Python 8yr", "ML Expert"] },
-                      { l: "W", c: CORAL, items: ["No React"] },
-                      { l: "O", c: "#3b82f6", items: ["Open to CDI"] },
-                      { l: "T", c: "#f59e0b", items: ["High demand"] },
+                      { l: "S", c: SUCCESS, items: ["Python 8 ans", "Expert ML"] },
+                      { l: "W", c: CORAL, items: ["Pas de React"] },
+                      { l: "O", c: "#3b82f6", items: ["Ouvert au CDI"] },
+                      { l: "T", c: "#f59e0b", items: ["Forte demande"] },
                     ].map(s => (
                       <div key={s.l} className="p-2.5" style={{ backgroundColor: `${WHITE}04`, borderRadius: "8px" }}>
                         <span className="text-[10px] font-mono font-bold" style={{ color: s.c }}>{s.l}</span>
@@ -512,7 +441,7 @@ function Hero() {
                       Contact
                     </div>
                     <div className="h-9 flex-1 flex items-center justify-center font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}40`, borderRadius: "6px" }}>
-                      Save
+                      Sauver
                     </div>
                   </div>
                 </div>
@@ -533,10 +462,10 @@ function Hero() {
 
 function MetricsBar() {
   const metrics = [
-    { value: 10000, suffix: "+", label: "Indexed profiles" },
-    { value: 3, suffix: "+", label: "Data sources" },
-    { value: 5, prefix: "<", suffix: "s", label: "Time to results" },
-    { value: 94, suffix: "%", label: "Matching accuracy" },
+    { value: 10000, suffix: "+", label: "Profils indexés" },
+    { value: 3, suffix: "+", label: "Sources de données" },
+    { value: 5, prefix: "<", suffix: "s", label: "Temps de réponse" },
+    { value: 94, suffix: "%", label: "Précision du matching" },
   ]
 
   return (
@@ -572,14 +501,12 @@ function ProblemSection() {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <Reveal>
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] mb-6" style={{ color: CORAL }}>The Problem</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] mb-6" style={{ color: CORAL }}>Le Problème</p>
               <h2 className="leading-[1.08] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2rem, 4vw, 3.2rem)", color: INK }}>
-                Your best hires <span style={{ fontStyle: "italic", color: CORAL }}>never applied.</span>
+                Vos meilleurs talents <span style={{ fontStyle: "italic", color: CORAL }}>n'ont jamais postulé.</span>
               </h2>
               <p className="mt-6 text-lg leading-relaxed" style={{ color: MUTED }}>
-                Top talent is passive — they are not on job boards. Sourcing
-                across GitHub, LinkedIn, and Indeed by hand takes weeks. By the
-                time you find them, they are already gone.
+                Les meilleurs candidats sont passifs — ils ne sont pas sur les job boards. Sourcer sur GitHub, LinkedIn et Indeed à la main prend des semaines. Quand vous les trouvez, ils sont déjà partis.
               </p>
               <div className="mt-8 w-16 h-1" style={{ backgroundColor: CORAL }} />
             </div>
@@ -588,10 +515,10 @@ function ProblemSection() {
           <Reveal delay={200}>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: "150+", title: "CVs per role", desc: "Recruiters drown in volume, miss the best fits", accent: false },
-                { icon: "72%", title: "Passive talent", desc: "The majority of top candidates never apply", accent: false },
-                { icon: "3 wks", title: "Manual sourcing", desc: "Time wasted searching across platforms", accent: false },
-                { icon: "< 5s", title: "With PTI", desc: "AI-powered sourcing delivers ranked results instantly", accent: true },
+                { icon: "150+", title: "CVs par poste", desc: "Les recruteurs se noient dans le volume et passent à côté des meilleurs", accent: false },
+                { icon: "72%", title: "Talents passifs", desc: "La majorité des meilleurs candidats ne postulent jamais", accent: false },
+                { icon: "3 sem.", title: "Sourcing manuel", desc: "Temps perdu à chercher sur plusieurs plateformes", accent: false },
+                { icon: "< 5s", title: "Avec Claw4HR", desc: "Le sourcing IA livre des résultats classés instantanément", accent: true },
               ].map((card) => (
                 <div
                   key={card.title}
@@ -622,22 +549,18 @@ function ProblemSection() {
 
 function SourcesVisual() {
   const sources = [
-    { name: "GitHub", sub: "Developer repos & activity", bg: "#24292e", count: "2.4k profiles" },
-    { name: "LinkedIn", sub: "Professional profiles", bg: "#0A66C2", count: "5.1k profiles" },
-    { name: "Indeed", sub: "Job applications", bg: "#2164F3", count: "1.8k profiles" },
-    { name: "HrFlow", sub: "Indexed CVs", bg: CORAL, count: "10k+ profiles" },
+    { name: "GitHub", letter: "GH", sub: "Repos & activité développeur", bg: "#24292e", count: "2.4k profils" },
+    { name: "LinkedIn", letter: "in", sub: "Profils professionnels", bg: "#0A66C2", count: "5.1k profils" },
+    { name: "Indeed", letter: "IN", sub: "Candidatures", bg: "#2164F3", count: "1.8k profils" },
+    { name: "HrFlow", letter: "H", sub: "CVs indexés", bg: CORAL, count: "10k+ profils" },
   ]
   return (
     <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
       {/* Header bar */}
       <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-            </svg>
-          </div>
-          <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Multi-source aggregation</span>
+          <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
+          <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Agrégation multi-sources</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
@@ -646,40 +569,27 @@ function SourcesVisual() {
       </div>
       {/* Sources grid */}
       <div className="p-6 grid grid-cols-2 gap-4">
-        {sources.map((s) => {
-          const Icon = ICONS[s.name]
-          return (
-            <div key={s.name} className="p-5 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-11 h-11 flex items-center justify-center" style={{ backgroundColor: s.bg, borderRadius: "10px" }}>
-                  {Icon ? <Icon size={20} color="white" /> : null}
-                </div>
-                <span className="text-[10px] font-mono" style={{ color: MUTED }}>{s.count}</span>
-              </div>
-              <p className="font-semibold text-sm" style={{ color: INK }}>{s.name}</p>
-              <p className="text-xs mt-0.5" style={{ color: MUTED }}>{s.sub}</p>
+        {sources.map((s) => (
+          <div key={s.name} className="p-5 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-11 h-11 flex items-center justify-center text-white font-mono font-bold text-sm" style={{ backgroundColor: s.bg, borderRadius: "10px" }}>{s.letter}</div>
+              <span className="text-[10px] font-mono" style={{ color: MUTED }}>{s.count}</span>
             </div>
-          )
-        })}
+            <p className="font-semibold text-sm" style={{ color: INK }}>{s.name}</p>
+            <p className="text-xs mt-0.5" style={{ color: MUTED }}>{s.sub}</p>
+          </div>
+        ))}
       </div>
       {/* Bottom: converging indicator */}
       <div className="px-8 py-4 flex items-center gap-3" style={{ backgroundColor: `${CORAL}06`, borderTop: `1px solid ${INK}06` }}>
         <div className="flex -space-x-2">
-          {[
-            { bg: "#24292e", name: "GitHub" },
-            { bg: "#0A66C2", name: "LinkedIn" },
-            { bg: "#2164F3", name: "Indeed" },
-            { bg: CORAL, name: "HrFlow" },
-          ].map((item, i) => {
-            const Icon = ICONS[item.name]
-            return (
-              <div key={i} className="w-7 h-7 flex items-center justify-center border-2 border-white" style={{ backgroundColor: item.bg, borderRadius: "50%" }}>
-                {Icon ? <Icon size={12} color="white" /> : null}
-              </div>
-            )
-          })}
+          {["#24292e", "#0A66C2", "#2164F3", CORAL].map((c, i) => (
+            <div key={i} className="w-6 h-6 flex items-center justify-center text-white text-[8px] font-bold border-2 border-white" style={{ backgroundColor: c, borderRadius: "50%" }}>
+              {["GH", "in", "IN", "H"][i]}
+            </div>
+          ))}
         </div>
-        <span className="text-xs" style={{ color: MUTED }}>All sources merge into a single, ranked pipeline</span>
+        <span className="text-xs" style={{ color: MUTED }}>Toutes les sources convergent en un seul pipeline classé</span>
       </div>
     </div>
   )
@@ -693,7 +603,7 @@ function ScoreVisual() {
         <Avatar name="Sophie Martin" size={52} bg={CORAL} />
         <div className="flex-1">
           <div className="font-semibold text-base" style={{ color: INK }}>Sophie Martin</div>
-          <div className="text-sm" style={{ color: MUTED }}>Senior ML Engineer &middot; Paris &middot; 7 yrs exp.</div>
+          <div className="text-sm" style={{ color: MUTED }}>Ingénieure ML Senior &middot; Paris &middot; 7 ans d'exp.</div>
         </div>
         <div className="text-right">
           <div className="font-mono font-bold text-2xl" style={{ color: CORAL }}>87%</div>
@@ -713,10 +623,10 @@ function ScoreVisual() {
         </div>
         <div className="flex-1 grid grid-cols-2 gap-3">
           {[
-            { label: "Strengths", color: SUCCESS, items: ["Python Expert — 8 yrs", "ML / Deep Learning"] },
-            { label: "Weaknesses", color: CORAL, items: ["No frontend exp."] },
-            { label: "Opportunities", color: "#3b82f6", items: ["Open to CDI", "Paris-based"] },
-            { label: "Threats", color: "#f59e0b", items: ["High market demand"] },
+            { label: "Forces", color: SUCCESS, items: ["Expert Python — 8 ans", "ML / Deep Learning"] },
+            { label: "Faiblesses", color: CORAL, items: ["Pas d'exp. frontend"] },
+            { label: "Opportunités", color: "#3b82f6", items: ["Ouvert au CDI", "Paris"] },
+            { label: "Menaces", color: "#f59e0b", items: ["Forte demande marché"] },
           ].map(s => (
             <div key={s.label} className="p-3" style={{ backgroundColor: WHITE, borderRadius: "10px", border: `1px solid ${INK}06` }}>
               <div className="flex items-center gap-1.5 mb-2">
@@ -736,19 +646,19 @@ function ScoreVisual() {
 
 function PipelineFlowVisual() {
   const steps = [
-    { letter: "X", name: "X-Ray", desc: "Discover profiles", status: "Done", color: SUCCESS },
-    { letter: "E", name: "Enrich", desc: "Add context", status: "Done", color: SUCCESS },
-    { letter: "I", name: "Index", desc: "Structure data", status: "Running", color: "#3b82f6" },
-    { letter: "S", name: "Score", desc: "Rank candidates", status: "Queued", color: MUTED },
+    { letter: "X", name: "X-Ray", desc: "Découvrir les profils", status: "Fait", color: SUCCESS },
+    { letter: "E", name: "Enrich", desc: "Ajouter le contexte", status: "Fait", color: SUCCESS },
+    { letter: "I", name: "Index", desc: "Structurer les données", status: "En cours", color: "#3b82f6" },
+    { letter: "S", name: "Score", desc: "Classer les candidats", status: "En attente", color: MUTED },
   ]
   return (
     <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
       {/* Status bar */}
       <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
-        <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Pipeline Status</span>
+        <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Statut du Pipeline</span>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 animate-pulse" style={{ backgroundColor: "#3b82f6", borderRadius: "50%" }} />
-          <span className="font-mono text-xs" style={{ color: "#3b82f6" }}>Processing 12 profiles...</span>
+          <span className="font-mono text-xs" style={{ color: "#3b82f6" }}>Traitement de 12 profils...</span>
         </div>
       </div>
       {/* Progress bar */}
@@ -768,7 +678,7 @@ function PipelineFlowVisual() {
               <p className="font-mono font-bold text-xs" style={{ color: INK }}>{s.name}</p>
               <p className="text-[10px] mt-0.5" style={{ color: MUTED }}>{s.desc}</p>
               <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5" style={{ backgroundColor: `${s.color}10`, borderRadius: "100px" }}>
-                {s.status === "Running" && <div className="w-1.5 h-1.5 animate-pulse" style={{ backgroundColor: s.color, borderRadius: "50%" }} />}
+                {s.status === "En cours" && <div className="w-1.5 h-1.5 animate-pulse" style={{ backgroundColor: s.color, borderRadius: "50%" }} />}
                 <span className="text-[9px] font-mono font-bold uppercase" style={{ color: s.color }}>{s.status}</span>
               </div>
             </div>
@@ -790,10 +700,10 @@ function ChatVisual() {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
           <div>
-            <span className="font-semibold text-sm" style={{ color: INK }}>PTI Assistant</span>
+            <span className="font-semibold text-sm" style={{ color: INK }}>Claw4HR Assistant</span>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
-              <span className="text-[10px]" style={{ color: SUCCESS }}>Online</span>
+              <span className="text-[10px]" style={{ color: SUCCESS }}>En ligne</span>
             </div>
           </div>
         </div>
@@ -806,7 +716,7 @@ function ChatVisual() {
           <div className="flex-1">
             <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>You</div>
             <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
-              Find me senior Python developers in Paris, available for CDI, with machine learning experience.
+              Trouvez-moi des développeurs Python senior à Paris, disponibles en CDI, avec de l'expérience en machine learning.
             </div>
           </div>
         </div>
@@ -814,14 +724,14 @@ function ChatVisual() {
         <div className="flex items-start gap-3">
           <Avatar name="AI" size={36} bg={CORAL} />
           <div className="flex-1">
-            <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>PTI</div>
+            <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>Claw4HR</div>
             <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
-              Found <strong>12 candidates</strong> across 3 sources in 4.2s.
+              Trouvé <strong>12 candidats</strong> sur 3 sources en 4.2s.
               <div className="mt-3 flex items-center gap-3 p-3" style={{ backgroundColor: CREAM, borderRadius: "8px" }}>
                 <Avatar name="Sophie Martin" size={32} bg={CORAL} />
                 <div className="flex-1">
                   <div className="text-xs font-semibold" style={{ color: INK }}>Sophie Martin</div>
-                  <div className="text-[10px]" style={{ color: MUTED }}>ML Engineer, 7yrs Python, Paris</div>
+                  <div className="text-[10px]" style={{ color: MUTED }}>Ingénieure ML, 7 ans Python, Paris</div>
                 </div>
                 <span className="font-mono font-bold text-sm" style={{ color: CORAL }}>94%</span>
               </div>
@@ -835,7 +745,7 @@ function ChatVisual() {
               <div key={i} className="w-2 h-2 animate-pulse" style={{ backgroundColor: `${CORAL}50`, animationDelay: `${i * 200}ms`, borderRadius: "50%" }} />
             ))}
           </div>
-          <span className="text-xs font-mono" style={{ color: `${MUTED}80` }}>Generating SWOT analysis...</span>
+          <span className="text-xs font-mono" style={{ color: `${MUTED}80` }}>Génération de l'analyse SWOT...</span>
         </div>
       </div>
     </div>
@@ -850,32 +760,32 @@ const features = [
   {
     num: "01",
     tag: "Multi-Source",
-    title: "Search everywhere.\nFind anyone.",
-    desc: "Query GitHub, LinkedIn, Indeed, and 10,000+ indexed profiles simultaneously. Our AI agent connects to every major talent source so you never miss a candidate.",
+    title: "Cherchez partout.\nTrouvez n'importe qui.",
+    desc: "Interrogez GitHub, LinkedIn, Indeed et plus de 10 000 profils indexés simultanément. Notre agent IA se connecte à toutes les sources de talents.",
     visual: <SourcesVisual />,
     bg: CREAM,
   },
   {
     num: "02",
     tag: "AI Scoring",
-    title: "Every candidate.\nRanked & explained.",
-    desc: "HrFlow.ai\u2019s proprietary algorithm scores every candidate 0\u2013100%. SWOT analysis makes every match transparent \u2014 strengths, gaps, and reasoning visible at a glance.",
+    title: "Chaque candidat.\nClassé & expliqué.",
+    desc: "L'algorithme propriétaire de HrFlow.ai note chaque candidat de 0 à 100%. L'analyse SWOT rend chaque match transparent — forces, lacunes et raisonnement.",
     visual: <ScoreVisual />,
     bg: WHITE,
   },
   {
     num: "03",
     tag: "JIT Pipeline",
-    title: "Real-time.\nNot yesterday\u2019s data.",
-    desc: "X-Ray discovers. Enrich reveals context. Index structures data. Score ranks candidates. Every step happens in real time \u2014 no stale databases, no waiting.",
+    title: "Temps réel.\nPas les données d'hier.",
+    desc: "X-Ray découvre. Enrich révèle le contexte. Index structure les données. Score classe les candidats. Chaque étape en temps réel.",
     visual: <PipelineFlowVisual />,
     bg: CREAM,
   },
   {
     num: "04",
     tag: "Natural Language",
-    title: "Just describe\nwho you need.",
-    desc: "Type a job description or ask in plain language. The agent parses your intent, searches intelligently, and delivers ranked results with full transparency.",
+    title: "Décrivez simplement\nqui vous cherchez.",
+    desc: "Tapez une description de poste ou demandez en langage naturel. L'agent comprend votre intention et livre des résultats classés.",
     visual: <ChatVisual />,
     bg: WHITE,
   },
@@ -932,13 +842,12 @@ function DemoSection() {
       <div className="relative z-10 mx-auto max-w-6xl px-8">
         <Reveal>
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>See It In Action</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Voyez-le en Action</p>
             <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
-              From job description to <span style={{ fontStyle: "italic", color: CORAL }}>ranked candidates</span> in seconds.
+              De la description de poste aux <span style={{ fontStyle: "italic", color: CORAL }}>candidats classés</span> en quelques secondes.
             </h2>
             <p className="mt-5 text-lg leading-relaxed" style={{ color: `${WHITE}60` }}>
-              Watch how PTI transforms a simple job description into a pipeline
-              of scored, enriched, and ready-to-contact candidates.
+              Regardez comment Claw4HR transforme une simple description de poste en un pipeline de candidats scorés, enrichis et prêts à contacter.
             </p>
           </div>
         </Reveal>
@@ -961,7 +870,7 @@ function DemoSection() {
                   <polygon points="9,5 20,12 9,19" />
                 </svg>
               </div>
-              <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}50` }}>Watch the 2-min demo</span>
+              <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}50` }}>Regarder la démo de 2 min</span>
             </div>
           </div>
         </Reveal>
@@ -970,9 +879,9 @@ function DemoSection() {
         <Reveal delay={400}>
           <div className="mt-14 grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
             {[
-              { val: "4.2s", desc: "Average query time" },
-              { val: "4 steps", desc: "Automated pipeline" },
-              { val: "Zero", desc: "Manual sourcing" },
+              { val: "4.2s", desc: "Temps moyen de requête" },
+              { val: "4 étapes", desc: "Pipeline automatisé" },
+              { val: "Zéro", desc: "Sourcing manuel" },
             ].map(s => (
               <div key={s.desc}>
                 <div className="font-mono font-bold text-xl" style={{ color: CORAL }}>{s.val}</div>
@@ -992,10 +901,10 @@ function DemoSection() {
 
 function PipelineSection() {
   const steps = [
-    { letter: "X", name: "X-Ray", desc: "Discover passive talent across GitHub, LinkedIn, Indeed via OpenClaw orchestration." },
-    { letter: "E", name: "Enrich", desc: "Reveal full professional context with Proxycurl and GitHub activity analysis." },
-    { letter: "I", name: "Index", desc: "Parse and structure CV data with HrFlow.ai into a searchable knowledge base." },
-    { letter: "S", name: "Score", desc: "AI scoring 0\u2013100% using HrFlow\u2019s proprietary matching algorithm." },
+    { letter: "X", name: "X-Ray", desc: "Découverte de talents passifs sur GitHub, LinkedIn, Indeed via l'orchestration OpenClaw." },
+    { letter: "E", name: "Enrich", desc: "Révélation du contexte professionnel complet via Proxycurl et l'analyse d'activité GitHub." },
+    { letter: "I", name: "Index", desc: "Analyse et structuration des CVs avec HrFlow.ai en base de connaissances exploitable." },
+    { letter: "S", name: "Score", desc: "Scoring IA 0–100% avec l'algorithme propriétaire de matching de HrFlow." },
   ]
 
   return (
@@ -1009,10 +918,10 @@ function PipelineSection() {
           <div className="text-center max-w-3xl mx-auto">
             <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5 text-white/50">Pipeline</p>
             <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
-              Four steps. <span style={{ fontStyle: "italic" }}>Zero manual work.</span>
+              Quatre étapes. <span style={{ fontStyle: "italic" }}>Zéro travail manuel.</span>
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-white/70 max-w-xl mx-auto">
-              Our Just-in-Time pipeline processes candidates the moment they are discovered. Real time, always fresh.
+              Notre pipeline Just-in-Time traite les candidats dès qu'ils sont découverts. Temps réel, toujours frais.
             </p>
           </div>
         </Reveal>
@@ -1023,7 +932,7 @@ function PipelineSection() {
               <div className="p-7 h-full transition-all duration-200 hover:-translate-y-2" style={{ backgroundColor: WHITE, borderRadius: "14px", boxShadow: `0 20px 40px -10px ${CORAL_DEEP}50` }}>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-12 h-12 flex items-center justify-center font-mono font-bold text-base text-white" style={{ backgroundColor: CORAL, borderRadius: "12px" }}>{s.letter}</div>
-                  <span className="text-xs font-mono" style={{ color: MUTED }}>Step 0{i + 1}</span>
+                  <span className="text-xs font-mono" style={{ color: MUTED }}>&Eacute;tape 0{i + 1}</span>
                 </div>
                 <h3 className="font-bold text-xl mb-3" style={{ color: INK }}>{s.name}</h3>
                 <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{s.desc}</p>
@@ -1043,21 +952,21 @@ function PipelineSection() {
 function TestimonialsSection() {
   const testimonials = [
     {
-      quote: "We reduced our time-to-shortlist from 2 weeks to 30 minutes. The SWOT analysis gives our team confidence in every match.",
+      quote: "Nous avons réduit notre temps de présélection de 2 semaines à 30 minutes. L'analyse SWOT donne confiance à toute l'équipe.",
       name: "Marie Dupont",
-      role: "Head of Talent Acquisition",
+      role: "Directrice Acquisition de Talents",
       company: "Tech Corp",
       bg: CORAL,
     },
     {
-      quote: "The multi-source search is a game-changer. We\u2019re finding developers on GitHub that we never would have discovered manually.",
+      quote: "La recherche multi-sources est révolutionnaire. On trouve des développeurs sur GitHub qu'on n'aurait jamais découverts manuellement.",
       name: "Thomas Bernard",
-      role: "Senior Recruiter",
+      role: "Recruteur Senior",
       company: "Scale Studio",
       bg: "#3b82f6",
     },
     {
-      quote: "Finally, a sourcing tool that explains WHY a candidate is a good fit \u2014 not just that they matched some keywords.",
+      quote: "Enfin, un outil de sourcing qui explique POURQUOI un candidat correspond — pas juste qu'il a matché des mots-clés.",
       name: "Camille Leroy",
       role: "VP People",
       company: "DataFlow Labs",
@@ -1070,9 +979,9 @@ function TestimonialsSection() {
       <div className="mx-auto max-w-7xl px-8">
         <Reveal>
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>What Recruiters Say</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Ce que disent les recruteurs</p>
             <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
-              Built for people who <span style={{ color: CORAL, fontStyle: "italic" }}>hire people.</span>
+              Conçu pour ceux qui <span style={{ color: CORAL, fontStyle: "italic" }}>recrutent.</span>
             </h2>
           </div>
         </Reveal>
@@ -1114,12 +1023,12 @@ function TestimonialsSection() {
 
 function StackSection() {
   const items = [
-    { name: "HrFlow.ai", desc: "CV parsing, indexing & AI scoring engine", bg: CORAL },
-    { name: "OpenClaw", desc: "Multi-agent orchestration & Telegram bot", bg: "#7C3AED" },
-    { name: "GitHub", desc: "Developer activity & repository analysis", bg: "#24292e" },
-    { name: "LinkedIn", desc: "Professional profile enrichment", bg: "#0A66C2" },
-    { name: "Indeed", desc: "Job board scraping & candidate discovery", bg: "#2164F3" },
-    { name: "Ollama", desc: "Local LLM inference \u2014 Qwen3 14B", bg: "#10b981" },
+    { name: "HrFlow.ai", desc: "Parsing CV, indexation & moteur de scoring IA", letter: "H", bg: CORAL },
+    { name: "OpenClaw", desc: "Orchestration multi-agents & bot Telegram", letter: "O", bg: "#7C3AED" },
+    { name: "GitHub", desc: "Activité développeur & analyse de repos", letter: "GH", bg: "#24292e" },
+    { name: "LinkedIn", desc: "Enrichissement de profils professionnels", letter: "in", bg: "#0A66C2" },
+    { name: "Indeed", desc: "Scraping job boards & découverte de candidats", letter: "IN", bg: "#2164F3" },
+    { name: "Ollama", desc: "Inférence LLM locale — Qwen3 14B", letter: "Q", bg: "#10b981" },
   ]
 
   return (
@@ -1129,10 +1038,10 @@ function StackSection() {
           <div className="text-center max-w-3xl mx-auto">
             <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Integrations</p>
             <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
-              Built on <span style={{ color: CORAL, fontStyle: "italic" }}>industry leaders.</span>
+              Construit sur <span style={{ color: CORAL, fontStyle: "italic" }}>les meilleurs.</span>
             </h2>
             <p className="mt-5 text-lg leading-relaxed" style={{ color: MUTED }}>
-              PTI connects the best tools in recruitment, AI, and developer platforms into one seamless pipeline.
+              Claw4HR connecte les meilleurs outils de recrutement, d'IA et de plateformes développeur en un seul pipeline.
             </p>
           </div>
         </Reveal>
@@ -1141,9 +1050,7 @@ function StackSection() {
           {items.map((x, i) => (
             <Reveal key={x.name} delay={i * 60}>
               <div className="p-7 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: CREAM, borderRadius: "14px", border: `1px solid ${INK}06` }}>
-                <div className="flex items-center justify-center mb-5" style={{ backgroundColor: x.bg, borderRadius: "12px", width: 52, height: 52 }}>
-                  {ICONS[x.name] ? ICONS[x.name]({ size: 24, color: "white" }) : <span className="text-white font-mono font-bold text-sm">{x.name[0]}</span>}
-                </div>
+                <div className="w-13 h-13 flex items-center justify-center text-white font-mono font-bold text-sm mb-5" style={{ backgroundColor: x.bg, borderRadius: "12px", width: 52, height: 52 }}>{x.letter}</div>
                 <p className="font-semibold text-lg" style={{ color: INK }}>{x.name}</p>
                 <p className="text-sm mt-1.5 leading-relaxed" style={{ color: MUTED }}>{x.desc}</p>
               </div>
@@ -1162,32 +1069,31 @@ function StackSection() {
 function CTASection() {
   return (
     <section className="relative py-32 md:py-44 overflow-hidden" style={{ backgroundColor: NAVY }}>
-      <div className="absolute inset-0 opacity-20">
-        <DitheringShader shape="ripple" type="8x8" colorBack="#0B1226" colorFront="#FF6B6B" width={1920} height={1080} pxSize={5} speed={0.3} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <GlobeCanvas />
       </div>
 
       <div className="relative z-10 text-center px-8 max-w-3xl mx-auto">
         <Reveal>
           <h2 className="leading-[0.95] tracking-[-0.03em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.8rem, 5.5vw, 5rem)" }}>
-            Ready to find talent<br />
-            <span style={{ fontStyle: "italic", color: CORAL }}>before they apply?</span>
+            Prêt à trouver les talents<br />
+            <span style={{ fontStyle: "italic", color: CORAL }}>avant qu'ils ne postulent ?</span>
           </h2>
         </Reveal>
         <Reveal delay={150}>
           <p className="mt-6 text-lg max-w-lg mx-auto leading-relaxed" style={{ color: `${WHITE}60` }}>
-            Join the recruiters who source, score, and engage the best passive
-            talent \u2014 all in real time, powered by AI.
+            Rejoignez les recruteurs qui sourcent, scorent et engagent les meilleurs talents passifs — en temps réel, propulsé par l'IA.
           </p>
         </Reveal>
         <Reveal delay={300}>
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
-            <PixelBtn href="/" variant="coral" size="lg">Launch Dashboard &rarr;</PixelBtn>
-            <PixelBtn href="#demo" variant="white" size="lg">Watch Demo</PixelBtn>
+            <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
+            <PixelBtn href="#demo" variant="white" size="lg">Voir la Démo</PixelBtn>
           </div>
         </Reveal>
         <Reveal delay={400}>
           <p className="mt-8 font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}25` }}>
-            Free to try &middot; No credit card required
+            Gratuit à essayer &middot; Sans carte bancaire
           </p>
         </Reveal>
       </div>
@@ -1386,23 +1292,23 @@ function Footer() {
         <div className="flex flex-col md:flex-row items-start justify-between gap-8">
           <div>
             <span className="font-mono font-bold text-xl tracking-tight" style={{ color: CORAL }}>
-              PTI<span style={{ color: INK }}>.</span>
+              Claw4HR
             </span>
             <p className="mt-2 text-sm max-w-xs" style={{ color: MUTED }}>
-              Passive Talent Intelligence \u2014 AI-powered sourcing that finds the candidates who never apply.
+              Intelligence de Talents Passifs — Sourcing IA qui trouve les candidats qui ne postulent jamais.
             </p>
           </div>
           <div className="flex gap-12">
             <div>
-              <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Product</p>
+              <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Produit</p>
               <div className="space-y-2">
-                {["Features", "Pipeline", "Demo", "Stack"].map(link => (
-                  <a key={link} href={`#${link.toLowerCase()}`} className="block text-sm transition-colors hover:text-[#1a1a2e]" style={{ color: MUTED }}>{link}</a>
+                {[{label: "Fonctionnalités", href: "features"}, {label: "Pipeline", href: "pipeline"}, {label: "Démo", href: "demo"}, {label: "Stack", href: "stack"}].map(link => (
+                  <a key={link.href} href={`#${link.href}`} className="block text-sm transition-colors hover:text-[#1a1a2e]" style={{ color: MUTED }}>{link.label}</a>
                 ))}
               </div>
             </div>
             <div>
-              <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Built With</p>
+              <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Construit avec</p>
               <div className="space-y-2">
                 {["HrFlow.ai", "OpenClaw", "Ollama", "Next.js"].map(link => (
                   <span key={link} className="block text-sm" style={{ color: MUTED }}>{link}</span>
@@ -1412,8 +1318,8 @@ function Footer() {
           </div>
         </div>
         <div className="mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderTop: `1px solid ${INK}06` }}>
-          <p className="text-sm" style={{ color: `${MUTED}80` }}>Built for HrFlow.ai Hackathon 2026</p>
-          <p className="text-sm" style={{ color: `${MUTED}80` }}>Powered by HrFlow.ai & OpenClaw</p>
+          <p className="text-sm" style={{ color: `${MUTED}80` }}>Conçu pour le Hackathon HrFlow.ai 2026</p>
+          <p className="text-sm" style={{ color: `${MUTED}80` }}>Propulsé par HrFlow.ai & OpenClaw</p>
         </div>
       </div>
     </footer>
