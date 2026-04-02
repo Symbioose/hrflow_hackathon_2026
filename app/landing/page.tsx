@@ -256,14 +256,14 @@ function Nav() {
           className="hidden md:flex items-center gap-10 text-sm font-mono uppercase tracking-widest"
           style={{ color: MUTED, fontSize: "11px" }}
         >
-          <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Fonctionnalit&eacute;s</a>
-          <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">D&eacute;mo</a>
+          <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Fonctionnalités</a>
+          <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">Démo</a>
           <a href="#pipeline" className="hover:text-[#1a1a2e] transition-colors">Pipeline</a>
           <a href="#stack" className="hover:text-[#1a1a2e] transition-colors">Stack</a>
         </div>
         <div className="flex items-center gap-3">
-          <PixelBtn href="#demo" variant="outline" size="sm">Voir la D&eacute;mo</PixelBtn>
-          <PixelBtn href="/" variant="coral" size="sm">Acc&egrave;s Dashboard &rarr;</PixelBtn>
+          <PixelBtn href="#demo" variant="outline" size="sm">Voir la Démo</PixelBtn>
+          <PixelBtn href="/" variant="coral" size="sm">Accès Dashboard &rarr;</PixelBtn>
         </div>
       </div>
     </nav>
@@ -310,26 +310,26 @@ function Hero() {
           {/* Headline */}
           <h1 className="animate-fade-in-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <span className="block leading-[0.92] tracking-[-0.03em]" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Arr&ecirc;tez de chercher.
+              Arrêtez de chercher.
             </span>
             <span className="block leading-[0.92] tracking-[-0.03em] mt-2" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Commencez &agrave; <span style={{ color: CORAL, fontStyle: "italic" }}>trouver.</span>
+              Commencez à <span style={{ color: CORAL, fontStyle: "italic" }}>trouver.</span>
             </span>
           </h1>
 
           <p className="mt-8 text-xl leading-relaxed max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s", animationFillMode: "both", color: MUTED }}>
-            Un agent IA qui d&eacute;couvre, enrichit et &eacute;value les meilleurs talents passifs sur GitHub, LinkedIn et Indeed — en temps r&eacute;el.
+            Un agent IA qui découvre, enrichit et évalue les meilleurs talents passifs sur GitHub, LinkedIn et Indeed — en temps réel.
           </p>
 
           {/* CTAs */}
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
             <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
-            <PixelBtn href="#demo" variant="outline" size="lg">Voir la D&eacute;mo</PixelBtn>
+            <PixelBtn href="#demo" variant="outline" size="lg">Voir la Démo</PixelBtn>
           </div>
 
           {/* Social proof */}
           <div className="mt-14 flex items-center justify-center gap-8 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.9s", animationFillMode: "both" }}>
-            <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${MUTED}90` }}>Propuls&eacute; par</span>
+            <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${MUTED}90` }}>Propulsé par</span>
             {["HrFlow.ai", "OpenClaw", "Ollama"].map((name) => (
               <span key={name} className="font-mono font-bold text-sm tracking-tight" style={{ color: `${INK}60` }}>{name}</span>
             ))}
@@ -501,12 +501,12 @@ function ProblemSection() {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <Reveal>
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] mb-6" style={{ color: CORAL }}>Le Probl&egrave;me</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] mb-6" style={{ color: CORAL }}>Le Problème</p>
               <h2 className="leading-[1.08] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2rem, 4vw, 3.2rem)", color: INK }}>
-                Vos meilleurs talents <span style={{ fontStyle: "italic", color: CORAL }}>n&apos;ont jamais postul&eacute;.</span>
+                Vos meilleurs talents <span style={{ fontStyle: "italic", color: CORAL }}>n'ont jamais postulé.</span>
               </h2>
               <p className="mt-6 text-lg leading-relaxed" style={{ color: MUTED }}>
-                Les meilleurs candidats sont passifs — ils ne sont pas sur les job boards. Sourcer sur GitHub, LinkedIn et Indeed &agrave; la main prend des semaines. Quand vous les trouvez, ils sont d&eacute;j&agrave; partis.
+                Les meilleurs candidats sont passifs — ils ne sont pas sur les job boards. Sourcer sur GitHub, LinkedIn et Indeed à la main prend des semaines. Quand vous les trouvez, ils sont déjà partis.
               </p>
               <div className="mt-8 w-16 h-1" style={{ backgroundColor: CORAL }} />
             </div>
@@ -603,7 +603,7 @@ function ScoreVisual() {
         <Avatar name="Sophie Martin" size={52} bg={CORAL} />
         <div className="flex-1">
           <div className="font-semibold text-base" style={{ color: INK }}>Sophie Martin</div>
-          <div className="text-sm" style={{ color: MUTED }}>Ing&eacute;nieure ML Senior &middot; Paris &middot; 7 ans d&apos;exp.</div>
+          <div className="text-sm" style={{ color: MUTED }}>Ingénieure ML Senior &middot; Paris &middot; 7 ans d'exp.</div>
         </div>
         <div className="text-right">
           <div className="font-mono font-bold text-2xl" style={{ color: CORAL }}>87%</div>
@@ -716,7 +716,7 @@ function ChatVisual() {
           <div className="flex-1">
             <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>You</div>
             <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
-              Trouvez-moi des développeurs Python senior à Paris, disponibles en CDI, avec de l&apos;expérience en machine learning.
+              Trouvez-moi des développeurs Python senior à Paris, disponibles en CDI, avec de l'expérience en machine learning.
             </div>
           </div>
         </div>
@@ -745,7 +745,7 @@ function ChatVisual() {
               <div key={i} className="w-2 h-2 animate-pulse" style={{ backgroundColor: `${CORAL}50`, animationDelay: `${i * 200}ms`, borderRadius: "50%" }} />
             ))}
           </div>
-          <span className="text-xs font-mono" style={{ color: `${MUTED}80` }}>Génération de l&apos;analyse SWOT...</span>
+          <span className="text-xs font-mono" style={{ color: `${MUTED}80` }}>Génération de l'analyse SWOT...</span>
         </div>
       </div>
     </div>
@@ -918,10 +918,10 @@ function PipelineSection() {
           <div className="text-center max-w-3xl mx-auto">
             <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5 text-white/50">Pipeline</p>
             <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
-              Quatre &eacute;tapes. <span style={{ fontStyle: "italic" }}>Z&eacute;ro travail manuel.</span>
+              Quatre étapes. <span style={{ fontStyle: "italic" }}>Zéro travail manuel.</span>
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-white/70 max-w-xl mx-auto">
-              Notre pipeline Just-in-Time traite les candidats d&egrave;s qu&apos;ils sont d&eacute;couverts. Temps r&eacute;el, toujours frais.
+              Notre pipeline Just-in-Time traite les candidats dès qu'ils sont découverts. Temps réel, toujours frais.
             </p>
           </div>
         </Reveal>
@@ -981,7 +981,7 @@ function TestimonialsSection() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Ce que disent les recruteurs</p>
             <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
-              Con&ccedil;u pour ceux qui <span style={{ color: CORAL, fontStyle: "italic" }}>recrutent.</span>
+              Conçu pour ceux qui <span style={{ color: CORAL, fontStyle: "italic" }}>recrutent.</span>
             </h2>
           </div>
         </Reveal>
@@ -1041,7 +1041,7 @@ function StackSection() {
               Construit sur <span style={{ color: CORAL, fontStyle: "italic" }}>les meilleurs.</span>
             </h2>
             <p className="mt-5 text-lg leading-relaxed" style={{ color: MUTED }}>
-              Claw4HR connecte les meilleurs outils de recrutement, d&apos;IA et de plateformes d&eacute;veloppeur en un seul pipeline.
+              Claw4HR connecte les meilleurs outils de recrutement, d'IA et de plateformes développeur en un seul pipeline.
             </p>
           </div>
         </Reveal>
@@ -1076,24 +1076,24 @@ function CTASection() {
       <div className="relative z-10 text-center px-8 max-w-3xl mx-auto">
         <Reveal>
           <h2 className="leading-[0.95] tracking-[-0.03em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.8rem, 5.5vw, 5rem)" }}>
-            Pr&ecirc;t &agrave; trouver les talents<br />
-            <span style={{ fontStyle: "italic", color: CORAL }}>avant qu&apos;ils ne postulent ?</span>
+            Prêt à trouver les talents<br />
+            <span style={{ fontStyle: "italic", color: CORAL }}>avant qu'ils ne postulent ?</span>
           </h2>
         </Reveal>
         <Reveal delay={150}>
           <p className="mt-6 text-lg max-w-lg mx-auto leading-relaxed" style={{ color: `${WHITE}60` }}>
-            Rejoignez les recruteurs qui sourcent, scorent et engagent les meilleurs talents passifs — en temps r&eacute;el, propuls&eacute; par l&apos;IA.
+            Rejoignez les recruteurs qui sourcent, scorent et engagent les meilleurs talents passifs — en temps réel, propulsé par l'IA.
           </p>
         </Reveal>
         <Reveal delay={300}>
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
             <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
-            <PixelBtn href="#demo" variant="white" size="lg">Voir la D&eacute;mo</PixelBtn>
+            <PixelBtn href="#demo" variant="white" size="lg">Voir la Démo</PixelBtn>
           </div>
         </Reveal>
         <Reveal delay={400}>
           <p className="mt-8 font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}25` }}>
-            Gratuit &agrave; essayer &middot; Sans carte bancaire
+            Gratuit à essayer &middot; Sans carte bancaire
           </p>
         </Reveal>
       </div>
