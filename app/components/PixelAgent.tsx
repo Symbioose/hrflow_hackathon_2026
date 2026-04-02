@@ -58,7 +58,7 @@ const SOURCE_CONFIG: Record<AgentSource, { label: string; color: string; message
 };
 
 /** Pixel art character rendered as a grid of colored divs (4×7 grid, 4px pixels) */
-function PixelSprite({ color, walking }: { color: string; walking: boolean }) {
+function PixelSprite({ color, frame }: { color: string; frame: number }) {
   // 0 = transparent, 1 = ink (#1a1a2e), 2 = accent (source color)
   const FRAME_A = [
     [0, 1, 1, 0],
@@ -67,7 +67,7 @@ function PixelSprite({ color, walking }: { color: string; walking: boolean }) {
     [1, 2, 2, 1],
     [0, 1, 1, 0],
     [1, 0, 0, 1],
-    [1, 0, 0, 0],
+    [1, 0, 0, 1],
   ];
   const FRAME_B = [
     [0, 1, 1, 0],
@@ -75,10 +75,20 @@ function PixelSprite({ color, walking }: { color: string; walking: boolean }) {
     [0, 2, 2, 0],
     [1, 2, 2, 1],
     [0, 1, 1, 0],
-    [0, 0, 1, 1],
-    [0, 0, 0, 1],
+    [0, 1, 0, 0],
+    [1, 0, 1, 0],
   ];
-  const frame = walking ? FRAME_B : FRAME_A;
+  const FRAME_C = [
+    [0, 1, 1, 0],
+    [1, 1, 1, 1],
+    [0, 2, 2, 0],
+    [1, 2, 2, 1],
+    [0, 1, 1, 0],
+    [0, 0, 1, 1],
+    [0, 0, 1, 1],
+  ];
+  const frames = [FRAME_A, FRAME_B, FRAME_C];
+  const currentFrame = frames[frame % frames.length];
   const PS = 4; // pixel size in px
 
   return (
@@ -90,7 +100,7 @@ function PixelSprite({ color, walking }: { color: string; walking: boolean }) {
         imageRendering: "pixelated",
       }}
     >
-      {frame.flatMap((row, r) =>
+      {currentFrame.flatMap((row, r) =>
         row.map((cell, c) => (
           <div
             key={`${r}-${c}`}
@@ -112,21 +122,21 @@ function PixelSprite({ color, walking }: { color: string; walking: boolean }) {
 export default function PixelAgent({ source, state }: PixelAgentProps) {
   const config = SOURCE_CONFIG[source];
   const [msgIndex, setMsgIndex] = useState(0);
-  const [walking, setWalking] = useState(false);
+  const [walkFrame, setWalkFrame] = useState(0);
 
-  // Cycle terminal messages every 1.2s when running
+  // Cycle terminal messages every 1.5s when running
   useEffect(() => {
     if (state !== "running") return;
     const t = setInterval(() => {
       setMsgIndex((i) => (i + 1) % config.messages.length);
-    }, 1200);
+    }, 1500);
     return () => clearInterval(t);
   }, [state, source, config.messages.length]);
 
-  // Walk animation frame toggle every 200ms
+  // Walk animation: cycle through 3 frames every 150ms (smooth movement)
   useEffect(() => {
     if (state !== "running") return;
-    const t = setInterval(() => setWalking((w) => !w), 200);
+    const t = setInterval(() => setWalkFrame((f) => (f + 1) % 3), 150);
     return () => clearInterval(t);
   }, [state, source]);
 
@@ -148,7 +158,7 @@ export default function PixelAgent({ source, state }: PixelAgentProps) {
         className={state === "running" ? "animate-pixel-bounce" : ""}
         style={{ opacity: state === "error" ? 0.4 : 1 }}
       >
-        <PixelSprite color={config.color} walking={walking} />
+        <PixelSprite color={config.color} frame={state === "running" ? walkFrame : 0} />
       </div>
 
       {/* Source label */}

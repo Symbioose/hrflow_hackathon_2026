@@ -28,17 +28,39 @@ export async function POST(req: NextRequest) {
 
     // Batch profiles shorthand: {"profiles": [...]}
     if (Array.isArray(body.profiles)) {
-      const created = body.profiles.map((profile: unknown) =>
+      if (body.profiles.length > 50) {
+        return NextResponse.json(
+          { error: "Batch size exceeds maximum of 50 profiles" },
+          { status: 400 },
+        );
+      }
+
+      const validProfiles = body.profiles.filter((p: unknown) => {
+        if (typeof p !== "object" || p === null) return false;
+        const rec = p as Record<string, unknown>;
+        return (
+          typeof rec.key === "string" &&
+          typeof rec.name === "string" &&
+          typeof rec.title === "string"
+        );
+      });
+
+      const created = validProfiles.map((profile: unknown) =>
         pushEvent("profile", { profile: profile as OpenClawEvent["payload"]["profile"] }),
       );
       return NextResponse.json({ code: 200, message: "OK", count: created.length });
     }
 
     // Standard single or batch events
+    const VALID_CHANNELS = new Set(["chat", "feed", "action", "profile"]);
     const items: { channel: OpenClawEvent["channel"]; payload: OpenClawEvent["payload"] }[] =
       body.events ?? [body];
 
-    const created = items.map((item) => pushEvent(item.channel, item.payload));
+    const validItems = items.filter(
+      (item) => typeof item.channel === "string" && VALID_CHANNELS.has(item.channel),
+    );
+
+    const created = validItems.map((item) => pushEvent(item.channel, item.payload));
     return NextResponse.json({ code: 200, message: "OK", count: created.length });
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
