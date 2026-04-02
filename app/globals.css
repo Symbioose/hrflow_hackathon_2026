@@ -25,6 +25,22 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Landing design system — also used by dashboard */
+:root {
+  --coral: #FF6B6B;
+  --coral-dark: #E85555;
+  --coral-deep: #CC4444;
+  --coral-glow: rgba(255, 107, 107, 0.15);
+  --cream: #FFF5F0;
+  --cream-mid: #F5EDE6;
+  --ink: #1a1a2e;
+  --navy: #0B1226;
+  --muted-text: #6b7280;
+  --success: #10b981;
+  --amber: #f59e0b;
+  --rose: #f43f5e;
+}
+
 @theme inline {
   --color-background: var(--bg-deep);
   --color-foreground: var(--text-primary);
@@ -222,4 +238,32 @@ body {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ─── Dashboard 2.0 animations ─── */
+
+/* Pixel agent walk cycle */
+@keyframes pixel-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Score ring fill */
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-total); }
+  to { stroke-dashoffset: var(--ring-offset); }
+}
+
+/* Card stagger reveal */
+@keyframes card-reveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pixel-bounce {
+  animation: pixel-bounce 0.4s ease-in-out infinite;
+}
+
+.animate-card-reveal {
+  animation: card-reveal 0.4s ease-out both;
 }
