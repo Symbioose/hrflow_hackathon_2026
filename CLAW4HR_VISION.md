@@ -68,4 +68,35 @@ Pour que ça fonctionne, voici la stack à consolider demain :
 | **Temps de latence (L'agent est trop lent à sourcer en live)** | Mettre en place un système asynchrone (Webhooks). Le recruteur lance la recherche, l'agent feed tourne en background, et envoie une notif quand les 10 meilleurs profils sont prêts. |
 
 ---
+
+## 7. Workflow d'Exécution & Implémentation du Dashboard
+
+### Étape 1 : Saisie & Compréhension (Input)
+- **Action :** Le recruteur entre une requête en langage naturel (ex: "Data Scientist à Paris avec 5 ans d'expérience").
+- **Technique :** Le frontend (Next.js) envoie cette requête via API ou WebSocket à l'agent OpenClaw.
+
+### Étape 2 : Sourcing & Extraction (Processing Agent)
+- **Action :** L'agent analyse les critères.
+- **Technique :** Utilisation des outils d'extraction (Agent-Reach, recherche web) et parsing via HrFlow.
+
+### Étape 3 : Structuration de la Donnée
+- **Action :** Formatage en objet exploitable par le front.
+- **Technique :** JSON standardisé (basé sur HrFlow).
+  ```json
+  {
+    "id": "uuid",
+    "name": "Adrien Hairault",
+    "role": "Data Scientist",
+    "location": "Paris",
+    "source_url": "https://fr.linkedin.com/...",
+    "skills": ["Python", "Machine Learning"],
+    "experience_years": 5
+  }
+  ```
+
+### Étape 4 : Mise à jour du Dashboard (Output / UI)
+- **Action :** Le dashboard se met à jour en temps réel avec les profils trouvés.
+- **Technique :** Réception SSE/WebSockets, mise à jour du state, rendu des Candidate Cards.
+
+---
 *Document mis à jour pour présentation stratégique (Hackathon HrFlow).*
