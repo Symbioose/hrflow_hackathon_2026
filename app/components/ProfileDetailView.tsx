@@ -55,7 +55,7 @@ export default function ProfileDetailView({
       {/* Hero header */}
       <div className="px-6 pb-8 pt-2">
         <div
-          className="rounded-2xl p-8 flex items-center justify-between gap-6"
+          className="rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6"
           style={{ background: "var(--navy)", color: "#fff" }}
         >
           <div className="flex items-center gap-5">
@@ -204,7 +204,7 @@ export default function ProfileDetailView({
         </div>
 
         {/* Right: Q&A panel (2/5) */}
-        <div className="lg:col-span-2" style={{ height: "fit-content", position: "sticky", top: 80 }}>
+        <div className="lg:col-span-2 lg:sticky lg:top-[80px]" style={{ height: "fit-content" }}>
           <QAPanel profile={profile} messages={messages} asking={asking} onSend={onSend} />
         </div>
       </div>

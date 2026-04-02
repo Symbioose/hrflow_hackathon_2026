@@ -41,15 +41,20 @@ export default function Dashboard() {
 
   const esRef = useRef<EventSource | null>(null);
   const demoCleanupRef = useRef<(() => void) | null>(null);
+  const retriesRef = useRef(0);
+  const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchIdRef = useRef(0);
 
   // ─── SSE connection ────────────────────────────────────────
 
   const connectSSE = useCallback((cursor = 0) => {
     if (esRef.current) esRef.current.close();
+    const thisSearch = searchIdRef.current;
     const es = new EventSource(`/api/openclaw/stream?cursor=${cursor}`);
     esRef.current = es;
 
     es.onmessage = (e) => {
+      if (searchIdRef.current !== thisSearch) return;
       try {
         const event = JSON.parse(e.data);
 
@@ -74,6 +79,18 @@ export default function Dashboard() {
 
     es.onerror = () => {
       es.close();
+      if (searchIdRef.current !== thisSearch) return;
+      if (retriesRef.current < 3) {
+        retriesRef.current++;
+        setTimeout(() => {
+          if (searchIdRef.current === thisSearch) {
+            connectSSE(cursor);
+          }
+        }, 2000);
+      } else {
+        setView("search");
+        setIsStreaming(false);
+      }
     };
   }, []);
 
@@ -81,12 +98,17 @@ export default function Dashboard() {
     return () => {
       esRef.current?.close();
       demoCleanupRef.current?.();
+      if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
     };
   }, []);
 
   // ─── Search handler ────────────────────────────────────────
 
   const handleSearch = useCallback(async (q: string) => {
+    const thisSearch = ++searchIdRef.current;
+    retriesRef.current = 0;
+    if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
+
     setQuery(q);
     setProfiles([]);
     setAgentStatuses({ github: "idle", linkedin: "idle", reddit: "idle", internet: "idle" });
@@ -101,18 +123,22 @@ export default function Dashboard() {
       body: JSON.stringify({ query: q }),
     });
 
+    if (searchIdRef.current !== thisSearch) return;
+
     if (!res.ok) {
       // OpenClaw not available — demo fallback
       setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
 
       (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
         setTimeout(() => {
+          if (searchIdRef.current !== thisSearch) return;
           setAgentStatuses((prev) => ({ ...prev, [src]: "done" }));
         }, 2000 + i * 1500);
       });
 
       demoCleanupRef.current?.();
       demoCleanupRef.current = streamDemoProfiles((p) => {
+        if (searchIdRef.current !== thisSearch) return;
         setProfiles((prev) => {
           if (prev.some((x) => x.key === p.key)) return prev;
           return [...prev, p];
@@ -121,7 +147,7 @@ export default function Dashboard() {
       }, 1400);
     }
 
-    setTimeout(() => setIsStreaming(false), 30_000);
+    streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
   }, [connectSSE]);
 
   // ─── Profile Q&A ──────────────────────────────────────────
@@ -175,6 +201,7 @@ export default function Dashboard() {
   const handleNewSearch = useCallback(() => {
     esRef.current?.close();
     demoCleanupRef.current?.();
+    if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
     setView("search");
     setProfiles([]);
     setQuery("");

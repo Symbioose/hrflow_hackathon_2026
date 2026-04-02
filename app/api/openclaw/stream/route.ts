@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const cursor = parseInt(url.searchParams.get("cursor") ?? "0", 10);
+  const raw = parseInt(url.searchParams.get("cursor") ?? "0", 10);
+  const cursor = Number.isFinite(raw) && raw >= 0 ? raw : 0;
 
   const encoder = new TextEncoder();
 
