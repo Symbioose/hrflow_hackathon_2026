@@ -248,6 +248,12 @@ body {
   50% { transform: translateY(-3px); }
 }
 
+/* Pixel agent run across screen */
+@keyframes agent-run {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--run-distance, 200px)); }
+}
+
 /* Score ring fill */
 @keyframes ring-fill {
   from { stroke-dashoffset: var(--ring-total); }

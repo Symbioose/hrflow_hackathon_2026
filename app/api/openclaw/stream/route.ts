@@ -29,6 +29,7 @@ export async function GET(req: Request) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
         } catch {
           unsubscribe();
+          try { controller.close(); } catch { /* already closed */ }
         }
       });
 
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
         } catch {
           clearInterval(heartbeat);
           unsubscribe();
+          try { controller.close(); } catch { /* already closed */ }
         }
       }, 15_000);
 
