@@ -36,20 +36,19 @@ export default function ProfileDetailView({
     .toUpperCase();
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--cream)" }}>
-      {/* Back button */}
-      <div className="px-6 pt-5 pb-3">
+    <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
+      {/* Navigation buttons */}
+      <div className="px-6 pt-5 pb-3 flex gap-3">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wider transition-all duration-100 active:translate-x-0.5 active:translate-y-0.5 px-4 py-2"
+          className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
           style={{
             color: "var(--ink)",
-            border: "2px solid var(--ink)",
-            boxShadow: "3px 3px 0 0 rgba(26,26,46,0.15)",
-            background: "transparent",
+            background: "#f3f4f6",
+            border: "1px solid #e5e7eb",
           }}
         >
-          ← Retour aux résultats
+          ← Retour
         </button>
       </div>
 
@@ -106,8 +105,8 @@ export default function ProfileDetailView({
         <div className="lg:col-span-3 space-y-6">
           {/* Summary */}
           <section
-            className="p-6 rounded-2xl"
-            style={{ background: "var(--cream-mid)", border: "1.5px solid rgba(26,26,46,0.08)" }}
+            className="p-6 rounded-lg"
+            style={{ background: "#FFFFFF", border: "1px solid #e5e7eb" }}
           >
             <h2
               className="text-lg font-bold mb-3"
@@ -122,8 +121,8 @@ export default function ProfileDetailView({
 
           {/* Skills */}
           <section
-            className="p-6 rounded-2xl"
-            style={{ background: "var(--cream-mid)", border: "1.5px solid rgba(26,26,46,0.08)" }}
+            className="p-6 rounded-lg"
+            style={{ background: "#FFFFFF", border: "1px solid #e5e7eb" }}
           >
             <h2
               className="text-lg font-bold mb-3"
@@ -135,8 +134,8 @@ export default function ProfileDetailView({
               {profile.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="px-3 py-1.5 rounded-lg text-sm font-mono"
-                  style={{ background: "rgba(26,26,46,0.07)", color: "var(--ink)" }}
+                  className="px-3 py-1.5 rounded text-sm font-mono"
+                  style={{ background: "#f3f4f6", color: "#4b5563" }}
                 >
                   {skill}
                 </span>

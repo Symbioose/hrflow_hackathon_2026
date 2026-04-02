@@ -55,21 +55,21 @@ export default function CandidateCard({ profile, index, onSelect }: CandidateCar
       onClick={() => onSelect(profile)}
     >
       <div
-        className="flex flex-col gap-4 p-5 rounded-2xl transition-all duration-200"
+        className="flex flex-col gap-4 p-5 rounded-lg transition-all duration-200"
         style={{
-          background: "var(--cream-mid)",
-          border: "1.5px solid rgba(26,26,46,0.08)",
-          boxShadow: "3px 3px 0 0 rgba(26,26,46,0.06)",
+          background: "#FFFFFF",
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 1px 3px rgba(26,26,46,0.08)",
         }}
         onMouseEnter={(e) => {
           const el = e.currentTarget as HTMLDivElement;
-          el.style.boxShadow = "4px 4px 0 0 var(--coral)";
+          el.style.boxShadow = "0 4px 12px rgba(26,26,46,0.12)";
           el.style.borderColor = "var(--coral)";
         }}
         onMouseLeave={(e) => {
           const el = e.currentTarget as HTMLDivElement;
-          el.style.boxShadow = "3px 3px 0 0 rgba(26,26,46,0.06)";
-          el.style.borderColor = "rgba(26,26,46,0.08)";
+          el.style.boxShadow = "0 1px 3px rgba(26,26,46,0.08)";
+          el.style.borderColor = "#e5e7eb";
         }}
       >
         {/* Top row: avatar + info + score ring */}
@@ -92,7 +92,7 @@ export default function CandidateCard({ profile, index, onSelect }: CandidateCar
         </div>
 
         {/* Source badges */}
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           {profile.sources.map((s) => (
             <a
               key={s.url}
@@ -100,11 +100,11 @@ export default function CandidateCard({ profile, index, onSelect }: CandidateCar
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono font-medium transition-opacity hover:opacity-70"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium transition-all hover:bg-gray-100"
               style={{
-                background: `${SOURCE_COLORS[s.type]}18`,
-                color: SOURCE_COLORS[s.type],
-                border: `1px solid ${SOURCE_COLORS[s.type]}30`,
+                background: "#f3f4f6",
+                color: "#4b5563",
+                border: "1px solid #e5e7eb",
               }}
             >
               {SOURCE_ICONS[s.type]} {s.label}
@@ -117,16 +117,16 @@ export default function CandidateCard({ profile, index, onSelect }: CandidateCar
           {profile.skills.slice(0, MAX_SKILLS).map((skill) => (
             <span
               key={skill}
-              className="px-2.5 py-1 rounded-lg text-xs font-mono"
-              style={{ background: "rgba(26,26,46,0.06)", color: "var(--ink)" }}
+              className="px-2.5 py-1 rounded text-[11px] font-mono"
+              style={{ background: "#f0f0f0", color: "#4b5563" }}
             >
               {skill}
             </span>
           ))}
           {extra > 0 && (
             <span
-              className="px-2.5 py-1 rounded-lg text-xs font-mono"
-              style={{ background: "var(--coral-glow)", color: "var(--coral)" }}
+              className="px-2.5 py-1 rounded text-[11px] font-mono"
+              style={{ background: "#f0f0f0", color: "var(--coral)" }}
             >
               +{extra}
             </span>
@@ -135,11 +135,12 @@ export default function CandidateCard({ profile, index, onSelect }: CandidateCar
 
         {/* CTA */}
         <button
-          className="w-full py-2.5 font-mono font-bold text-xs uppercase tracking-wider transition-all duration-100 active:translate-x-0.5 active:translate-y-0.5"
+          className="w-full py-2 font-mono font-bold text-xs uppercase tracking-wider transition-all duration-200 hover:bg-opacity-90"
           style={{
             background: "var(--coral)",
             color: "#fff",
-            boxShadow: "3px 3px 0 0 var(--coral-deep)",
+            border: "none",
+            borderRadius: "6px",
           }}
         >
           Voir le profil →

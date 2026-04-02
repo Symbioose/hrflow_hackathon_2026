@@ -36,27 +36,20 @@ export default function ResultsView({ profiles, query, isStreaming, onSelect, on
   const sorted = sortProfiles(profiles, sort);
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--cream)" }}>
+    <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
       {/* Sticky header */}
       <header
         className="sticky top-0 z-10 flex items-center justify-between px-6 py-4"
         style={{
-          background: "rgba(255,245,240,0.92)",
+          background: "rgba(255,255,255,0.95)",
           backdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(26,26,46,0.06)",
+          borderBottom: "1px solid #e5e7eb",
         }}
       >
         <div className="flex items-center gap-4">
-          <button
-            onClick={onNewSearch}
-            className="flex items-center gap-2 font-bold text-lg"
-            style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
-          >
-            🦞 Claw<span style={{ color: "var(--coral)" }}>4HR</span>
-          </button>
           <div
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-mono"
-            style={{ background: "#fff", border: "1px solid rgba(26,26,46,0.1)", color: "var(--ink)" }}
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-mono"
+            style={{ background: "#f3f4f6", border: "1px solid #e5e7eb", color: "var(--ink)" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--coral)" strokeWidth="2.5" strokeLinecap="round">
               <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
@@ -69,15 +62,22 @@ export default function ResultsView({ profiles, query, isStreaming, onSelect, on
           {isStreaming && (
             <div
               className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono"
-              style={{ background: "var(--coral-glow)", color: "var(--coral)" }}
+              style={{ background: "#fed7d7", color: "var(--coral)" }}
             >
               <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--coral)" }} />
               Recherche en cours...
             </div>
           )}
-          <span className="text-sm font-mono" style={{ color: "var(--muted-text)" }}>
+          <span className="text-sm font-mono" style={{ color: "#6b7280" }}>
             {profiles.length} profil{profiles.length > 1 ? "s" : ""}
           </span>
+          <button
+            onClick={onNewSearch}
+            className="px-4 py-2 rounded-md text-sm font-mono font-bold transition-all"
+            style={{ background: "var(--ink)", color: "#fff" }}
+          >
+            ← Nouvelle recherche
+          </button>
         </div>
       </header>
 
