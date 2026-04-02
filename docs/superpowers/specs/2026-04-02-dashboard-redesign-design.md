@@ -189,21 +189,38 @@ interface SourcedProfile {
   → OpenClaw lance les sub-agents (GitHub, LinkedIn, Reddit, Internet)
   → OpenClaw poste les profils trouvés via POST /api/openclaw/webhook
      {"channel": "profile", "payload": SourcedProfile}
-  → Dashboard reçoit les profils (polling /api/openclaw/events)
+  → Dashboard reçoit les profils via SSE /api/openclaw/stream (<200ms de délai)
   → Pour chaque profil : POST /api/hrflow/parse (si pas de hrflow_key)
   → GET /api/hrflow/score → hrflow_score mis à jour
-  → Card apparaît dans la grille avec score
+  → Card apparaît dans la grille avec score animé
 ```
 
-**Nouveaux channels webhook OpenClaw :**
+**Mécanisme temps réel — SSE (Server-Sent Events) :**
+
+Remplace le polling client toutes les 2s. Le dashboard ouvre une connexion SSE persistante dès le lancement de la recherche.
+
+```
+OpenClaw → POST /api/openclaw/webhook → eventStore (in-memory)
+Dashboard → EventSource('/api/openclaw/stream')
+              ↓ route SSE vérifie eventStore toutes les 200ms
+              → push immédiat dès qu'un event/profil arrive
+```
+
+Route SSE (`app/api/openclaw/stream/route.ts`) :
+- Runtime : Node.js avec `ReadableStream` (compatible Vercel)
+- Headers : `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `Connection: keep-alive`
+- Nettoyage : `controller.close()` sur déconnexion client
+- Fallback : si SSE non supporté (rare), retour au polling 1s
+
+**Channels webhook OpenClaw :**
 ```json
-// Profil trouvé (nouveau)
+// Profil trouvé (nouveau channel)
 {"channel": "profile", "payload": {SourcedProfile}}
 
-// Statut agent (existant, enrichi)
-{"channel": "feed", "payload": {"action": "GitHub scan", "source": "github", "status": "running"}}
+// Statut agent (existant, enrichi avec "source")
+{"channel": "feed", "payload": {"action": "GitHub scan", "source": "github", "status": "running|done|error"}}
 
-// Batch de profils (optimisation)
+// Batch de profils (optimisation réseau)
 {"profiles": [SourcedProfile, ...]}
 ```
 
@@ -243,8 +260,9 @@ interface SourcedProfile {
 | Endpoint | Méthode | Description |
 |---|---|---|
 | `/api/openclaw/trigger` | POST | Envoie la query à OpenClaw pour lancer la recherche |
+| `/api/openclaw/stream` | GET (SSE) | Stream temps réel des events et profils vers le client |
 
-L'endpoint webhook + events existants (`/api/openclaw/webhook`, `/api/openclaw/events`) restent inchangés, enrichis avec le channel `"profile"`.
+L'endpoint webhook existant (`/api/openclaw/webhook`) reste inchangé, enrichi avec le channel `"profile"`. L'endpoint `/api/openclaw/events` (polling) est conservé comme fallback uniquement.
 
 ---
 
