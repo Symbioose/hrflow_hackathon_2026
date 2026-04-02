@@ -28,6 +28,78 @@ const SUCCESS = "#10b981"
 const serif = "var(--font-display), 'Georgia', serif"
 
 /* ═══════════════════════════════════════════
+   SVG Icons
+   ═══════════════════════════════════════════ */
+
+function IconGitHub({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+    </svg>
+  )
+}
+
+function IconLinkedIn({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  )
+}
+
+function IconIndeed({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M11.566 21.882v-8.203c0-1.403.32-2.479 1.136-3.478C14.135 8.47 16.288 7.82 18.479 8.12c.197.025.37.074.543.111V3.476A11.998 11.998 0 0012 0C5.373 0 0 5.373 0 12s5.373 12 12 12c2.291 0 4.432-.646 6.252-1.762v-5.478c-1.835 2.27-4.536 3.613-7.458 3.368-.668-.067-.98-.273-1.043-.535-.043-.17.024-.482.166-.711h1.649z" />
+    </svg>
+  )
+}
+
+function IconHrFlow({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  )
+}
+
+function IconOpenClaw({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+      <path d="M2 17l10 5 10-5" />
+      <path d="M2 12l10 5 10-5" />
+    </svg>
+  )
+}
+
+function IconOllama({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a4 4 0 014 4v1a4 4 0 01-8 0V6a4 4 0 014-4z" />
+      <path d="M6 10v3a6 6 0 0012 0v-3" />
+      <path d="M8 22v-3" />
+      <path d="M16 22v-3" />
+      <circle cx="9" cy="9" r="0.5" fill={color} />
+      <circle cx="15" cy="9" r="0.5" fill={color} />
+    </svg>
+  )
+}
+
+const ICONS: Record<string, (props: { size?: number; color?: string }) => ReactNode> = {
+  GitHub: IconGitHub,
+  LinkedIn: IconLinkedIn,
+  Indeed: IconIndeed,
+  HrFlow: IconHrFlow,
+  "HrFlow.ai": IconHrFlow,
+  OpenClaw: IconOpenClaw,
+  Ollama: IconOllama,
+}
+
+/* ═══════════════════════════════════════════
    Animated Counter
    ═══════════════════════════════════════════ */
 
@@ -550,17 +622,21 @@ function ProblemSection() {
 
 function SourcesVisual() {
   const sources = [
-    { name: "GitHub", letter: "GH", sub: "Developer repos & activity", bg: "#24292e", count: "2.4k profiles" },
-    { name: "LinkedIn", letter: "in", sub: "Professional profiles", bg: "#0A66C2", count: "5.1k profiles" },
-    { name: "Indeed", letter: "IN", sub: "Job applications", bg: "#2164F3", count: "1.8k profiles" },
-    { name: "HrFlow", letter: "H", sub: "Indexed CVs", bg: CORAL, count: "10k+ profiles" },
+    { name: "GitHub", sub: "Developer repos & activity", bg: "#24292e", count: "2.4k profiles" },
+    { name: "LinkedIn", sub: "Professional profiles", bg: "#0A66C2", count: "5.1k profiles" },
+    { name: "Indeed", sub: "Job applications", bg: "#2164F3", count: "1.8k profiles" },
+    { name: "HrFlow", sub: "Indexed CVs", bg: CORAL, count: "10k+ profiles" },
   ]
   return (
     <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
       {/* Header bar */}
       <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
+          <div className="w-8 h-8 flex items-center justify-center" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+            </svg>
+          </div>
           <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Multi-source aggregation</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -570,25 +646,38 @@ function SourcesVisual() {
       </div>
       {/* Sources grid */}
       <div className="p-6 grid grid-cols-2 gap-4">
-        {sources.map((s) => (
-          <div key={s.name} className="p-5 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-11 h-11 flex items-center justify-center text-white font-mono font-bold text-sm" style={{ backgroundColor: s.bg, borderRadius: "10px" }}>{s.letter}</div>
-              <span className="text-[10px] font-mono" style={{ color: MUTED }}>{s.count}</span>
+        {sources.map((s) => {
+          const Icon = ICONS[s.name]
+          return (
+            <div key={s.name} className="p-5 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-11 h-11 flex items-center justify-center" style={{ backgroundColor: s.bg, borderRadius: "10px" }}>
+                  {Icon ? <Icon size={20} color="white" /> : null}
+                </div>
+                <span className="text-[10px] font-mono" style={{ color: MUTED }}>{s.count}</span>
+              </div>
+              <p className="font-semibold text-sm" style={{ color: INK }}>{s.name}</p>
+              <p className="text-xs mt-0.5" style={{ color: MUTED }}>{s.sub}</p>
             </div>
-            <p className="font-semibold text-sm" style={{ color: INK }}>{s.name}</p>
-            <p className="text-xs mt-0.5" style={{ color: MUTED }}>{s.sub}</p>
-          </div>
-        ))}
+          )
+        })}
       </div>
       {/* Bottom: converging indicator */}
       <div className="px-8 py-4 flex items-center gap-3" style={{ backgroundColor: `${CORAL}06`, borderTop: `1px solid ${INK}06` }}>
         <div className="flex -space-x-2">
-          {["#24292e", "#0A66C2", "#2164F3", CORAL].map((c, i) => (
-            <div key={i} className="w-6 h-6 flex items-center justify-center text-white text-[8px] font-bold border-2 border-white" style={{ backgroundColor: c, borderRadius: "50%" }}>
-              {["GH", "in", "IN", "H"][i]}
-            </div>
-          ))}
+          {[
+            { bg: "#24292e", name: "GitHub" },
+            { bg: "#0A66C2", name: "LinkedIn" },
+            { bg: "#2164F3", name: "Indeed" },
+            { bg: CORAL, name: "HrFlow" },
+          ].map((item, i) => {
+            const Icon = ICONS[item.name]
+            return (
+              <div key={i} className="w-7 h-7 flex items-center justify-center border-2 border-white" style={{ backgroundColor: item.bg, borderRadius: "50%" }}>
+                {Icon ? <Icon size={12} color="white" /> : null}
+              </div>
+            )
+          })}
         </div>
         <span className="text-xs" style={{ color: MUTED }}>All sources merge into a single, ranked pipeline</span>
       </div>
@@ -1025,12 +1114,12 @@ function TestimonialsSection() {
 
 function StackSection() {
   const items = [
-    { name: "HrFlow.ai", desc: "CV parsing, indexing & AI scoring engine", letter: "H", bg: CORAL },
-    { name: "OpenClaw", desc: "Multi-agent orchestration & Telegram bot", letter: "O", bg: "#7C3AED" },
-    { name: "GitHub", desc: "Developer activity & repository analysis", letter: "GH", bg: "#24292e" },
-    { name: "LinkedIn", desc: "Professional profile enrichment", letter: "in", bg: "#0A66C2" },
-    { name: "Indeed", desc: "Job board scraping & candidate discovery", letter: "IN", bg: "#2164F3" },
-    { name: "Ollama", desc: "Local LLM inference \u2014 Qwen3 14B", letter: "Q", bg: "#10b981" },
+    { name: "HrFlow.ai", desc: "CV parsing, indexing & AI scoring engine", bg: CORAL },
+    { name: "OpenClaw", desc: "Multi-agent orchestration & Telegram bot", bg: "#7C3AED" },
+    { name: "GitHub", desc: "Developer activity & repository analysis", bg: "#24292e" },
+    { name: "LinkedIn", desc: "Professional profile enrichment", bg: "#0A66C2" },
+    { name: "Indeed", desc: "Job board scraping & candidate discovery", bg: "#2164F3" },
+    { name: "Ollama", desc: "Local LLM inference \u2014 Qwen3 14B", bg: "#10b981" },
   ]
 
   return (
@@ -1052,7 +1141,9 @@ function StackSection() {
           {items.map((x, i) => (
             <Reveal key={x.name} delay={i * 60}>
               <div className="p-7 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: CREAM, borderRadius: "14px", border: `1px solid ${INK}06` }}>
-                <div className="w-13 h-13 flex items-center justify-center text-white font-mono font-bold text-sm mb-5" style={{ backgroundColor: x.bg, borderRadius: "12px", width: 52, height: 52 }}>{x.letter}</div>
+                <div className="flex items-center justify-center mb-5" style={{ backgroundColor: x.bg, borderRadius: "12px", width: 52, height: 52 }}>
+                  {ICONS[x.name] ? ICONS[x.name]({ size: 24, color: "white" }) : <span className="text-white font-mono font-bold text-sm">{x.name[0]}</span>}
+                </div>
                 <p className="font-semibold text-lg" style={{ color: INK }}>{x.name}</p>
                 <p className="text-sm mt-1.5 leading-relaxed" style={{ color: MUTED }}>{x.desc}</p>
               </div>
