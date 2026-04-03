@@ -117,6 +117,9 @@ export default function Dashboard() {
 
     connectSSE(0);
 
+    // Agents start running immediately — optimistic UI
+    setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
+
     const res = await fetch("/api/openclaw/trigger", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -126,9 +129,7 @@ export default function Dashboard() {
     if (searchIdRef.current !== thisSearch) return;
 
     if (!res.ok) {
-      // OpenClaw not available — demo fallback
-      setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
-
+      // OpenClaw not available — demo fallback with timed agent completion
       (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
         setTimeout(() => {
           if (searchIdRef.current !== thisSearch) return;
@@ -226,6 +227,7 @@ export default function Dashboard() {
         profiles={profiles}
         query={query}
         isStreaming={isStreaming}
+        agentStatuses={agentStatuses}
         onSelect={handleSelectProfile}
         onNewSearch={handleNewSearch}
       />
