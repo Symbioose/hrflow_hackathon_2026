@@ -591,9 +591,9 @@ const features = [
   },
   {
     num: "03",
-    tag: "JIT Pipeline",
-    title: "Temps réel.\nPas les données d'hier.",
-    desc: "X-Ray découvre. Enrich révèle le contexte. Index structure les données. Score classe les candidats. Chaque étape en temps réel.",
+    tag: "Pipeline JIT",
+    title: "Quatre étapes.\nZéro travail manuel.",
+    desc: "De la découverte au contact — X-Ray, Enrich, Index, Score. Chaque étape s'exécute en temps réel dès qu'un talent est détecté.",
     visual: <PipelineFlowVisual />,
     bg: CREAM,
   },
