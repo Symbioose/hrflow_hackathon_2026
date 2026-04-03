@@ -859,7 +859,7 @@ function Footer() {
             <div>
               <p className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: INK }}>Produit</p>
               <div className="space-y-2">
-                {[{label: "Fonctionnalités", href: "features"}, {label: "Pipeline", href: "pipeline"}, {label: "Démo", href: "demo"}, {label: "Stack", href: "stack"}].map(link => (
+                {[{label: "Fonctionnalités", href: "features"}, {label: "Démo", href: "demo"}, {label: "Stack", href: "stack"}].map(link => (
                   <a key={link.href} href={`#${link.href}`} className="block text-sm transition-colors hover:text-[#1a1a2e]" style={{ color: MUTED }}>{link.label}</a>
                 ))}
               </div>
