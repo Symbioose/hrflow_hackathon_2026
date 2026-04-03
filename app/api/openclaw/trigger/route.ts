@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
       headers["Authorization"] = `Bearer ${OPENCLAW_GATEWAY_TOKEN}`;
     }
 
-    const res = await fetch(`${OPENCLAW_GATEWAY_URL}/webhook`, {
+    const res = await fetch(`${OPENCLAW_GATEWAY_URL}/api/v1/messages/send`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ channel: "webchat", target: "main", message: query }),
       signal: AbortSignal.timeout(5000),
     });
 
