@@ -321,22 +321,15 @@ function Hero() {
 
           {/* CTAs */}
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
-            <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
+            <PixelBtn href="#demo" variant="coral" size="lg">Demander une démo &rarr;</PixelBtn>
             <PixelBtn href="#demo" variant="outline" size="lg">Voir la Démo</PixelBtn>
           </div>
 
-          {/* Social proof */}
-          <div className="mt-14 flex items-center justify-center gap-8 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.9s", animationFillMode: "both" }}>
-            <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${MUTED}90` }}>Propulsé par</span>
-            {["HrFlow.ai", "OpenClaw", "Ollama"].map((name) => (
-              <span key={name} className="font-mono font-bold text-sm tracking-tight" style={{ color: `${INK}60` }}>{name}</span>
-            ))}
-          </div>
         </div>
 
-        {/* Product Screenshot — large, immersive */}
-        <div className="mt-20 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
-          <div className="relative overflow-hidden" style={{ borderRadius: "12px", backgroundColor: NAVY, boxShadow: `0 50px 100px -30px ${INK}40, 0 0 0 1px ${WHITE}10` }}>
+        {/* Product visual — single candidate card */}
+        <div className="mt-20 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
+          <div className="relative overflow-hidden" style={{ borderRadius: "16px", backgroundColor: NAVY, boxShadow: `0 40px 80px -20px ${INK}40, 0 0 0 1px ${WHITE}10` }}>
             {/* Browser chrome */}
             <div className="flex items-center gap-2 px-5 py-3.5" style={{ backgroundColor: NAVY, borderBottom: `1px solid ${WHITE}08` }}>
               <div className="flex gap-2">
@@ -348,106 +341,44 @@ function Hero() {
                 app.claw4hr.ai/dashboard
               </div>
             </div>
-            {/* Dashboard mockup */}
-            <div className="aspect-[16/9] relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${NAVY}, #111827)` }}>
-              <div className="w-full h-full p-6 grid grid-cols-[240px_1fr_300px] gap-4" style={{ opacity: 0.95 }}>
-                {/* Sidebar */}
-                <div className="flex flex-col gap-3">
-                  <div className="h-10 flex items-center px-4 font-mono text-sm font-bold" style={{ color: CORAL }}>Claw4HR</div>
-                  <div className="h-9 flex items-center px-3 gap-2" style={{ backgroundColor: `${CORAL}12`, borderRadius: "8px" }}>
-                    <div className="w-4 h-4 rounded" style={{ backgroundColor: `${CORAL}40` }} />
-                    <div className="h-2 w-16" style={{ backgroundColor: `${CORAL}50`, borderRadius: "4px" }} />
-                  </div>
-                  {[1, 2, 3].map(n => (
-                    <div key={n} className="h-9 flex items-center px-3 gap-2" style={{ borderRadius: "8px" }}>
-                      <div className="w-4 h-4 rounded" style={{ backgroundColor: `${WHITE}08` }} />
-                      <div className="h-2" style={{ width: `${50 + n * 10}px`, backgroundColor: `${WHITE}08`, borderRadius: "4px" }} />
+            {/* Candidate card */}
+            <div className="p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <Avatar name="Sophie Martin" size={52} bg={CORAL} />
+                <div className="flex-1">
+                  <div className="font-semibold text-lg" style={{ color: WHITE }}>Sophie Martin</div>
+                  <div className="text-sm" style={{ color: `${WHITE}50` }}>Ingénieure ML Senior &middot; Paris &middot; 7 ans</div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="h-1.5 flex-1 overflow-hidden" style={{ backgroundColor: `${WHITE}08`, borderRadius: "4px" }}>
+                      <div className="h-full" style={{ width: "94%", backgroundColor: CORAL, borderRadius: "4px" }} />
                     </div>
-                  ))}
-                  <div className="mt-auto p-3" style={{ backgroundColor: `${WHITE}04`, borderRadius: "8px" }}>
-                    <div className="flex items-center gap-2">
-                      <Avatar name="You" size={28} bg={`${WHITE}15`} />
-                      <div className="h-2 w-16" style={{ backgroundColor: `${WHITE}10`, borderRadius: "4px" }} />
-                    </div>
-                  </div>
-                </div>
-                {/* Center — candidates */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="h-3 w-40" style={{ backgroundColor: `${WHITE}15`, borderRadius: "4px" }} />
-                    <div className="h-8 px-4 flex items-center font-mono text-xs" style={{ backgroundColor: CORAL, color: WHITE, borderRadius: "6px" }}>
-                      + Nouvelle Recherche
-                    </div>
-                  </div>
-                  {[
-                    { name: "Sophie Martin", role: "Ingénieure ML, 7 ans", score: 94 },
-                    { name: "Lucas Moreau", role: "Data Scientist, 5 ans", score: 89 },
-                    { name: "Camille Petit", role: "Dev Python, 6 ans", score: 85 },
-                    { name: "Hugo Lambert", role: "Chercheur IA, 4 ans", score: 81 },
-                  ].map((c, i) => (
-                    <div
-                      key={c.name}
-                      className="p-4 flex items-center gap-4 transition-all"
-                      style={{
-                        backgroundColor: i === 0 ? `${CORAL}08` : `${WHITE}04`,
-                        borderRadius: "10px",
-                        border: i === 0 ? `1px solid ${CORAL}20` : `1px solid ${WHITE}06`,
-                      }}
-                    >
-                      <Avatar name={c.name} size={36} bg={i === 0 ? CORAL : `${WHITE}15`} />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold truncate" style={{ color: `${WHITE}80` }}>{c.name}</div>
-                        <div className="text-[10px] mt-0.5 truncate" style={{ color: `${WHITE}35` }}>{c.role}</div>
-                      </div>
-                      {/* Score badge */}
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden" style={{ backgroundColor: `${WHITE}08`, borderRadius: "4px" }}>
-                          <div className="h-full" style={{ width: `${c.score}%`, backgroundColor: c.score > 90 ? SUCCESS : CORAL, borderRadius: "4px" }} />
-                        </div>
-                        <span className="font-mono font-bold text-xs" style={{ color: c.score > 90 ? SUCCESS : CORAL }}>{c.score}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {/* Right — detail panel */}
-                <div className="flex flex-col gap-3 p-4" style={{ backgroundColor: `${WHITE}04`, borderRadius: "10px" }}>
-                  <div className="flex items-center gap-3 pb-3" style={{ borderBottom: `1px solid ${WHITE}06` }}>
-                    <Avatar name="Sophie Martin" size={44} bg={CORAL} />
-                    <div>
-                      <div className="text-sm font-semibold" style={{ color: `${WHITE}85` }}>Sophie Martin</div>
-                      <div className="text-[10px]" style={{ color: `${WHITE}35` }}>ML Engineer &middot; Paris</div>
-                    </div>
-                  </div>
-                  {/* SWOT mini */}
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    {[
-                      { l: "S", c: SUCCESS, items: ["Python 8 ans", "Expert ML"] },
-                      { l: "W", c: CORAL, items: ["Pas de React"] },
-                      { l: "O", c: "#3b82f6", items: ["Ouvert au CDI"] },
-                      { l: "T", c: "#f59e0b", items: ["Forte demande"] },
-                    ].map(s => (
-                      <div key={s.l} className="p-2.5" style={{ backgroundColor: `${WHITE}04`, borderRadius: "8px" }}>
-                        <span className="text-[10px] font-mono font-bold" style={{ color: s.c }}>{s.l}</span>
-                        {s.items.map(item => (
-                          <div key={item} className="text-[9px] mt-1" style={{ color: `${WHITE}30` }}>{item}</div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-auto flex gap-2">
-                    <div className="h-9 flex-1 flex items-center justify-center font-mono text-xs font-bold" style={{ backgroundColor: CORAL, color: WHITE, borderRadius: "6px" }}>
-                      Contact
-                    </div>
-                    <div className="h-9 flex-1 flex items-center justify-center font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}40`, borderRadius: "6px" }}>
-                      Sauver
-                    </div>
+                    <span className="font-mono font-bold text-xl" style={{ color: CORAL }}>94%</span>
                   </div>
                 </div>
               </div>
+              {/* SWOT grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Forces", color: SUCCESS, items: ["Expert Python — 8 ans", "ML / Deep Learning"] },
+                  { label: "Faiblesses", color: CORAL, items: ["Pas d'exp. frontend"] },
+                  { label: "Opportunités", color: "#3b82f6", items: ["Ouvert au CDI", "Paris"] },
+                  { label: "Menaces", color: "#f59e0b", items: ["Forte demande marché"] },
+                ].map(s => (
+                  <div key={s.label} className="p-3" style={{ backgroundColor: `${WHITE}04`, borderRadius: "10px", border: `1px solid ${WHITE}06` }}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="w-2 h-2" style={{ backgroundColor: s.color, borderRadius: "50%" }} />
+                      <span className="text-[10px] font-mono uppercase tracking-wider font-bold" style={{ color: s.color }}>{s.label}</span>
+                    </div>
+                    {s.items.map(item => (
+                      <div key={item} className="text-xs leading-relaxed" style={{ color: `${WHITE}50` }}>{item}</div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          {/* Glow effect under screenshot */}
-          <div className="mx-auto w-3/4 h-16 -mt-4" style={{ background: `radial-gradient(ellipse at center, ${CORAL}15, transparent 70%)` }} />
+          {/* Glow */}
+          <div className="mx-auto w-3/4 h-12 -mt-3" style={{ background: `radial-gradient(ellipse at center, ${CORAL}15, transparent 70%)` }} />
         </div>
       </div>
     </section>
