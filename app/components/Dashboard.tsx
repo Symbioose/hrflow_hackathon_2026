@@ -226,6 +226,7 @@ export default function Dashboard() {
         profiles={profiles}
         query={query}
         isStreaming={isStreaming}
+        agentStatuses={agentStatuses}
         onSelect={handleSelectProfile}
         onNewSearch={handleNewSearch}
       />
