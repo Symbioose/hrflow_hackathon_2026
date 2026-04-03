@@ -258,12 +258,10 @@ function Nav() {
         >
           <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Fonctionnalités</a>
           <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">Démo</a>
-          <a href="#pipeline" className="hover:text-[#1a1a2e] transition-colors">Pipeline</a>
-          <a href="#stack" className="hover:text-[#1a1a2e] transition-colors">Stack</a>
         </div>
         <div className="flex items-center gap-3">
           <PixelBtn href="#demo" variant="outline" size="sm">Voir la Démo</PixelBtn>
-          <PixelBtn href="/" variant="coral" size="sm">Accès Dashboard &rarr;</PixelBtn>
+          <PixelBtn href="#demo" variant="coral" size="sm">Demander une démo &rarr;</PixelBtn>
         </div>
       </div>
     </nav>
