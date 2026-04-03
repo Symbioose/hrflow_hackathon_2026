@@ -258,6 +258,7 @@ function Nav() {
         >
           <a href="#features" className="hover:text-[#1a1a2e] transition-colors">Fonctionnalités</a>
           <a href="#demo" className="hover:text-[#1a1a2e] transition-colors">Démo</a>
+          <a href="/pricing" className="hover:text-[#1a1a2e] transition-colors">Tarifs</a>
         </div>
         <div className="flex items-center gap-3">
           <PixelBtn href="#demo" variant="outline" size="sm">Voir la Démo</PixelBtn>
