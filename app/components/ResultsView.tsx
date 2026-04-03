@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { SourcedProfile } from "@/app/lib/types";
+import { PixelSprite, SOURCE_CONFIG } from "./PixelAgent";
+import type { AgentSource, AgentState } from "./PixelAgent";
 import CandidateCard from "./CandidateCard";
 
 type SortMode = "score-desc" | "score-asc" | "high-only" | "arrival";
@@ -10,8 +12,64 @@ interface ResultsViewProps {
   profiles: SourcedProfile[];
   query: string;
   isStreaming: boolean;
+  agentStatuses: Record<AgentSource, AgentState>;
   onSelect: (profile: SourcedProfile) => void;
   onNewSearch: () => void;
+}
+
+/* ── Mini agent pill for the live strip ── */
+
+function MiniAgentPill({ source, state }: { source: AgentSource; state: AgentState }) {
+  const config = SOURCE_CONFIG[source];
+  const [walkFrame, setWalkFrame] = useState(0);
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    if (state !== "running") return;
+    const t = setInterval(() => setWalkFrame((f) => (f + 1) % 3), 180);
+    return () => clearInterval(t);
+  }, [state]);
+
+  useEffect(() => {
+    if (state !== "running") return;
+    const t = setInterval(() => setMsgIndex((i) => (i + 1) % config.messages.length), 1800);
+    return () => clearInterval(t);
+  }, [state, config.messages.length]);
+
+  const msg =
+    state === "done" ? "Terminé ✓"
+    : state === "error" ? "Erreur ✗"
+    : state === "idle" ? "En attente..."
+    : config.messages[msgIndex].replace("> ", "");
+
+  return (
+    <div
+      className="flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all duration-300"
+      style={{
+        background: state === "done" ? "#f0fdf4" : "#f9fafb",
+        border: `1px solid ${state === "done" ? "#86efac" : "#e5e7eb"}`,
+        opacity: state === "error" ? 0.4 : 1,
+      }}
+    >
+      <div style={{ opacity: state === "idle" ? 0.4 : 1 }}>
+        <PixelSprite color={config.color} frame={state === "running" ? walkFrame : 0} />
+      </div>
+      <div>
+        <p className="font-mono font-bold text-[10px] uppercase tracking-wider" style={{ color: config.color }}>
+          {config.label}
+        </p>
+        <p
+          className="font-mono text-[9px] truncate"
+          style={{
+            color: state === "done" ? "#16a34a" : "var(--muted-text)",
+            maxWidth: 72,
+          }}
+        >
+          {msg}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 /* ── Analytics helpers ── */
@@ -63,10 +121,16 @@ const SORT_OPTIONS: { mode: SortMode; label: string }[] = [
   { mode: "arrival",    label: "Ordre" },
 ];
 
-export default function ResultsView({ profiles, query, isStreaming, onSelect, onNewSearch }: ResultsViewProps) {
+export default function ResultsView({ profiles, query, isStreaming, agentStatuses, onSelect, onNewSearch }: ResultsViewProps) {
   const [sort, setSort] = useState<SortMode>("score-desc");
   const sorted = sortProfiles(profiles, sort);
   const { avgScore, topSkill, activeSources } = useAnalytics(profiles);
+
+  const agents = (["github", "linkedin", "reddit", "internet"] as AgentSource[]).map((s) => ({
+    source: s,
+    state: agentStatuses[s] ?? "idle",
+  }));
+  const allDone = agents.every((a) => a.state === "done" || a.state === "error");
 
   return (
     <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
@@ -113,6 +177,29 @@ export default function ResultsView({ profiles, query, isStreaming, onSelect, on
           </button>
         </div>
       </header>
+
+      {/* Live agent strip */}
+      <div
+        className="overflow-hidden transition-all duration-500"
+        style={{ maxHeight: isStreaming && !allDone ? 80 : 0, opacity: isStreaming && !allDone ? 1 : 0 }}
+      >
+        <div
+          className="mx-6 mt-3 flex items-center gap-3 px-4 py-2 rounded-lg"
+          style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}
+        >
+          <div className="flex items-center gap-1 mr-1">
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--coral)" }} />
+            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--muted-text)" }}>
+              Agents
+            </span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {agents.map(({ source, state }) => (
+              <MiniAgentPill key={source} source={source} state={state} />
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Sort controls */}
       <div className="flex gap-2 px-6 py-4">
