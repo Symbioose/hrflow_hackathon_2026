@@ -491,59 +491,6 @@ function MetricsBar() {
 }
 
 /* ═══════════════════════════════════════════
-   Problem — with visual contrast
-   ═══════════════════════════════════════════ */
-
-function ProblemSection() {
-  return (
-    <section className="py-28 md:py-36" style={{ backgroundColor: WHITE }}>
-      <div className="mx-auto max-w-6xl px-8">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          <Reveal>
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] mb-6" style={{ color: CORAL }}>Le Problème</p>
-              <h2 className="leading-[1.08] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2rem, 4vw, 3.2rem)", color: INK }}>
-                Vos meilleurs talents <span style={{ fontStyle: "italic", color: CORAL }}>n'ont jamais postulé.</span>
-              </h2>
-              <p className="mt-6 text-lg leading-relaxed" style={{ color: MUTED }}>
-                Les meilleurs candidats sont passifs — ils ne sont pas sur les job boards. Sourcer sur GitHub, LinkedIn et Indeed à la main prend des semaines. Quand vous les trouvez, ils sont déjà partis.
-              </p>
-              <div className="mt-8 w-16 h-1" style={{ backgroundColor: CORAL }} />
-            </div>
-          </Reveal>
-
-          <Reveal delay={200}>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { icon: "150+", title: "CVs par poste", desc: "Les recruteurs se noient dans le volume et passent à côté des meilleurs", accent: false },
-                { icon: "72%", title: "Talents passifs", desc: "La majorité des meilleurs candidats ne postulent jamais", accent: false },
-                { icon: "3 sem.", title: "Sourcing manuel", desc: "Temps perdu à chercher sur plusieurs plateformes", accent: false },
-                { icon: "< 5s", title: "Avec Claw4HR", desc: "Le sourcing IA livre des résultats classés instantanément", accent: true },
-              ].map((card) => (
-                <div
-                  key={card.title}
-                  className="p-6 transition-all duration-200 hover:-translate-y-1"
-                  style={{
-                    backgroundColor: card.accent ? `${CORAL}06` : CREAM,
-                    border: card.accent ? `2px solid ${CORAL}20` : `1px solid ${INK}06`,
-                    boxShadow: card.accent ? `4px 4px 0 0 ${CORAL}15` : `4px 4px 0 0 ${INK}06`,
-                    borderRadius: "12px",
-                  }}
-                >
-                  <div className="font-mono font-bold text-2xl mb-3" style={{ color: card.accent ? CORAL : INK }}>{card.icon}</div>
-                  <p className="font-semibold text-sm mb-1" style={{ color: INK }}>{card.title}</p>
-                  <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{card.desc}</p>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
    Feature Visuals — BIGGER, richer
    ═══════════════════════════════════════════ */
 
@@ -692,66 +639,6 @@ function PipelineFlowVisual() {
   )
 }
 
-function ChatVisual() {
-  return (
-    <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
-      {/* Chat header */}
-      <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
-          <div>
-            <span className="font-semibold text-sm" style={{ color: INK }}>Claw4HR Assistant</span>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
-              <span className="text-[10px]" style={{ color: SUCCESS }}>En ligne</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Messages */}
-      <div className="p-6 space-y-5">
-        {/* User */}
-        <div className="flex items-start gap-3">
-          <Avatar name="HR Manager" size={36} bg={INK} />
-          <div className="flex-1">
-            <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>You</div>
-            <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
-              Trouvez-moi des développeurs Python senior à Paris, disponibles en CDI, avec de l'expérience en machine learning.
-            </div>
-          </div>
-        </div>
-        {/* AI */}
-        <div className="flex items-start gap-3">
-          <Avatar name="AI" size={36} bg={CORAL} />
-          <div className="flex-1">
-            <div className="text-[10px] font-mono mb-1" style={{ color: MUTED }}>Claw4HR</div>
-            <div className="px-5 py-3.5 text-sm leading-relaxed" style={{ backgroundColor: WHITE, color: INK, borderRadius: "0 12px 12px 12px" }}>
-              Trouvé <strong>12 candidats</strong> sur 3 sources en 4.2s.
-              <div className="mt-3 flex items-center gap-3 p-3" style={{ backgroundColor: CREAM, borderRadius: "8px" }}>
-                <Avatar name="Sophie Martin" size={32} bg={CORAL} />
-                <div className="flex-1">
-                  <div className="text-xs font-semibold" style={{ color: INK }}>Sophie Martin</div>
-                  <div className="text-[10px]" style={{ color: MUTED }}>Ingénieure ML, 7 ans Python, Paris</div>
-                </div>
-                <span className="font-mono font-bold text-sm" style={{ color: CORAL }}>94%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Typing */}
-        <div className="flex items-center gap-3 pl-12">
-          <div className="px-4 py-2.5 flex items-center gap-2" style={{ backgroundColor: WHITE, borderRadius: "12px" }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} className="w-2 h-2 animate-pulse" style={{ backgroundColor: `${CORAL}50`, animationDelay: `${i * 200}ms`, borderRadius: "50%" }} />
-            ))}
-          </div>
-          <span className="text-xs font-mono" style={{ color: `${MUTED}80` }}>Génération de l'analyse SWOT...</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 /* ═══════════════════════════════════════════
    Features — Full-width visuals, stacked
    ═══════════════════════════════════════════ */
@@ -780,14 +667,6 @@ const features = [
     desc: "X-Ray découvre. Enrich révèle le contexte. Index structure les données. Score classe les candidats. Chaque étape en temps réel.",
     visual: <PipelineFlowVisual />,
     bg: CREAM,
-  },
-  {
-    num: "04",
-    tag: "Natural Language",
-    title: "Décrivez simplement\nqui vous cherchez.",
-    desc: "Tapez une description de poste ou demandez en langage naturel. L'agent comprend votre intention et livre des résultats classés.",
-    visual: <ChatVisual />,
-    bg: WHITE,
   },
 ]
 
@@ -896,128 +775,6 @@ function DemoSection() {
 }
 
 /* ═══════════════════════════════════════════
-   Pipeline — Coral accent section
-   ═══════════════════════════════════════════ */
-
-function PipelineSection() {
-  const steps = [
-    { letter: "X", name: "X-Ray", desc: "Découverte de talents passifs sur GitHub, LinkedIn, Indeed via l'orchestration OpenClaw." },
-    { letter: "E", name: "Enrich", desc: "Révélation du contexte professionnel complet via Proxycurl et l'analyse d'activité GitHub." },
-    { letter: "I", name: "Index", desc: "Analyse et structuration des CVs avec HrFlow.ai en base de connaissances exploitable." },
-    { letter: "S", name: "Score", desc: "Scoring IA 0–100% avec l'algorithme propriétaire de matching de HrFlow." },
-  ]
-
-  return (
-    <section id="pipeline" className="py-28 md:py-36 relative overflow-hidden" style={{ backgroundColor: CORAL }}>
-      <div className="absolute inset-0 opacity-15">
-        <DitheringShader shape="warp" type="8x8" colorBack="#FF6B6B" colorFront="#CC4444" width={1920} height={1080} pxSize={4} speed={0.2} style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }} />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl px-8">
-        <Reveal>
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5 text-white/50">Pipeline</p>
-            <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
-              Quatre étapes. <span style={{ fontStyle: "italic" }}>Zéro travail manuel.</span>
-            </h2>
-            <p className="mt-5 text-lg leading-relaxed text-white/70 max-w-xl mx-auto">
-              Notre pipeline Just-in-Time traite les candidats dès qu'ils sont découverts. Temps réel, toujours frais.
-            </p>
-          </div>
-        </Reveal>
-
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {steps.map((s, i) => (
-            <Reveal key={s.name} delay={i * 100}>
-              <div className="p-7 h-full transition-all duration-200 hover:-translate-y-2" style={{ backgroundColor: WHITE, borderRadius: "14px", boxShadow: `0 20px 40px -10px ${CORAL_DEEP}50` }}>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-12 h-12 flex items-center justify-center font-mono font-bold text-base text-white" style={{ backgroundColor: CORAL, borderRadius: "12px" }}>{s.letter}</div>
-                  <span className="text-xs font-mono" style={{ color: MUTED }}>&Eacute;tape 0{i + 1}</span>
-                </div>
-                <h3 className="font-bold text-xl mb-3" style={{ color: INK }}>{s.name}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{s.desc}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Testimonials — with avatars, human feel
-   ═══════════════════════════════════════════ */
-
-function TestimonialsSection() {
-  const testimonials = [
-    {
-      quote: "Nous avons réduit notre temps de présélection de 2 semaines à 30 minutes. L'analyse SWOT donne confiance à toute l'équipe.",
-      name: "Marie Dupont",
-      role: "Directrice Acquisition de Talents",
-      company: "Tech Corp",
-      bg: CORAL,
-    },
-    {
-      quote: "La recherche multi-sources est révolutionnaire. On trouve des développeurs sur GitHub qu'on n'aurait jamais découverts manuellement.",
-      name: "Thomas Bernard",
-      role: "Recruteur Senior",
-      company: "Scale Studio",
-      bg: "#3b82f6",
-    },
-    {
-      quote: "Enfin, un outil de sourcing qui explique POURQUOI un candidat correspond — pas juste qu'il a matché des mots-clés.",
-      name: "Camille Leroy",
-      role: "VP People",
-      company: "DataFlow Labs",
-      bg: "#7C3AED",
-    },
-  ]
-
-  return (
-    <section className="py-28 md:py-36" style={{ backgroundColor: CREAM }}>
-      <div className="mx-auto max-w-7xl px-8">
-        <Reveal>
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Ce que disent les recruteurs</p>
-            <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
-              Conçu pour ceux qui <span style={{ color: CORAL, fontStyle: "italic" }}>recrutent.</span>
-            </h2>
-          </div>
-        </Reveal>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
-            <Reveal key={t.name} delay={i * 120}>
-              <div className="p-8 h-full flex flex-col transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "16px", border: `1px solid ${INK}06`, boxShadow: `0 4px 24px -4px ${INK}08` }}>
-                {/* Stars */}
-                <div className="flex gap-1 mb-5">
-                  {[...Array(5)].map((_, j) => (
-                    <svg key={j} width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b">
-                      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-base leading-relaxed flex-1" style={{ color: INK }}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="mt-8 pt-6 flex items-center gap-3" style={{ borderTop: `1px solid ${INK}06` }}>
-                  <Avatar name={t.name} size={44} bg={t.bg} />
-                  <div>
-                    <p className="font-semibold text-sm" style={{ color: INK }}>{t.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: MUTED }}>{t.role} &middot; {t.company}</p>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
    Stack / Integrations
    ═══════════════════════════════════════════ */
 
@@ -1097,120 +854,6 @@ function CTASection() {
           </p>
         </Reveal>
       </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
-   Live Search Demo — Typing effect + results
-   ═══════════════════════════════════════════ */
-
-function LiveSearchDemo() {
-  const query = "Senior Python developer, Paris, ML experience, open to CDI"
-  const [typed, setTyped] = useState("")
-  const [showResults, setShowResults] = useState(false)
-  const [started, setStarted] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = ref.current; if (!el) return
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting && !started) { setStarted(true); obs.unobserve(el) } }, { threshold: 0.4 })
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [started])
-
-  useEffect(() => {
-    if (!started) return
-    let i = 0
-    const interval = setInterval(() => {
-      i++
-      setTyped(query.slice(0, i))
-      if (i >= query.length) {
-        clearInterval(interval)
-        setTimeout(() => setShowResults(true), 600)
-      }
-    }, 40)
-    return () => clearInterval(interval)
-  }, [started])
-
-  const candidates = [
-    { name: "Sophie Martin", role: "ML Engineer · 7 yrs · Paris", score: 94, tags: ["Python", "ML", "CDI"] },
-    { name: "Lucas Moreau", role: "Data Scientist · 5 yrs · Paris", score: 89, tags: ["Python", "Data", "CDI"] },
-    { name: "Camille Petit", role: "Python Dev · 6 yrs · Lyon", score: 85, tags: ["Python", "Backend"] },
-  ]
-
-  return (
-    <section className="py-24 md:py-32" style={{ backgroundColor: NAVY }}>
-      <div ref={ref} className="mx-auto max-w-4xl px-8">
-        <Reveal>
-          <div className="text-center mb-12">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-4" style={{ color: CORAL }}>Live Demo</p>
-            <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2rem, 4vw, 3rem)" }}>
-              See it <span style={{ color: CORAL, fontStyle: "italic" }}>work.</span>
-            </h2>
-          </div>
-        </Reveal>
-
-        {/* Search box with typing */}
-        <div style={{ backgroundColor: `${WHITE}06`, borderRadius: "16px", border: `1px solid ${WHITE}08`, overflow: "hidden" }}>
-          <div className="px-6 py-5 flex items-center gap-3" style={{ borderBottom: `1px solid ${WHITE}06` }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={CORAL} strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-            <span className="font-mono text-sm" style={{ color: WHITE }}>
-              {typed}<span className="animate-pulse" style={{ color: CORAL }}>|</span>
-            </span>
-          </div>
-
-          {/* Results */}
-          <div className="p-5 space-y-3" style={{ minHeight: 200 }}>
-            {showResults ? (
-              <>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-2 h-2" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
-                  <span className="font-mono text-xs" style={{ color: SUCCESS }}>Found 12 candidates in 4.2s</span>
-                </div>
-                {candidates.map((c, i) => (
-                  <div
-                    key={c.name}
-                    className="p-4 flex items-center gap-4 transition-all duration-500"
-                    style={{
-                      backgroundColor: `${WHITE}05`,
-                      borderRadius: "12px",
-                      border: i === 0 ? `1px solid ${CORAL}30` : `1px solid ${WHITE}06`,
-                      opacity: 1,
-                      animation: `fadeSlideIn 0.5s ease-out ${i * 150}ms both`,
-                    }}
-                  >
-                    <Avatar name={c.name} size={40} bg={i === 0 ? CORAL : `${WHITE}15`} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm" style={{ color: `${WHITE}85` }}>{c.name}</div>
-                      <div className="text-xs mt-0.5" style={{ color: `${WHITE}35` }}>{c.role}</div>
-                      <div className="flex gap-1.5 mt-2">
-                        {c.tags.map(t => (
-                          <span key={t} className="px-2 py-0.5 font-mono text-[9px] font-bold" style={{ backgroundColor: `${SUCCESS}15`, color: SUCCESS, borderRadius: "6px" }}>{t}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono font-bold text-lg" style={{ color: c.score > 90 ? SUCCESS : CORAL }}>{c.score}%</div>
-                      <div className="text-[9px] font-mono uppercase" style={{ color: `${WHITE}30` }}>match</div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            ) : started ? (
-              <div className="flex items-center justify-center h-40 gap-3">
-                <div className="w-5 h-5 border-2 border-t-transparent animate-spin" style={{ borderColor: `${CORAL} transparent ${CORAL}30 ${CORAL}30`, borderRadius: "50%" }} />
-                <span className="font-mono text-xs" style={{ color: `${WHITE}35` }}>Searching across 3 sources...</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-40">
-                <span className="font-mono text-xs" style={{ color: `${WHITE}20` }}>Type a search to see results...</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </section>
   )
 }
@@ -1337,12 +980,8 @@ export default function LandingPage() {
       <Nav />
       <Hero />
       <MetricsBar />
-      <ProblemSection />
       <FeaturesSection />
-      <LiveSearchDemo />
       <DemoSection />
-      <PipelineSection />
-      <TestimonialsSection />
       <StackSection />
       <FAQSection />
       <CTASection />
