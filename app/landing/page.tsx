@@ -671,6 +671,7 @@ function DemoSection() {
               </div>
             </div>
 
+            {/* TODO: remplacer par la vraie vidéo (tag <video> ou embed YouTube/Vimeo) */}
             {/* Play button */}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
               <div className="w-20 h-20 flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{ backgroundColor: CORAL, borderRadius: "50%", boxShadow: `0 0 0 16px ${CORAL}15, 0 0 0 32px ${CORAL}08` }}>
@@ -683,21 +684,7 @@ function DemoSection() {
           </div>
         </Reveal>
 
-        {/* Stats row */}
-        <Reveal delay={400}>
-          <div className="mt-14 grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
-            {[
-              { val: "4.2s", desc: "Temps moyen de requête" },
-              { val: "4 étapes", desc: "Pipeline automatisé" },
-              { val: "Zéro", desc: "Sourcing manuel" },
-            ].map(s => (
-              <div key={s.desc}>
-                <div className="font-mono font-bold text-xl" style={{ color: CORAL }}>{s.val}</div>
-                <div className="mt-1 text-xs font-mono uppercase tracking-wider" style={{ color: `${WHITE}35` }}>{s.desc}</div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+
       </div>
     </section>
   )
