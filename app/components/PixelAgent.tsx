@@ -58,7 +58,7 @@ const SOURCE_CONFIG: Record<AgentSource, { label: string; color: string; message
 };
 
 /** Pixel art character rendered as a grid of colored divs (4×7 grid, 4px pixels) */
-function PixelSprite({ color, frame }: { color: string; frame: number }) {
+export function PixelSprite({ color, frame }: { color: string; frame: number }) {
   // 0 = transparent, 1 = ink (#1a1a2e), 2 = accent (source color)
   const FRAME_A = [
     [0, 1, 1, 0],
@@ -118,6 +118,8 @@ function PixelSprite({ color, frame }: { color: string; frame: number }) {
     </div>
   );
 }
+
+export { SOURCE_CONFIG };
 
 export default function PixelAgent({ source, state }: PixelAgentProps) {
   const config = SOURCE_CONFIG[source];
