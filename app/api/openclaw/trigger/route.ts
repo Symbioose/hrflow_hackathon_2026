@@ -24,20 +24,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "OPENCLAW_GATEWAY_URL not set" }, { status: 503 });
     }
 
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "x-openclaw-scopes": "operator.write, operator.read",
+    };
     if (OPENCLAW_GATEWAY_TOKEN) {
       headers["Authorization"] = `Bearer ${OPENCLAW_GATEWAY_TOKEN}`;
     }
 
-    const res = await fetch(`${OPENCLAW_GATEWAY_URL}/api/v1/messages/send`, {
+    const res = await fetch(`${OPENCLAW_GATEWAY_URL}/v1/chat/completions`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ channel: "webchat", target: "main", message: query }),
+      body: JSON.stringify({
+        model: "openclaw/default",
+        messages: [{ role: "user", content: query }],
+      }),
       signal: AbortSignal.timeout(5000),
     });
 
     if (!res.ok) {
-      return NextResponse.json({ ok: false, error: `OpenClaw returned ${res.status}` }, { status: 502 });
+      const body = await res.text().catch(() => "(no body)");
+      console.error("[openclaw/trigger] error", res.status, body);
+      return NextResponse.json({ ok: false, error: `OpenClaw returned ${res.status}`, detail: body }, { status: 502 });
     }
 
     return NextResponse.json({ ok: true });
