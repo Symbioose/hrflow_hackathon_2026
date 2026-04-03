@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const OPENCLAW_WEBHOOK_URL = process.env.OPENCLAW_WEBHOOK_URL;
+const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL;
+const OPENCLAW_GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
 
 /**
  * POST /api/openclaw/trigger
@@ -9,7 +10,7 @@ const OPENCLAW_WEBHOOK_URL = process.env.OPENCLAW_WEBHOOK_URL;
  * Body: { "query": "Data Scientist Paris 5 ans" }
  * Response: { "ok": true } or { "ok": false, "error": "..." }
  *
- * Returns 503 if OPENCLAW_WEBHOOK_URL is not configured — dashboard
+ * Returns 503 if OPENCLAW_GATEWAY_URL is not configured — dashboard
  * will automatically fall back to demo profiles.
  */
 export async function POST(req: NextRequest) {
@@ -19,13 +20,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Missing query" }, { status: 400 });
     }
 
-    if (!OPENCLAW_WEBHOOK_URL) {
-      return NextResponse.json({ ok: false, error: "OPENCLAW_WEBHOOK_URL not set" }, { status: 503 });
+    if (!OPENCLAW_GATEWAY_URL) {
+      return NextResponse.json({ ok: false, error: "OPENCLAW_GATEWAY_URL not set" }, { status: 503 });
     }
 
-    const res = await fetch(OPENCLAW_WEBHOOK_URL, {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (OPENCLAW_GATEWAY_TOKEN) {
+      headers["Authorization"] = `Bearer ${OPENCLAW_GATEWAY_TOKEN}`;
+    }
+
+    const res = await fetch(`${OPENCLAW_GATEWAY_URL}/webhook`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ query }),
       signal: AbortSignal.timeout(5000),
     });
