@@ -708,12 +708,12 @@ function DemoSection() {
 
 function StackSection() {
   const items = [
-    { name: "HrFlow.ai", desc: "Parsing CV, indexation & moteur de scoring IA", letter: "H", bg: CORAL },
-    { name: "OpenClaw", desc: "Orchestration multi-agents & bot Telegram", letter: "O", bg: "#7C3AED" },
-    { name: "GitHub", desc: "Activité développeur & analyse de repos", letter: "GH", bg: "#24292e" },
-    { name: "LinkedIn", desc: "Enrichissement de profils professionnels", letter: "in", bg: "#0A66C2" },
-    { name: "Indeed", desc: "Scraping job boards & découverte de candidats", letter: "IN", bg: "#2164F3" },
-    { name: "Ollama", desc: "Inférence LLM locale — Qwen3 14B", letter: "Q", bg: "#10b981" },
+    { name: "HrFlow.ai", desc: "Parsing CV, indexation & moteur de scoring IA", bg: CORAL },
+    { name: "OpenClaw", desc: "Orchestration multi-agents & bot Telegram", bg: "#7C3AED" },
+    { name: "GitHub", desc: "Activité développeur & analyse de repos", bg: "#24292e", svgPath: GH_PATH, svgViewBox: "0 0 98 96" },
+    { name: "LinkedIn", desc: "Enrichissement de profils professionnels", bg: "#0A66C2", svgPath: LI_PATH, svgViewBox: "0 0 24 24" },
+    { name: "Indeed", desc: "Scraping job boards & découverte de candidats", bg: "#2164F3" },
+    { name: "Ollama", desc: "Inférence LLM locale — Qwen3 14B", bg: "#10b981" },
   ]
 
   return (
@@ -735,7 +735,9 @@ function StackSection() {
           {items.map((x, i) => (
             <Reveal key={x.name} delay={i * 60}>
               <div className="p-7 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: CREAM, borderRadius: "14px", border: `1px solid ${INK}06` }}>
-                <div className="w-13 h-13 flex items-center justify-center text-white font-mono font-bold text-sm mb-5" style={{ backgroundColor: x.bg, borderRadius: "12px", width: 52, height: 52 }}>{x.letter}</div>
+                <div className="mb-5">
+                  <BrandPill label={x.name} bg={x.bg} svgPath={(x as { svgPath?: string }).svgPath} svgViewBox={(x as { svgViewBox?: string }).svgViewBox} />
+                </div>
                 <p className="font-semibold text-lg" style={{ color: INK }}>{x.name}</p>
                 <p className="text-sm mt-1.5 leading-relaxed" style={{ color: MUTED }}>{x.desc}</p>
               </div>
