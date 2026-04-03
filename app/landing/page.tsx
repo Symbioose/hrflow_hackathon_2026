@@ -760,13 +760,13 @@ function CTASection() {
         </Reveal>
         <Reveal delay={300}>
           <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
-            <PixelBtn href="/" variant="coral" size="lg">Lancer le Dashboard &rarr;</PixelBtn>
-            <PixelBtn href="#demo" variant="white" size="lg">Voir la Démo</PixelBtn>
+            <PixelBtn href="#demo" variant="coral" size="lg">Demander une démo &rarr;</PixelBtn>
+            <PixelBtn href="mailto:contact@claw4hr.ai" variant="white" size="lg">Contacter l'équipe</PixelBtn>
           </div>
         </Reveal>
         <Reveal delay={400}>
           <p className="mt-8 font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}25` }}>
-            Gratuit à essayer &middot; Sans carte bancaire
+            Sur invitation &middot; Démo personnalisée disponible
           </p>
         </Reveal>
       </div>
