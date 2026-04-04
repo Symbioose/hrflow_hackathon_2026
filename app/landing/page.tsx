@@ -638,6 +638,105 @@ const features = [
   },
 ]
 
+/* ═══════════════════════════════════════════
+   Pain Block — Avant / Après
+   ═══════════════════════════════════════════ */
+
+function PainBlock() {
+  return (
+    <section className="py-28 md:py-36 relative overflow-hidden" style={{ backgroundColor: NAVY }}>
+      <div className="absolute inset-0 opacity-10">
+        <DitheringShader
+          shape="wave"
+          type="8x8"
+          colorBack="#0B1226"
+          colorFront="#FF6B6B"
+          width={1920}
+          height={1080}
+          pxSize={4}
+          speed={0.15}
+          style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+        />
+      </div>
+      <div className="relative z-10 mx-auto max-w-5xl px-8">
+        <Reveal>
+          <div className="text-center mb-14">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Le Problème</p>
+            <h2 className="leading-[1.05] tracking-[-0.02em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)" }}>
+              Le problème de tous les recruteurs.{" "}
+              <span style={{ fontStyle: "italic", color: CORAL }}>Enfin résolu.</span>
+            </h2>
+          </div>
+        </Reveal>
+
+        <Reveal delay={150}>
+          <div className="grid md:grid-cols-2 gap-0 overflow-hidden" style={{ borderRadius: "16px", border: `1px solid ${WHITE}10` }}>
+            {/* Colonne gauche — Sans Claw4HR */}
+            <div className="p-8" style={{ backgroundColor: "#f5f5f5" }}>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "#ef4444" }} />
+                <span className="font-mono text-xs uppercase tracking-wider font-bold" style={{ color: "#ef4444" }}>
+                  Sans Claw4HR
+                </span>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { icon: "📋", text: "300 CVs reçus" },
+                  { icon: "🔍", text: "Tri manuel — 2 jours" },
+                  { icon: "📞", text: "10 entretiens téléphoniques" },
+                  { icon: "😞", text: "3 profils pertinents" },
+                  { icon: "⏰", text: "Poste ouvert depuis 6 semaines" },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-center gap-3 text-sm" style={{ color: "#374151" }}>
+                    <span className="text-base">{item.icon}</span>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div
+                className="mt-6 inline-flex items-center gap-2 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider"
+                style={{ backgroundColor: "#ef444415", color: "#ef4444", borderRadius: "8px", border: "1px solid #ef444430" }}
+              >
+                Les meilleurs ? Jamais vus.
+              </div>
+            </div>
+
+            {/* Colonne droite — Avec Claw4HR */}
+            <div className="p-8" style={{ backgroundColor: "#0d1730", borderLeft: `1px solid ${WHITE}10` }}>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SUCCESS }} />
+                <span className="font-mono text-xs uppercase tracking-wider font-bold" style={{ color: SUCCESS }}>
+                  Avec Claw4HR
+                </span>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { icon: "🤖", text: "Recherche GitHub + LinkedIn + Indeed" },
+                  { icon: "⚡", text: "Résultats en moins de 5 secondes" },
+                  { icon: "📊", text: "Score + analyse SWOT par candidat" },
+                  { icon: "🎯", text: "12 profils pertinents classés" },
+                  { icon: "📅", text: "Contact sous 24h" },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-center gap-3 text-sm" style={{ color: `${WHITE}70` }}>
+                    <span className="text-base">{item.icon}</span>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div
+                className="mt-6 inline-flex items-center gap-2 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider"
+                style={{ backgroundColor: `${SUCCESS}15`, color: SUCCESS, borderRadius: "8px", border: `1px solid ${SUCCESS}30` }}
+              >
+                Talents passifs inclus.
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
 function FeaturesSection() {
   return (
     <section id="features">
