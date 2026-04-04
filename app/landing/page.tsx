@@ -324,21 +324,20 @@ function Hero() {
           {/* Headline */}
           <h1 className="animate-fade-in-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <span className="block leading-[0.92] tracking-[-0.03em]" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Arrêtez de chercher.
+              Les talents que vous cherchez
             </span>
             <span className="block leading-[0.92] tracking-[-0.03em] mt-2" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Commencez à <span style={{ color: CORAL, fontStyle: "italic" }}>trouver.</span>
+              ne <span style={{ color: CORAL, fontStyle: "italic" }}>postulent jamais.</span>
             </span>
           </h1>
 
           <p className="mt-8 text-xl leading-relaxed max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s", animationFillMode: "both", color: MUTED }}>
-            Un agent IA qui découvre, enrichit et évalue les meilleurs talents passifs sur GitHub, LinkedIn et Indeed — en temps réel.
+            Claw4HR trouve les meilleurs profils passifs sur GitHub, LinkedIn et Indeed — scorés, enrichis, prêts à contacter. En moins de 5 secondes.
           </p>
 
           {/* CTAs */}
-          <div className="mt-10 flex items-center justify-center gap-4 flex-wrap animate-fade-in-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
-            <PixelBtn href="#demo" variant="coral" size="lg">Demander une démo &rarr;</PixelBtn>
-            <PixelBtn href="#demo" variant="outline" size="lg">Voir la Démo</PixelBtn>
+          <div className="mt-10 flex items-center justify-center animate-fade-in-up" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+            <PixelBtn href="#demo" variant="coral" size="lg">Voir en action ↓</PixelBtn>
           </div>
 
         </div>
