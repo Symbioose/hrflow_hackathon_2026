@@ -290,9 +290,9 @@ function Nav() {
 
 function SearchResultsVisual() {
   const results = [
-    { initials: "SM", name: "Sophie Martin", title: "ML Engineer · Paris · GitHub 847★", score: 94, bg: CORAL, source: "GitHub" },
-    { initials: "AL", name: "Alex Leroy", title: "Data Scientist · Lyon · LinkedIn ✓", score: 87, bg: "#7C3AED", source: "LinkedIn" },
-    { initials: "MK", name: "Marie K.", title: "Backend Dev · Paris · Indeed", score: 81, bg: "#0A66C2", source: "Indeed" },
+    { initials: "SM", name: "Sophie Martin", title: "ML Engineer · Paris · GitHub 847★", score: 94, bg: CORAL },
+    { initials: "AL", name: "Alex Leroy", title: "Data Scientist · Lyon · LinkedIn ✓", score: 87, bg: "#7C3AED" },
+    { initials: "MK", name: "Marie K.", title: "Backend Dev · Paris · Indeed", score: 81, bg: "#0A66C2" },
   ]
 
   return (
@@ -325,7 +325,7 @@ function SearchResultsVisual() {
       <div className="px-6 py-4 flex flex-col gap-3">
         {results.map((r, i) => (
           <div
-            key={r.name}
+            key={i}
             className="flex items-center gap-4 px-4 py-3 transition-all"
             style={{
               backgroundColor: i === 0 ? `${WHITE}08` : `${WHITE}04`,
