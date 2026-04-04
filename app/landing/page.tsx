@@ -615,26 +615,18 @@ const features = [
   {
     num: "01",
     tag: "Multi-Source",
-    title: "Cherchez partout.\nTrouvez n'importe qui.",
-    desc: "Interrogez GitHub, LinkedIn, Indeed et plus de 10 000 profils indexés simultanément. Notre agent IA se connecte à toutes les sources de talents.",
+    title: "Cherchez là où les talents\npassifs vivent vraiment.",
+    desc: "GitHub, LinkedIn, Indeed — Claw4HR interroge simultanément toutes les plateformes où les meilleurs profils sont actifs sans chercher d'emploi.",
     visual: <SourcesVisual />,
     bg: CREAM,
   },
   {
     num: "02",
     tag: "AI Scoring",
-    title: "Chaque candidat.\nClassé & expliqué.",
-    desc: "L'algorithme propriétaire de HrFlow.ai note chaque candidat de 0 à 100%. L'analyse SWOT rend chaque match transparent — forces, lacunes et raisonnement.",
+    title: "Chaque candidat expliqué.\nPas juste noté.",
+    desc: "L'analyse SWOT rend chaque match transparent — forces, lacunes et raisonnement. Pas un chiffre opaque : une décision argumentée.",
     visual: <ScoreVisual />,
     bg: WHITE,
-  },
-  {
-    num: "03",
-    tag: "Pipeline JIT",
-    title: "Quatre étapes.\nZéro travail manuel.",
-    desc: "De la découverte au contact — X-Ray, Enrich, Index, Score. Chaque étape s'exécute en temps réel dès qu'un talent est détecté.",
-    visual: <PipelineFlowVisual />,
-    bg: CREAM,
   },
 ]
 
