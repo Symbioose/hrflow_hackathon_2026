@@ -288,6 +288,83 @@ function Nav() {
    Hero
    ═══════════════════════════════════════════ */
 
+function SearchResultsVisual() {
+  const results = [
+    { initials: "SM", name: "Sophie Martin", title: "ML Engineer · Paris · GitHub 847★", score: 94, bg: CORAL, source: "GitHub" },
+    { initials: "AL", name: "Alex Leroy", title: "Data Scientist · Lyon · LinkedIn ✓", score: 87, bg: "#7C3AED", source: "LinkedIn" },
+    { initials: "MK", name: "Marie K.", title: "Backend Dev · Paris · Indeed", score: 81, bg: "#0A66C2", source: "Indeed" },
+  ]
+
+  return (
+    <div
+      className="w-full overflow-hidden"
+      style={{ borderRadius: "16px", backgroundColor: NAVY, border: `1px solid ${WHITE}10`, boxShadow: `0 40px 80px -20px ${INK}40` }}
+    >
+      {/* Browser chrome */}
+      <div className="flex items-center gap-2 px-5 py-3.5" style={{ borderBottom: `1px solid ${WHITE}08` }}>
+        <div className="flex gap-2">
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#ff5f57" }} />
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#febc2e" }} />
+          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#28c840" }} />
+        </div>
+        <div className="ml-4 flex-1 h-7 flex items-center px-4 font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}35`, borderRadius: "6px" }}>
+          app.claw4hr.ai/dashboard
+        </div>
+      </div>
+      {/* Search bar */}
+      <div className="px-6 pt-5 pb-3 flex items-center gap-3" style={{ borderBottom: `1px solid ${WHITE}06` }}>
+        <div
+          className="flex-1 flex items-center gap-3 px-4 py-3 font-mono text-sm"
+          style={{ backgroundColor: `${WHITE}06`, borderRadius: "10px", border: `1px solid ${WHITE}10`, color: `${WHITE}50` }}
+        >
+          <span style={{ color: CORAL, fontSize: "16px" }}>→</span>
+          « Développeur Python senior à Paris, exp. ML »
+        </div>
+      </div>
+      {/* Results */}
+      <div className="px-6 py-4 flex flex-col gap-3">
+        {results.map((r, i) => (
+          <div
+            key={r.name}
+            className="flex items-center gap-4 px-4 py-3 transition-all"
+            style={{
+              backgroundColor: i === 0 ? `${WHITE}08` : `${WHITE}04`,
+              borderRadius: "10px",
+              border: `1px solid ${i === 0 ? `${SUCCESS}25` : `${WHITE}06`}`,
+              opacity: i === 2 ? 0.6 : 1,
+            }}
+          >
+            <div
+              className="flex items-center justify-center font-mono font-bold text-xs text-white flex-shrink-0"
+              style={{ width: 36, height: 36, backgroundColor: r.bg, borderRadius: "50%" }}
+            >
+              {r.initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm" style={{ color: WHITE }}>{r.name}</div>
+              <div className="text-xs mt-0.5" style={{ color: `${WHITE}45` }}>{r.title}</div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="font-mono font-bold text-lg" style={{ color: CORAL }}>{r.score}%</div>
+              <div className="font-mono text-[9px] uppercase tracking-wider" style={{ color: i === 0 ? SUCCESS : `${WHITE}30` }}>
+                {i === 0 ? "MATCH" : "match"}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Footer */}
+      <div
+        className="px-6 py-3 flex items-center justify-between font-mono text-xs"
+        style={{ borderTop: `1px solid ${WHITE}06`, color: `${WHITE}30` }}
+      >
+        <span>12 profils trouvés</span>
+        <span style={{ color: SUCCESS }}>⚡ 3.2s</span>
+      </div>
+    </div>
+  )
+}
+
 function Hero() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden" style={{ backgroundColor: WHITE }}>
@@ -342,57 +419,9 @@ function Hero() {
 
         </div>
 
-        {/* Product visual — single candidate card */}
+        {/* Product visual — search results */}
         <div className="mt-20 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
-          <div className="relative overflow-hidden" style={{ borderRadius: "16px", backgroundColor: NAVY, boxShadow: `0 40px 80px -20px ${INK}40, 0 0 0 1px ${WHITE}10` }}>
-            {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-5 py-3.5" style={{ backgroundColor: NAVY, borderBottom: `1px solid ${WHITE}08` }}>
-              <div className="flex gap-2">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#ff5f57" }} />
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#febc2e" }} />
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: "#28c840" }} />
-              </div>
-              <div className="ml-4 flex-1 h-7 flex items-center px-4 font-mono text-xs" style={{ backgroundColor: `${WHITE}06`, color: `${WHITE}35`, borderRadius: "6px" }}>
-                app.claw4hr.ai/dashboard
-              </div>
-            </div>
-            {/* Candidate card */}
-            <div className="p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <Avatar name="Sophie Martin" size={52} bg={CORAL} />
-                <div className="flex-1">
-                  <div className="font-semibold text-lg" style={{ color: WHITE }}>Sophie Martin</div>
-                  <div className="text-sm" style={{ color: `${WHITE}50` }}>Ingénieure ML Senior &middot; Paris &middot; 7 ans</div>
-                  <div className="mt-3 flex items-center gap-3">
-                    <div className="h-1.5 flex-1 overflow-hidden" style={{ backgroundColor: `${WHITE}08`, borderRadius: "4px" }}>
-                      <div className="h-full" style={{ width: "94%", backgroundColor: CORAL, borderRadius: "4px" }} />
-                    </div>
-                    <span className="font-mono font-bold text-xl" style={{ color: CORAL }}>94%</span>
-                  </div>
-                </div>
-              </div>
-              {/* SWOT grid */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: "Forces", color: SUCCESS, items: ["Expert Python — 8 ans", "ML / Deep Learning"] },
-                  { label: "Faiblesses", color: CORAL, items: ["Pas d'exp. frontend"] },
-                  { label: "Opportunités", color: "#3b82f6", items: ["Ouvert au CDI", "Paris"] },
-                  { label: "Menaces", color: "#f59e0b", items: ["Forte demande marché"] },
-                ].map(s => (
-                  <div key={s.label} className="p-3" style={{ backgroundColor: `${WHITE}04`, borderRadius: "10px", border: `1px solid ${WHITE}06` }}>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span className="w-2 h-2" style={{ backgroundColor: s.color, borderRadius: "50%" }} />
-                      <span className="text-[10px] font-mono uppercase tracking-wider font-bold" style={{ color: s.color }}>{s.label}</span>
-                    </div>
-                    {s.items.map(item => (
-                      <div key={item} className="text-xs leading-relaxed" style={{ color: `${WHITE}50` }}>{item}</div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* Glow */}
+          <SearchResultsVisual />
           <div className="mx-auto w-3/4 h-12 -mt-3" style={{ background: `radial-gradient(ellipse at center, ${CORAL}15, transparent 70%)` }} />
         </div>
       </div>
