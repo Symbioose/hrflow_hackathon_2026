@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [selectedProfile, setSelectedProfile] = useState<SourcedProfile | null>(null);
   const [qaMessages, setQaMessages] = useState<ChatMessage[]>([]);
   const [asking, setAsking] = useState(false);
+  const [savedProfiles, setSavedProfiles] = useState<Set<string>>(new Set());
 
   const esRef = useRef<EventSource | null>(null);
   const demoCleanupRef = useRef<(() => void) | null>(null);
@@ -199,6 +200,22 @@ export default function Dashboard() {
     setQaMessages([]);
   }, []);
 
+  const handleSave = useCallback((profile: SourcedProfile) => {
+    setSavedProfiles((prev) => {
+      const next = new Set(prev);
+      if (next.has(profile.key)) {
+        next.delete(profile.key);
+      } else {
+        next.add(profile.key);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleContact = useCallback((_profile: SourcedProfile) => {
+    // Contact action — à implémenter
+  }, []);
+
   const handleNewSearch = useCallback(() => {
     esRef.current?.close();
     demoCleanupRef.current?.();
@@ -228,7 +245,9 @@ export default function Dashboard() {
         query={query}
         isStreaming={isStreaming}
         agentStatuses={agentStatuses}
+        savedProfiles={savedProfiles}
         onSelect={handleSelectProfile}
+        onSave={handleSave}
         onNewSearch={handleNewSearch}
       />
     );
@@ -240,8 +259,11 @@ export default function Dashboard() {
         profile={selectedProfile}
         messages={qaMessages}
         asking={asking}
+        isSaved={savedProfiles.has(selectedProfile.key)}
         onBack={handleBack}
         onSend={handleAsk}
+        onSave={handleSave}
+        onContact={handleContact}
       />
     );
   }
