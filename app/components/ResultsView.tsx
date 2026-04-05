@@ -13,7 +13,9 @@ interface ResultsViewProps {
   query: string;
   isStreaming: boolean;
   agentStatuses: Record<AgentSource, AgentState>;
+  savedProfiles: Set<string>;
   onSelect: (profile: SourcedProfile) => void;
+  onSave: (profile: SourcedProfile) => void;
   onNewSearch: () => void;
 }
 
@@ -121,7 +123,7 @@ const SORT_OPTIONS: { mode: SortMode; label: string }[] = [
   { mode: "arrival",    label: "Ordre" },
 ];
 
-export default function ResultsView({ profiles, query, isStreaming, agentStatuses, onSelect, onNewSearch }: ResultsViewProps) {
+export default function ResultsView({ profiles, query, isStreaming, agentStatuses, savedProfiles, onSelect, onSave, onNewSearch }: ResultsViewProps) {
   const [sort, setSort] = useState<SortMode>("score-desc");
   const sorted = sortProfiles(profiles, sort);
   const { avgScore, topSkill, activeSources } = useAnalytics(profiles);
@@ -299,7 +301,7 @@ export default function ResultsView({ profiles, query, isStreaming, agentStatuse
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-6 pb-12">
           {sorted.map((p, i) => (
-            <CandidateCard key={p.key} profile={p} index={i} onSelect={onSelect} />
+            <CandidateCard key={p.key} profile={p} index={i} isSaved={savedProfiles.has(p.key)} onSelect={onSelect} onSave={onSave} />
           ))}
         </div>
       )}

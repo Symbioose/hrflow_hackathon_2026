@@ -17,16 +17,22 @@ interface ProfileDetailViewProps {
   profile: SourcedProfile;
   messages: ChatMessage[];
   asking: boolean;
+  isSaved: boolean;
   onBack: () => void;
   onSend: (question: string) => void;
+  onSave: (profile: SourcedProfile) => void;
+  onContact: (profile: SourcedProfile) => void;
 }
 
 export default function ProfileDetailView({
   profile,
   messages,
   asking,
+  isSaved,
   onBack,
   onSend,
+  onSave,
+  onContact,
 }: ProfileDetailViewProps) {
   const initials = profile.name
     .split(" ")
@@ -42,13 +48,32 @@ export default function ProfileDetailView({
         <button
           onClick={onBack}
           className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
-          style={{
-            color: "var(--ink)",
-            background: "#f3f4f6",
-            border: "1px solid #e5e7eb",
-          }}
+          style={{ color: "var(--ink)", background: "#f3f4f6", border: "1px solid #e5e7eb" }}
         >
           ← Retour
+        </button>
+        <button
+          onClick={() => onSave(profile)}
+          className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
+          style={{
+            color: isSaved ? "#f59e0b" : "var(--ink)",
+            background: isSaved ? "#fff8e7" : "#f3f4f6",
+            border: `1px solid ${isSaved ? "#f59e0b" : "#e5e7eb"}`,
+          }}
+        >
+          {isSaved ? "★ Sauvegardé" : "☆ Sauvegarder"}
+        </button>
+        <button
+          onClick={() => onContact(profile)}
+          className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
+          style={{
+            color: "#fff",
+            background: "var(--coral)",
+            border: "1px solid var(--coral-deep)",
+            boxShadow: "2px 2px 0 0 var(--coral-deep)",
+          }}
+        >
+          ✉ Contacter
         </button>
       </div>
 
