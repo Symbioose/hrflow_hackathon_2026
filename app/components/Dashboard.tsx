@@ -7,7 +7,10 @@ import SearchView from "./SearchView";
 import LoadingView from "./LoadingView";
 import ResultsView from "./ResultsView";
 import ProfileDetailView from "./ProfileDetailView";
+import Header from "./Header";
+import OutreachModal from "./OutreachModal";
 import { streamDemoProfiles } from "@/app/lib/demoProfiles";
+import { getSessionId } from "@/app/lib/session";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -29,22 +32,47 @@ export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [profiles, setProfiles] = useState<SourcedProfile[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<Record<AgentSource, AgentState>>({
-    github: "idle",
-    linkedin: "idle",
-    reddit: "idle",
-    internet: "idle",
+    github: "idle", linkedin: "idle", reddit: "idle", internet: "idle",
   });
   const [isStreaming, setIsStreaming] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<SourcedProfile | null>(null);
   const [qaMessages, setQaMessages] = useState<ChatMessage[]>([]);
   const [asking, setAsking] = useState(false);
+
+  // ─── Account state ─────────────────────────────────────────
+  const [sessionId] = useState<string>(() => {
+    if (typeof window !== "undefined") return getSessionId();
+    return "ssr";
+  });
   const [savedProfiles, setSavedProfiles] = useState<Set<string>>(new Set());
+  const [shortlistCount, setShortlistCount] = useState(0);
+  const [outreachCount, setOutreachCount] = useState(0);
+  const [outreachTarget, setOutreachTarget] = useState<SourcedProfile | null>(null);
 
   const esRef = useRef<EventSource | null>(null);
   const demoCleanupRef = useRef<(() => void) | null>(null);
   const retriesRef = useRef(0);
   const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchIdRef = useRef(0);
+
+  // ─── Load initial shortlist + outreach counts ──────────────
+
+  useEffect(() => {
+    if (!sessionId || sessionId === "ssr") return;
+    fetch(`/api/account/shortlist?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const keys = new Set<string>((data.data ?? []).map((e: { profile_key: string }) => e.profile_key));
+        setSavedProfiles(keys);
+        setShortlistCount(keys.size);
+      })
+      .catch(() => {});
+
+    fetch(`/api/account/outreach?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => setOutreachCount((data.data ?? []).length))
+      .catch(() => {});
+  }, [sessionId]);
 
   // ─── SSE connection ────────────────────────────────────────
 
@@ -58,8 +86,6 @@ export default function Dashboard() {
       if (searchIdRef.current !== thisSearch) return;
       try {
         const event = JSON.parse(e.data);
-
-        // Profile received
         if (event.channel === "profile" && event.payload?.profile) {
           const p = event.payload.profile as SourcedProfile;
           setProfiles((prev) => {
@@ -68,8 +94,6 @@ export default function Dashboard() {
           });
           setView((v) => (v === "loading" ? "results" : v));
         }
-
-        // Agent status update
         if (event.channel === "feed" && event.payload?.source) {
           const source = event.payload.source as AgentSource;
           const status = event.payload.status as "running" | "done" | "error";
@@ -84,9 +108,7 @@ export default function Dashboard() {
       if (retriesRef.current < 3) {
         retriesRef.current++;
         setTimeout(() => {
-          if (searchIdRef.current === thisSearch) {
-            connectSSE(cursor);
-          }
+          if (searchIdRef.current === thisSearch) connectSSE(cursor);
         }, 2000);
       } else {
         setView("search");
@@ -117,9 +139,16 @@ export default function Dashboard() {
     setIsStreaming(true);
 
     connectSSE(0);
-
-    // Agents start running immediately — optimistic UI
     setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
+
+    // Log search to Supabase
+    if (sessionId && sessionId !== "ssr") {
+      fetch("/api/account/searches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, query: q }),
+      }).catch(() => {});
+    }
 
     const res = await fetch("/api/openclaw/trigger", {
       method: "POST",
@@ -130,7 +159,6 @@ export default function Dashboard() {
     if (searchIdRef.current !== thisSearch) return;
 
     if (!res.ok) {
-      // OpenClaw not available — demo fallback with timed agent completion
       (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
         setTimeout(() => {
           if (searchIdRef.current !== thisSearch) return;
@@ -150,7 +178,7 @@ export default function Dashboard() {
     }
 
     streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
-  }, [connectSSE]);
+  }, [connectSSE, sessionId]);
 
   // ─── Profile Q&A ──────────────────────────────────────────
 
@@ -180,7 +208,6 @@ export default function Dashboard() {
     if (!selectedProfile || asking) return;
     setQaMessages((prev) => [...prev, chatMsg("user", question)]);
     setAsking(true);
-
     try {
       const profileKey = selectedProfile.hrflow_key ?? selectedProfile.key;
       const res = await fetch(`/api/hrflow/ask?profile_key=${encodeURIComponent(profileKey)}&question=${encodeURIComponent(question)}`);
@@ -200,22 +227,6 @@ export default function Dashboard() {
     setQaMessages([]);
   }, []);
 
-  const handleSave = useCallback((profile: SourcedProfile) => {
-    setSavedProfiles((prev) => {
-      const next = new Set(prev);
-      if (next.has(profile.key)) {
-        next.delete(profile.key);
-      } else {
-        next.add(profile.key);
-      }
-      return next;
-    });
-  }, []);
-
-  const handleContact = useCallback((_profile: SourcedProfile) => {
-    // Contact action — à implémenter
-  }, []);
-
   const handleNewSearch = useCallback(() => {
     esRef.current?.close();
     demoCleanupRef.current?.();
@@ -228,45 +239,106 @@ export default function Dashboard() {
     setQaMessages([]);
   }, []);
 
+  // ─── Save / Shortlist ──────────────────────────────────────
+
+  const handleSave = useCallback((profile: SourcedProfile) => {
+    const isCurrentlySaved = savedProfiles.has(profile.key);
+
+    // Optimistic update
+    setSavedProfiles((prev) => {
+      const next = new Set(prev);
+      if (isCurrentlySaved) {
+        next.delete(profile.key);
+        setShortlistCount((c) => Math.max(0, c - 1));
+      } else {
+        next.add(profile.key);
+        setShortlistCount((c) => c + 1);
+      }
+      return next;
+    });
+
+    if (isCurrentlySaved) {
+      fetch("/api/account/shortlist", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, profile_key: profile.key }),
+      }).catch(() => {});
+    } else {
+      fetch("/api/account/shortlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, profile_key: profile.key, profile_data: profile }),
+      }).catch(() => {});
+    }
+  }, [savedProfiles, sessionId]);
+
+  // ─── Outreach ──────────────────────────────────────────────
+
+  const handleContact = useCallback((profile: SourcedProfile) => {
+    setOutreachTarget(profile);
+  }, []);
+
+  const handleOutreachClose = useCallback(() => {
+    setOutreachTarget(null);
+    fetch(`/api/account/outreach?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => setOutreachCount((data.data ?? []).length))
+      .catch(() => {});
+  }, [sessionId]);
+
   // ─── Render ────────────────────────────────────────────────
 
-  if (view === "search") {
-    return <SearchView onSearch={handleSearch} />;
-  }
-
-  if (view === "loading") {
-    return <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />;
-  }
-
-  if (view === "results") {
-    return (
-      <ResultsView
-        profiles={profiles}
-        query={query}
-        isStreaming={isStreaming}
-        agentStatuses={agentStatuses}
-        savedProfiles={savedProfiles}
-        onSelect={handleSelectProfile}
-        onSave={handleSave}
-        onNewSearch={handleNewSearch}
+  return (
+    <>
+      <Header
+        sessionId={sessionId}
+        shortlistKeys={savedProfiles}
+        onRelaunchSearch={handleSearch}
+        onOpenProfile={handleSelectProfile}
+        shortlistCount={shortlistCount}
+        outreachCount={outreachCount}
       />
-    );
-  }
+      <div style={{ paddingTop: 56 }}>
+        {view === "search" && <SearchView onSearch={handleSearch} />}
 
-  if (view === "profile" && selectedProfile) {
-    return (
-      <ProfileDetailView
-        profile={selectedProfile}
-        messages={qaMessages}
-        asking={asking}
-        isSaved={savedProfiles.has(selectedProfile.key)}
-        onBack={handleBack}
-        onSend={handleAsk}
-        onSave={handleSave}
-        onContact={handleContact}
-      />
-    );
-  }
+        {view === "loading" && (
+          <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />
+        )}
 
-  return null;
+        {view === "results" && (
+          <ResultsView
+            profiles={profiles}
+            query={query}
+            isStreaming={isStreaming}
+            agentStatuses={agentStatuses}
+            savedProfiles={savedProfiles}
+            onSelect={handleSelectProfile}
+            onSave={handleSave}
+            onNewSearch={handleNewSearch}
+          />
+        )}
+
+        {view === "profile" && selectedProfile && (
+          <ProfileDetailView
+            profile={selectedProfile}
+            messages={qaMessages}
+            asking={asking}
+            isSaved={savedProfiles.has(selectedProfile.key)}
+            onBack={handleBack}
+            onSend={handleAsk}
+            onSave={handleSave}
+            onContact={handleContact}
+          />
+        )}
+      </div>
+
+      {outreachTarget && (
+        <OutreachModal
+          profile={outreachTarget}
+          sessionId={sessionId}
+          onClose={handleOutreachClose}
+        />
+      )}
+    </>
+  );
 }
