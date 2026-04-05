@@ -40,12 +40,7 @@ export default function SearchView({ onSearch }: SearchViewProps) {
       {/* Logo */}
       <div className="mb-12 text-center animate-card-reveal">
         <div className="inline-flex items-center gap-3 mb-4">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <path d="M8 3C6 3 4.5 4.5 4.5 7v6c0 1.5.8 2.5 2 2.5" stroke="var(--coral)" strokeWidth="2.2" strokeLinecap="round"/>
-            <path d="M6.5 15.5C7.5 18.5 9.5 20.5 12 20.5s4.5-2 5.5-5" stroke="var(--coral)" strokeWidth="2.2" strokeLinecap="round"/>
-            <path d="M16 3C18 3 19.5 4.5 19.5 7v6c0 1.5-.8 2.5-2 2.5" stroke="var(--coral)" strokeWidth="2.2" strokeLinecap="round"/>
-            <path d="M12 6v5" stroke="var(--coral)" strokeWidth="2.2" strokeLinecap="round"/>
-          </svg>
+          <span style={{ fontSize: 40 }}>🦞</span>
           <h1
             className="text-5xl font-bold tracking-tight"
             style={{ fontFamily: "var(--font-display, Georgia, serif)", color: "var(--ink)" }}
