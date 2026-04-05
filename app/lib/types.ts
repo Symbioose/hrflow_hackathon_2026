@@ -103,3 +103,25 @@ export interface ChatMessage {
   text: string;
   time: string;
 }
+
+// ─── Account / persistence types ───────────────────────────────
+
+export interface SavedSearch {
+  id: string;
+  query: string;
+  profile_count: number;
+  created_at: string;
+}
+
+export interface ShortlistEntry {
+  id: string;
+  profile_data: SourcedProfile;
+  added_at: string;
+}
+
+export interface OutreachEntry {
+  id: string;
+  profile_name: string;
+  message: string;
+  sent_at: string;
+}
