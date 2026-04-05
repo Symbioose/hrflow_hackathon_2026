@@ -17,8 +17,7 @@ import AccountModal from "./AccountModal";
 import AnalyseView from "./AnalyseView";
 import PipelineView from "./PipelineView";
 import TeamView from "./TeamView";
-import { runDemoSearch, type DemoLog } from "@/app/lib/demoSearch";
-// import { streamDemoProfiles } from "@/app/lib/demoProfiles"; // kept for reference
+import type { FeedLog } from "@/app/lib/types";
 import { getSessionId } from "@/app/lib/session";
 import { supabase } from "@/app/lib/supabase";
 
@@ -64,8 +63,8 @@ export default function Dashboard() {
   const [userProfile, setUserProfile] = useState<{ name: string; company: string; email: string } | null>(null);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
 
-  // ─── Demo feed logs ────────────────────────────────────────
-  const [feedLogs, setFeedLogs] = useState<DemoLog[]>([]);
+  const [feedLogs, setFeedLogs] = useState<FeedLog[]>([]);
+  const [sourcingError, setSourcingError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -92,10 +91,8 @@ export default function Dashboard() {
   const [pendingQuery, setPendingQuery] = useState<string>("");
 
   const esRef = useRef<EventSource | null>(null);
-  const demoCleanupRef = useRef<(() => void) | null>(null);
   const retriesRef = useRef(0);
   const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const demoFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchIdRef = useRef(0);
 
   useEffect(() => {
@@ -123,7 +120,7 @@ export default function Dashboard() {
   const connectSSE = useCallback((cursor = 0) => {
     if (esRef.current) esRef.current.close();
     const thisSearch = searchIdRef.current;
-    const es = new EventSource(`/api/openclaw/stream?cursor=${cursor}`);
+    const es = new EventSource(`/api/trigger/stream?cursor=${cursor}`);
     esRef.current = es;
 
     es.onmessage = (e) => {
@@ -132,10 +129,6 @@ export default function Dashboard() {
         const event = JSON.parse(e.data);
         if (event.channel === "profile" && event.payload?.profile) {
           const p = event.payload.profile as SourcedProfile;
-          if (demoFallbackTimerRef.current) {
-            clearTimeout(demoFallbackTimerRef.current);
-            demoFallbackTimerRef.current = null;
-          }
           setProfiles((prev) => {
             if (prev.some((x) => x.key === p.key)) return prev;
             return [...prev, p];
@@ -144,8 +137,18 @@ export default function Dashboard() {
         }
         if (event.channel === "feed" && event.payload?.source) {
           const source = event.payload.source as AgentSource;
-          const status = event.payload.status as "running" | "done" | "error";
-          setAgentStatuses((prev) => ({ ...prev, [source]: status }));
+          if (event.payload.status) {
+            const status = event.payload.status as "running" | "done" | "error";
+            setAgentStatuses((prev) => ({ ...prev, [source]: status }));
+          }
+          if (event.payload.message) {
+            setFeedLogs((prev) => [...prev, {
+              id: event.id ?? crypto.randomUUID(),
+              source,
+              message: event.payload.message as string,
+              type: (event.payload.logType ?? "info") as FeedLog["type"],
+            }]);
+          }
         }
         if (event.channel === "chat" && event.payload?.query) {
           setPendingQuery(event.payload.query as string);
@@ -171,8 +174,6 @@ export default function Dashboard() {
   useEffect(() => {
     return () => {
       esRef.current?.close();
-      demoCleanupRef.current?.();
-      if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
       if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
     };
   }, []);
@@ -198,45 +199,31 @@ export default function Dashboard() {
       }).catch(() => {});
     }
 
-    // ── Demo search script (OpenClaw disabled for demo) ──────────
-    // To re-enable OpenClaw: comment out runDemoSearch and restore the
-    // fetch("/api/openclaw/trigger") block below.
-    demoCleanupRef.current?.();
-    demoCleanupRef.current = runDemoSearch({
-      onLog: (log) => {
-        if (searchIdRef.current !== thisSearch) return;
-        setFeedLogs((prev) => [...prev, log]);
-      },
-      onAgentStatus: (source, status) => {
-        if (searchIdRef.current !== thisSearch) return;
-        setAgentStatuses((prev) => ({ ...prev, [source]: status }));
-      },
-      onProfile: (profile) => {
-        if (searchIdRef.current !== thisSearch) return;
-        setProfiles((prev) => {
-          if (prev.some((x) => x.key === profile.key)) return prev;
-          return [...prev, profile];
-        });
-        setView("results");
-      },
-      onDone: () => {
-        if (searchIdRef.current !== thisSearch) return;
-        setIsStreaming(false);
-      },
-    }, count);
-
-    /* ── OpenClaw (disabled for demo — uncomment to re-enable) ──────────────
+    setSourcingError(null);
     connectSSE(0);
     setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
-    fetch("/api/openclaw/trigger", {
+    fetch("/api/trigger/run", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: q }),
-    }).then((res) => {
+    }).then(async (res) => {
       if (searchIdRef.current !== thisSearch) return;
-      if (!res.ok) { ... triggerDemoFallback() ... }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setIsStreaming(false);
+        setView("search");
+        setSourcingError(
+          data.error === "TRIGGER_NOT_CONFIGURED"
+            ? "Sourcing not configured — set TRIGGER_SECRET_KEY to enable."
+            : "Failed to start sourcing pipeline.",
+        );
+      }
+    }).catch(() => {
+      if (searchIdRef.current !== thisSearch) return;
+      setIsStreaming(false);
+      setView("search");
+      setSourcingError("Could not reach the sourcing service.");
     });
-    ── ─────────────────────────────────────────────────────────────────────── */
 
     streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
   }, [sessionId]);
@@ -301,9 +288,7 @@ export default function Dashboard() {
 
   const handleNewSearch = useCallback(() => {
     esRef.current?.close();
-    demoCleanupRef.current?.();
     if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
-    if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
     setView("search");
     setProfiles([]);
     setQuery("");
@@ -385,7 +370,15 @@ export default function Dashboard() {
       {/* Main content */}
       <main className="flex-1 overflow-hidden" style={{ marginLeft: 240 }}>
         {view === "search" && (
-          <SearchView onSearch={handleSearch} initialQuery={pendingQuery} />
+          <>
+            {sourcingError && (
+              <div style={{ margin: "16px 24px 0", padding: "10px 16px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, color: "#991b1b", fontSize: 13, fontFamily: "monospace", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                {sourcingError}
+                <button onClick={() => setSourcingError(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#991b1b", fontSize: 16, lineHeight: 1 }}>×</button>
+              </div>
+            )}
+            <SearchView onSearch={handleSearch} initialQuery={pendingQuery} />
+          </>
         )}
 
         {view === "loading" && (

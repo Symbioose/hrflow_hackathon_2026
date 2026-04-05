@@ -2,22 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { pushEvent, type OpenClawEvent } from "@/app/lib/eventStore";
 
 /**
- * POST /api/openclaw/webhook — Receive events from OpenClaw
+ * POST /api/trigger/webhook
+ * Receives events from the trigger.dev sourcing task and forwards them
+ * to the SSE stream so the dashboard updates in real time.
  *
  * Supported channels: "chat" | "feed" | "action" | "profile"
  *
- * Profile example:
- * {"channel":"profile","payload":{"profile":{...SourcedProfile...}}}
+ * Profile event:
+ *   { channel: "profile", payload: { profile: SourcedProfile } }
  *
  * Batch profiles shorthand:
- * {"profiles":[{...SourcedProfile...}, ...]}
+ *   { profiles: [SourcedProfile, ...] }
  *
- * All other formats unchanged.
+ * Feed log event:
+ *   { channel: "feed", payload: { source, status, message, logType } }
  */
 export async function POST(req: NextRequest) {
-  const secret = process.env.OPENCLAW_WEBHOOK_SECRET;
+  const secret = process.env.TRIGGER_WEBHOOK_SECRET;
   if (secret) {
-    const provided = req.headers.get("x-openclaw-secret");
+    const provided = req.headers.get("x-trigger-secret");
     if (provided !== secret) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -26,7 +29,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Batch profiles shorthand: {"profiles": [...]}
     if (Array.isArray(body.profiles)) {
       if (body.profiles.length > 50) {
         return NextResponse.json(
@@ -51,7 +53,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ code: 200, message: "OK", count: created.length });
     }
 
-    // Standard single or batch events
     const VALID_CHANNELS = new Set(["chat", "feed", "action", "profile"]);
     const items: { channel: OpenClawEvent["channel"]; payload: OpenClawEvent["payload"] }[] =
       body.events ?? [body];

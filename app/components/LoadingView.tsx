@@ -2,16 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PixelSprite, SOURCE_CONFIG, type AgentSource, type AgentState } from "./PixelAgent";
-import type { DemoLog } from "@/app/lib/demoSearch";
+import type { FeedLog } from "@/app/lib/types";
 
 interface LoadingViewProps {
   query: string;
   profileCount: number;
   agentStatuses: Record<AgentSource, AgentState>;
-  feedLogs: DemoLog[];
+  feedLogs: FeedLog[];
 }
 
-const LOG_TYPE_COLORS: Record<DemoLog["type"], string> = {
+const LOG_TYPE_COLORS: Record<FeedLog["type"], string> = {
   info:  "#6b7280",
   found: "#059669",
   score: "#4f46e5",

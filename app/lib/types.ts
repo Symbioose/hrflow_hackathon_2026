@@ -86,6 +86,15 @@ export interface SourcedProfile {
   avatar_color: string;                // hex, pre-computed by OpenClaw
 }
 
+// ─── Feed logs (sourcing pipeline) ─────────────────────────────
+
+export interface FeedLog {
+  id: string;
+  source: "github" | "linkedin" | "reddit" | "internet";
+  message: string;
+  type: "info" | "found" | "score" | "done";
+}
+
 // ─── Feed + Chat (unchanged) ────────────────────────────────────
 
 export interface FeedEvent {

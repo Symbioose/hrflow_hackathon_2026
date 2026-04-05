@@ -3,8 +3,8 @@ import { subscribe, getEventsSince } from "@/app/lib/eventStore";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/openclaw/stream
- * Server-Sent Events stream — pushes events to the dashboard in <200ms.
+ * GET /api/trigger/stream
+ * Server-Sent Events stream — pushes sourcing events to the dashboard in real time.
  *
  * Query params:
  *   cursor (optional): last event id seen (to catch up on missed events)
@@ -18,13 +18,11 @@ export async function GET(req: Request) {
 
   const stream = new ReadableStream({
     start(controller) {
-      // Send any events missed since cursor immediately
       const { events: missed } = getEventsSince(cursor);
       for (const event of missed) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       }
 
-      // Subscribe to new events
       const unsubscribe = subscribe((event) => {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
@@ -34,7 +32,6 @@ export async function GET(req: Request) {
         }
       });
 
-      // Heartbeat every 15s to keep connection alive
       const heartbeat = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(`: heartbeat\n\n`));
@@ -45,7 +42,6 @@ export async function GET(req: Request) {
         }
       }, 15_000);
 
-      // Cleanup on client disconnect
       req.signal.addEventListener("abort", () => {
         clearInterval(heartbeat);
         unsubscribe();
