@@ -13,6 +13,15 @@ const SOURCE_COLORS: Record<SourceType, string> = {
   hellowork: "#e05c2a",
 };
 
+const SOURCE_LABELS: Record<SourceType, string> = {
+  github: "GitHub",
+  linkedin: "LinkedIn",
+  reddit: "Reddit",
+  internet: "Web",
+  indeed: "Indeed",
+  hellowork: "HelloWork",
+};
+
 interface ProfileDetailViewProps {
   profile: SourcedProfile;
   messages: ChatMessage[];
@@ -42,194 +51,200 @@ export default function ProfileDetailView({
     .toUpperCase();
 
   return (
-    <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
-      {/* Navigation buttons */}
-      <div className="px-6 pt-5 pb-3 flex gap-3">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
-          style={{ color: "var(--ink)", background: "#f3f4f6", border: "1px solid #e5e7eb" }}
-        >
-          ← Retour
-        </button>
-        <button
-          onClick={() => onSave(profile)}
-          className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
-          style={{
-            color: isSaved ? "#f59e0b" : "var(--ink)",
-            background: isSaved ? "#fff8e7" : "#f3f4f6",
-            border: `1px solid ${isSaved ? "#f59e0b" : "#e5e7eb"}`,
-          }}
-        >
-          {isSaved ? "★ Sauvegardé" : "☆ Sauvegarder"}
-        </button>
-        <button
-          onClick={() => onContact(profile)}
-          className="flex items-center gap-2 font-mono text-sm font-bold px-4 py-2 rounded-md transition-all"
-          style={{
-            color: "#fff",
-            background: "var(--coral)",
-            border: "1px solid var(--coral-deep)",
-            boxShadow: "2px 2px 0 0 var(--coral-deep)",
-          }}
-        >
-          ✉ Contacter
-        </button>
-      </div>
-
-      {/* Hero header */}
-      <div className="px-6 pb-8 pt-2">
+    <div className="flex" style={{ height: "100vh", overflow: "hidden" }}>
+      {/* ─── Left panel: Profile info ─────────────────────────── */}
+      <div
+        className="flex flex-col overflow-hidden flex-shrink-0"
+        style={{ width: 440, borderRight: "1px solid #e5e7eb", background: "#fff" }}
+      >
+        {/* Action bar */}
         <div
-          className="rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6"
-          style={{ background: "var(--navy)", color: "#fff" }}
+          className="flex items-center gap-2 px-5 py-4 flex-shrink-0"
+          style={{ borderBottom: "1px solid #f3f4f6" }}
         >
-          <div className="flex items-center gap-5">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center font-mono font-bold text-white text-2xl flex-shrink-0"
-              style={{ backgroundColor: profile.avatar_color }}
-            >
-              {initials}
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: "Georgia, serif" }}>
-                {profile.name}
-              </h1>
-              <p className="text-lg mb-2" style={{ color: "rgba(255,255,255,0.7)" }}>
-                {profile.title}
-              </p>
-              <p className="text-sm font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>
-                📍 {profile.location} · {profile.experience_years} ans d&apos;expérience
-              </p>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {profile.sources.map((s) => (
-                  <a
-                    key={s.url}
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 rounded-full text-xs font-mono transition-opacity hover:opacity-70"
-                    style={{
-                      background: `${SOURCE_COLORS[s.type]}30`,
-                      color: "#fff",
-                      border: `1px solid ${SOURCE_COLORS[s.type]}60`,
-                    }}
-                  >
-                    {s.label}
-                  </a>
-                ))}
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-all"
+            style={{ color: "#6b7280", background: "#f9fafb", border: "1px solid #e5e7eb" }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#1a1a2e")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#6b7280")}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            Retour
+          </button>
+          <button
+            onClick={() => onSave(profile)}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-all"
+            style={{
+              color: isSaved ? "#f59e0b" : "#6b7280",
+              background: isSaved ? "#fff8e7" : "#f9fafb",
+              border: `1px solid ${isSaved ? "#fcd34d" : "#e5e7eb"}`,
+            }}
+          >
+            {isSaved ? "★ Sauvegardé" : "☆ Sauvegarder"}
+          </button>
+          <button
+            onClick={() => onContact(profile)}
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg transition-all ml-auto"
+            style={{
+              background: "#FF6B6B",
+              color: "#fff",
+              boxShadow: "0 2px 8px rgba(255,107,107,0.3)",
+            }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#CC4444")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#FF6B6B")}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            Contacter
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Hero */}
+          <div className="px-6 py-6" style={{ borderBottom: "1px solid #f3f4f6" }}>
+            <div className="flex items-start gap-4">
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-lg flex-shrink-0"
+                style={{ background: profile.avatar_color }}
+              >
+                {initials}
               </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-bold mb-0.5 leading-tight" style={{ color: "#1a1a2e" }}>
+                  {profile.name}
+                </h1>
+                <p className="text-sm mb-1" style={{ color: "#6b7280" }}>{profile.title}</p>
+                <p className="text-xs font-mono" style={{ color: "#9ca3af" }}>
+                  {profile.location} · {profile.experience_years} ans d&apos;expérience
+                </p>
+              </div>
+              <ScoreRing score={profile.hrflow_score} size={56} strokeWidth={4} />
+            </div>
+
+            {/* Sources */}
+            <div className="flex gap-2 flex-wrap mt-4">
+              {profile.sources.map((s) => (
+                <a
+                  key={s.url}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono transition-colors"
+                  style={{
+                    background: `${SOURCE_COLORS[s.type]}0d`,
+                    color: SOURCE_COLORS[s.type],
+                    border: `1px solid ${SOURCE_COLORS[s.type]}20`,
+                  }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = `${SOURCE_COLORS[s.type]}1a`)}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.background = `${SOURCE_COLORS[s.type]}0d`)}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: SOURCE_COLORS[s.type] }} />
+                  {SOURCE_LABELS[s.type]}
+                </a>
+              ))}
             </div>
           </div>
-          <ScoreRing score={profile.hrflow_score} size={80} strokeWidth={5} />
-        </div>
-      </div>
 
-      {/* 2-column body */}
-      <div className="px-6 pb-16 grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left: profile content (3/5) */}
-        <div className="lg:col-span-3 space-y-6">
           {/* Summary */}
-          <section
-            className="p-6 rounded-lg"
-            style={{ background: "#FFFFFF", border: "1px solid #e5e7eb" }}
-          >
-            <h2
-              className="text-lg font-bold mb-3"
-              style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
-            >
-              Résumé
-            </h2>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--muted-text)" }}>
-              {profile.summary}
-            </p>
-          </section>
+          <div className="px-6 py-5" style={{ borderBottom: "1px solid #f3f4f6" }}>
+            <p className="text-[11px] font-mono uppercase tracking-widest mb-3" style={{ color: "#9ca3af" }}>Résumé</p>
+            <p className="text-sm leading-relaxed" style={{ color: "#374151" }}>{profile.summary}</p>
+          </div>
 
           {/* Skills */}
-          <section
-            className="p-6 rounded-lg"
-            style={{ background: "#FFFFFF", border: "1px solid #e5e7eb" }}
-          >
-            <h2
-              className="text-lg font-bold mb-3"
-              style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
-            >
-              Compétences
-            </h2>
-            <div className="flex flex-wrap gap-2">
+          <div className="px-6 py-5" style={{ borderBottom: "1px solid #f3f4f6" }}>
+            <p className="text-[11px] font-mono uppercase tracking-widest mb-3" style={{ color: "#9ca3af" }}>Compétences</p>
+            <div className="flex flex-wrap gap-1.5">
               {profile.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="px-3 py-1.5 rounded text-sm font-mono"
-                  style={{ background: "#f3f4f6", color: "#4b5563" }}
+                  className="px-2.5 py-1 rounded-md text-xs font-mono"
+                  style={{ background: "#f3f4f6", color: "#374151" }}
                 >
                   {skill}
                 </span>
               ))}
             </div>
-          </section>
+          </div>
 
           {/* Experiences */}
           {profile.experiences.length > 0 && (
-            <section
-              className="p-6 rounded-2xl"
-              style={{ background: "var(--cream-mid)", border: "1.5px solid rgba(26,26,46,0.08)" }}
-            >
-              <h2
-                className="text-lg font-bold mb-4"
-                style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
-              >
-                Expériences
-              </h2>
+            <div className="px-6 py-5" style={{ borderBottom: "1px solid #f3f4f6" }}>
+              <p className="text-[11px] font-mono uppercase tracking-widest mb-4" style={{ color: "#9ca3af" }}>Expériences</p>
               <div className="space-y-5">
                 {profile.experiences.map((exp, i) => (
-                  <div key={i} className="flex gap-4">
+                  <div key={i} className="flex gap-3">
                     <div
-                      className="w-1 flex-shrink-0 rounded-full mt-1.5"
-                      style={{ background: i === 0 ? "var(--coral)" : "rgba(26,26,46,0.15)", minHeight: 40 }}
+                      className="w-0.5 flex-shrink-0 rounded-full mt-1"
+                      style={{ background: i === 0 ? "#FF6B6B" : "#e5e7eb", minHeight: 40 }}
                     />
                     <div>
-                      <p className="font-bold text-sm" style={{ color: "var(--ink)" }}>{exp.title}</p>
-                      <p className="text-sm font-mono" style={{ color: "var(--coral)" }}>{exp.company}</p>
-                      <p className="text-xs font-mono mb-1" style={{ color: "var(--muted-text)" }}>
+                      <p className="font-semibold text-sm" style={{ color: "#1a1a2e" }}>{exp.title}</p>
+                      <p className="text-xs font-mono" style={{ color: "#FF6B6B" }}>{exp.company}</p>
+                      <p className="text-xs font-mono mb-1.5" style={{ color: "#9ca3af" }}>
                         {exp.location} · {exp.period}
                       </p>
-                      <p className="text-sm leading-relaxed" style={{ color: "var(--muted-text)" }}>
-                        {exp.description}
-                      </p>
+                      <p className="text-xs leading-relaxed" style={{ color: "#6b7280" }}>{exp.description}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
           )}
 
           {/* Educations */}
           {profile.educations.length > 0 && (
-            <section
-              className="p-6 rounded-2xl"
-              style={{ background: "var(--cream-mid)", border: "1.5px solid rgba(26,26,46,0.08)" }}
-            >
-              <h2
-                className="text-lg font-bold mb-4"
-                style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
-              >
-                Formation
-              </h2>
+            <div className="px-6 py-5">
+              <p className="text-[11px] font-mono uppercase tracking-widest mb-4" style={{ color: "#9ca3af" }}>Formation</p>
               <div className="space-y-3">
                 {profile.educations.map((edu, i) => (
                   <div key={i}>
-                    <p className="font-bold text-sm" style={{ color: "var(--ink)" }}>{edu.degree}</p>
-                    <p className="text-sm font-mono" style={{ color: "var(--coral)" }}>{edu.school}</p>
-                    <p className="text-xs font-mono" style={{ color: "var(--muted-text)" }}>{edu.period}</p>
+                    <p className="font-semibold text-sm" style={{ color: "#1a1a2e" }}>{edu.degree}</p>
+                    <p className="text-xs font-mono" style={{ color: "#FF6B6B" }}>{edu.school}</p>
+                    <p className="text-xs font-mono" style={{ color: "#9ca3af" }}>{edu.period}</p>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
           )}
         </div>
+      </div>
 
-        {/* Right: Q&A panel (2/5) */}
-        <div className="lg:col-span-2 lg:sticky lg:top-[80px]" style={{ height: "fit-content" }}>
+      {/* ─── Right panel: AI Q&A ──────────────────────────────── */}
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#f8f9fa" }}>
+        {/* Panel header */}
+        <div
+          className="flex items-center gap-3 px-6 py-4 flex-shrink-0"
+          style={{ background: "#fff", borderBottom: "1px solid #e5e7eb" }}
+        >
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-xs flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #FF6B6B, #CC4444)" }}
+          >
+            IA
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>Assistant IA</p>
+            <p className="text-[11px] font-mono" style={{ color: "#FF6B6B" }}>
+              Analyse de {profile.name.split(" ")[0]}
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: asking ? "#f59e0b" : "#10b981" }} />
+            <span className="text-[11px] font-mono" style={{ color: "#9ca3af" }}>
+              {asking ? "Analyse…" : "Prêt"}
+            </span>
+          </div>
+        </div>
+
+        {/* Q&A Panel fills remaining space */}
+        <div className="flex-1 overflow-hidden p-4 flex flex-col">
           <QAPanel profile={profile} messages={messages} asking={asking} onSend={onSend} />
         </div>
       </div>
