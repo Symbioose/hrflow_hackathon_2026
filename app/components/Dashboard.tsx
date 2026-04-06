@@ -54,6 +54,7 @@ export default function Dashboard() {
   const demoCleanupRef = useRef<(() => void) | null>(null);
   const retriesRef = useRef(0);
   const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const demoFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchIdRef = useRef(0);
 
   // ─── Connect SSE on mount to receive chat events from OpenClaw ──
@@ -95,6 +96,11 @@ export default function Dashboard() {
         const event = JSON.parse(e.data);
         if (event.channel === "profile" && event.payload?.profile) {
           const p = event.payload.profile as SourcedProfile;
+          // A real profile arrived — cancel demo fallback timer
+          if (demoFallbackTimerRef.current) {
+            clearTimeout(demoFallbackTimerRef.current);
+            demoFallbackTimerRef.current = null;
+          }
           setProfiles((prev) => {
             if (prev.some((x) => x.key === p.key)) return prev;
             return [...prev, p];
@@ -131,6 +137,7 @@ export default function Dashboard() {
     return () => {
       esRef.current?.close();
       demoCleanupRef.current?.();
+      if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
       if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
     };
   }, []);
@@ -168,14 +175,14 @@ export default function Dashboard() {
 
     if (searchIdRef.current !== thisSearch) return;
 
-    if (!res.ok) {
+    const triggerDemoFallback = () => {
+      if (searchIdRef.current !== thisSearch) return;
       (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
         setTimeout(() => {
           if (searchIdRef.current !== thisSearch) return;
           setAgentStatuses((prev) => ({ ...prev, [src]: "done" }));
-        }, 2000 + i * 1500);
+        }, i * 1500);
       });
-
       demoCleanupRef.current?.();
       demoCleanupRef.current = streamDemoProfiles((p) => {
         if (searchIdRef.current !== thisSearch) return;
@@ -185,6 +192,20 @@ export default function Dashboard() {
         });
         setView("results");
       }, 1400);
+    };
+
+    if (!res.ok) {
+      triggerDemoFallback();
+    } else {
+      // OpenClaw returned 200 but profiles arrive async via webhook.
+      // If no profile appears within 6s, fall back to demo profiles.
+      if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
+      demoFallbackTimerRef.current = setTimeout(() => {
+        setProfiles((current) => {
+          if (current.length === 0) triggerDemoFallback();
+          return current;
+        });
+      }, 6000);
     }
 
     streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
@@ -241,6 +262,7 @@ export default function Dashboard() {
     esRef.current?.close();
     demoCleanupRef.current?.();
     if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
+    if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
     setView("search");
     setProfiles([]);
     setQuery("");
