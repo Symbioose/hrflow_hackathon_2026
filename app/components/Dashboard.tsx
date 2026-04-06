@@ -16,6 +16,7 @@ import OutreachModal from "./OutreachModal";
 import AccountModal from "./AccountModal";
 import AnalyseView from "./AnalyseView";
 import PipelineView from "./PipelineView";
+import TeamView from "./TeamView";
 import { runDemoSearch, type DemoLog } from "@/app/lib/demoSearch";
 // import { streamDemoProfiles } from "@/app/lib/demoProfiles"; // kept for reference
 import { getSessionId } from "@/app/lib/session";
@@ -23,7 +24,7 @@ import { supabase } from "@/app/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────
 
-type DashboardView = "search" | "loading" | "results" | "profile" | "shortlist" | "outreach" | "history" | "analyse" | "pipeline";
+type DashboardView = "search" | "loading" | "results" | "profile" | "shortlist" | "outreach" | "history" | "analyse" | "pipeline" | "team";
 
 function chatMsg(type: "user" | "agent", text: string): ChatMessage {
   return {
@@ -40,6 +41,7 @@ function viewToSection(view: DashboardView): NavSection {
   if (view === "history") return "history";
   if (view === "analyse") return "analyse";
   if (view === "pipeline") return "pipeline";
+  if (view === "team") return "team";
   return "search";
 }
 
@@ -446,6 +448,10 @@ export default function Dashboard() {
             onOpenProfile={handleSelectProfile}
             onContact={handleContact}
           />
+        )}
+
+        {view === "team" && (
+          <TeamView companyName={userProfile?.company ?? ""} />
         )}
       </main>
 
