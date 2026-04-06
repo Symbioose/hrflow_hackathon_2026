@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing profile or question" }, { status: 400 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.MISTRAL_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ data: { response: profile.summary } });
   }
@@ -36,18 +36,19 @@ ${profile.experiences[1] ? `- Expérience précédente : ${profile.experiences[1
 ${profile.educations[0] ? `- Formation : ${profile.educations[0].degree}, ${profile.educations[0].school}` : ""}`;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "mistral-small-latest",
         max_tokens: 300,
-        system: systemPrompt,
-        messages: [{ role: "user", content: question }],
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: question },
+        ],
       }),
     });
 
@@ -56,7 +57,7 @@ ${profile.educations[0] ? `- Formation : ${profile.educations[0].degree}, ${prof
     }
 
     const data = await res.json();
-    const response = data.content?.[0]?.text ?? profile.summary;
+    const response = data.choices?.[0]?.message?.content ?? profile.summary;
     return NextResponse.json({ data: { response } });
   } catch {
     return NextResponse.json({ data: { response: profile.summary } });

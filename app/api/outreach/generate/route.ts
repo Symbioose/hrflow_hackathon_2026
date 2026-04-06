@@ -47,36 +47,35 @@ export async function POST(req: NextRequest) {
     return new Response("missing profile or session_id", { status: 400 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.MISTRAL_API_KEY;
   if (!apiKey) {
-    return new Response("ANTHROPIC_API_KEY not configured", { status: 500 });
+    return new Response("MISTRAL_API_KEY not configured", { status: 500 });
   }
 
-  const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+  const mistralRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
+      "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: "mistral-small-latest",
       max_tokens: 400,
       stream: true,
       messages: [{ role: "user", content: buildPrompt(profile) }],
     }),
   });
 
-  if (!anthropicRes.ok) {
-    const err = await anthropicRes.text();
-    return new Response(`Anthropic error: ${err}`, { status: 500 });
+  if (!mistralRes.ok) {
+    const err = await mistralRes.text();
+    return new Response(`Mistral error: ${err}`, { status: 500 });
   }
 
   let fullMessage = "";
 
   const stream = new ReadableStream({
     async start(controller) {
-      const reader = anthropicRes.body!.getReader();
+      const reader = mistralRes.body!.getReader();
       const decoder = new TextDecoder();
 
       while (true) {
@@ -91,8 +90,8 @@ export async function POST(req: NextRequest) {
           if (json === "[DONE]") continue;
           try {
             const parsed = JSON.parse(json);
-            if (parsed.type === "content_block_delta" && parsed.delta?.type === "text_delta") {
-              const text = parsed.delta.text;
+            const text = parsed.choices?.[0]?.delta?.content;
+            if (text) {
               fullMessage += text;
               controller.enqueue(new TextEncoder().encode(text));
             }
