@@ -190,18 +190,19 @@ export default function LoginPage() {
       {/* ── Right: Globe visual ──────────────────────────── */}
       <div
         className="hidden lg:flex flex-1 relative items-center justify-center overflow-hidden"
-        style={{ background: "#f8f9fa" }}
+        style={{
+          background: "radial-gradient(ellipse at 60% 40%, #e8f0fe 0%, #f0f4ff 40%, #fdf0ee 100%)",
+        }}
       >
         {/* Subtle grid */}
         <div className="absolute inset-0" style={{
-          backgroundImage: "linear-gradient(#e5e7eb 1px, transparent 1px), linear-gradient(90deg, #e5e7eb 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-          opacity: 0.4,
         }} />
         {/* Glow */}
         <div className="absolute rounded-full" style={{
           width: 480, height: 480,
-          background: "radial-gradient(circle, rgba(255,107,107,0.06) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,107,107,0.08) 0%, rgba(99,102,241,0.05) 50%, transparent 70%)",
           top: "50%", left: "50%", transform: "translate(-50%, -50%)",
         }} />
         <div className="relative z-10 flex flex-col items-center gap-10">
