@@ -25,29 +25,33 @@ export default function LoadingView({ query, profileCount, agentStatuses }: Load
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-16"
-      style={{ background: "var(--cream)" }}
+      className="min-h-screen flex flex-col items-center justify-center px-8 py-16"
+      style={{ background: "#f8f9fa" }}
     >
-      {/* Header */}
-      <div className="mb-12 text-center">
-        <div className="inline-flex items-center gap-3 mb-2">
-          <span style={{ fontSize: 28 }}>🦞</span>
-          <span
-            className="text-2xl font-bold"
-            style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
-          >
-            Claw<span style={{ color: "var(--coral)" }}>4HR</span>
-          </span>
+      {/* Status */}
+      <div className="mb-10 text-center">
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-xs font-mono font-bold uppercase tracking-wider"
+          style={{ background: "rgba(255,107,107,0.08)", color: "#FF6B6B", border: "1px solid rgba(255,107,107,0.15)" }}
+        >
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#FF6B6B" }} />
+          Agents actifs
         </div>
         <h2
-          className="text-3xl font-bold mt-4 mb-2"
-          style={{ fontFamily: "Georgia, serif", color: "var(--ink)" }}
+          className="text-2xl font-bold mb-3 tracking-tight"
+          style={{ color: "#1a1a2e" }}
         >
           Recherche en cours{dots}
         </h2>
-        <p className="font-mono text-sm" style={{ color: "var(--muted-text)" }}>
-          &ldquo;{query}&rdquo;
-        </p>
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-mono"
+          style={{ background: "#fff", border: "1px solid #e5e7eb", color: "#6b7280" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" strokeWidth="2.5" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+          </svg>
+          {query}
+        </div>
       </div>
 
       {/* Pixel agents */}
@@ -57,34 +61,31 @@ export default function LoadingView({ query, profileCount, agentStatuses }: Load
         ))}
       </div>
 
-      {/* Progress bar */}
-      <div
-        className="w-full max-w-md h-2 rounded-full overflow-hidden mb-4"
-        style={{ background: "rgba(26,26,46,0.1)" }}
-      >
+      {/* Progress */}
+      <div className="w-full max-w-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-mono" style={{ color: "#9ca3af" }}>
+            {doneCount}/{agents.length} agents terminés
+          </span>
+          {profileCount > 0 && (
+            <span className="text-xs font-mono font-bold" style={{ color: "#FF6B6B" }}>
+              +{profileCount} profil{profileCount > 1 ? "s" : ""} trouvé{profileCount > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
         <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{
-            width: `${(doneCount / agents.length) * 100}%`,
-            background: "var(--coral)",
-          }}
-        />
-      </div>
-
-      {/* Profile counter */}
-      {profileCount > 0 && (
-        <p
-          className="font-mono text-sm font-bold animate-card-reveal"
-          style={{ color: "var(--coral)" }}
+          className="w-full h-1.5 rounded-full overflow-hidden"
+          style={{ background: "#e5e7eb" }}
         >
-          +{profileCount} profil{profileCount > 1 ? "s" : ""} trouvé{profileCount > 1 ? "s" : ""}
-        </p>
-      )}
-
-      {/* Step indicator */}
-      <p className="mt-2 text-xs font-mono" style={{ color: "var(--muted-text)" }}>
-        {doneCount}/{agents.length} agents terminés
-      </p>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${(doneCount / agents.length) * 100}%`,
+              background: "linear-gradient(90deg, #FF6B6B, #CC4444)",
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
