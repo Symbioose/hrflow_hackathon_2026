@@ -59,6 +59,7 @@ export default function Header({
           <div
             className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
             style={{ background: "var(--ink)" }}
+            suppressHydrationWarning
           >
             {sessionId.slice(0, 2).toUpperCase()}
           </div>
