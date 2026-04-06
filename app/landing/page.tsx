@@ -278,7 +278,8 @@ function Nav() {
           <a href="/pricing" className="hover:text-[#1a1a2e] transition-colors">Tarifs</a>
         </div>
         <div className="flex items-center gap-3">
-          <PixelBtn href="#demo" variant="coral" size="sm">Demander une démo &rarr;</PixelBtn>
+          <PixelBtn href="/" variant="outline" size="sm">Mon compte</PixelBtn>
+          <PixelBtn href="/" variant="coral" size="sm">Tester &rarr;</PixelBtn>
         </div>
       </div>
     </nav>

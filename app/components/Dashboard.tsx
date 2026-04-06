@@ -7,7 +7,10 @@ import SearchView from "./SearchView";
 import LoadingView from "./LoadingView";
 import ResultsView from "./ResultsView";
 import ProfileDetailView from "./ProfileDetailView";
+import Header from "./Header";
+import OutreachModal from "./OutreachModal";
 import { streamDemoProfiles } from "@/app/lib/demoProfiles";
+import { getSessionId } from "@/app/lib/session";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -29,21 +32,55 @@ export default function Dashboard() {
   const [query, setQuery] = useState("");
   const [profiles, setProfiles] = useState<SourcedProfile[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<Record<AgentSource, AgentState>>({
-    github: "idle",
-    linkedin: "idle",
-    reddit: "idle",
-    internet: "idle",
+    github: "idle", linkedin: "idle", reddit: "idle", internet: "idle",
   });
   const [isStreaming, setIsStreaming] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<SourcedProfile | null>(null);
   const [qaMessages, setQaMessages] = useState<ChatMessage[]>([]);
   const [asking, setAsking] = useState(false);
 
+  // ─── Account state ─────────────────────────────────────────
+  const [sessionId] = useState<string>(() => {
+    if (typeof window !== "undefined") return getSessionId();
+    return "ssr";
+  });
+  const [savedProfiles, setSavedProfiles] = useState<Set<string>>(new Set());
+  const [shortlistCount, setShortlistCount] = useState(0);
+  const [outreachCount, setOutreachCount] = useState(0);
+  const [outreachTarget, setOutreachTarget] = useState<SourcedProfile | null>(null);
+  const [pendingQuery, setPendingQuery] = useState<string>("");
+
   const esRef = useRef<EventSource | null>(null);
   const demoCleanupRef = useRef<(() => void) | null>(null);
   const retriesRef = useRef(0);
   const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const demoFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchIdRef = useRef(0);
+
+  // ─── Connect SSE on mount to receive chat events from OpenClaw ──
+  useEffect(() => {
+    connectSSE(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ─── Load initial shortlist + outreach counts ──────────────
+
+  useEffect(() => {
+    if (!sessionId || sessionId === "ssr") return;
+    fetch(`/api/account/shortlist?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const keys = new Set<string>((data.data ?? []).map((e: { profile_key: string }) => e.profile_key));
+        setSavedProfiles(keys);
+        setShortlistCount(keys.size);
+      })
+      .catch(() => {});
+
+    fetch(`/api/account/outreach?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => setOutreachCount((data.data ?? []).length))
+      .catch(() => {});
+  }, [sessionId]);
 
   // ─── SSE connection ────────────────────────────────────────
 
@@ -57,22 +94,26 @@ export default function Dashboard() {
       if (searchIdRef.current !== thisSearch) return;
       try {
         const event = JSON.parse(e.data);
-
-        // Profile received
         if (event.channel === "profile" && event.payload?.profile) {
           const p = event.payload.profile as SourcedProfile;
+          // A real profile arrived — cancel demo fallback timer
+          if (demoFallbackTimerRef.current) {
+            clearTimeout(demoFallbackTimerRef.current);
+            demoFallbackTimerRef.current = null;
+          }
           setProfiles((prev) => {
             if (prev.some((x) => x.key === p.key)) return prev;
             return [...prev, p];
           });
           setView((v) => (v === "loading" ? "results" : v));
         }
-
-        // Agent status update
         if (event.channel === "feed" && event.payload?.source) {
           const source = event.payload.source as AgentSource;
           const status = event.payload.status as "running" | "done" | "error";
           setAgentStatuses((prev) => ({ ...prev, [source]: status }));
+        }
+        if (event.channel === "chat" && event.payload?.query) {
+          setPendingQuery(event.payload.query as string);
         }
       } catch {}
     };
@@ -83,9 +124,7 @@ export default function Dashboard() {
       if (retriesRef.current < 3) {
         retriesRef.current++;
         setTimeout(() => {
-          if (searchIdRef.current === thisSearch) {
-            connectSSE(cursor);
-          }
+          if (searchIdRef.current === thisSearch) connectSSE(cursor);
         }, 2000);
       } else {
         setView("search");
@@ -98,6 +137,7 @@ export default function Dashboard() {
     return () => {
       esRef.current?.close();
       demoCleanupRef.current?.();
+      if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
       if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
     };
   }, []);
@@ -116,9 +156,16 @@ export default function Dashboard() {
     setIsStreaming(true);
 
     connectSSE(0);
-
-    // Agents start running immediately — optimistic UI
     setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
+
+    // Log search to Supabase
+    if (sessionId && sessionId !== "ssr") {
+      fetch("/api/account/searches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, query: q }),
+      }).catch(() => {});
+    }
 
     const res = await fetch("/api/openclaw/trigger", {
       method: "POST",
@@ -128,15 +175,14 @@ export default function Dashboard() {
 
     if (searchIdRef.current !== thisSearch) return;
 
-    if (!res.ok) {
-      // OpenClaw not available — demo fallback with timed agent completion
+    const triggerDemoFallback = () => {
+      if (searchIdRef.current !== thisSearch) return;
       (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
         setTimeout(() => {
           if (searchIdRef.current !== thisSearch) return;
           setAgentStatuses((prev) => ({ ...prev, [src]: "done" }));
-        }, 2000 + i * 1500);
+        }, i * 1500);
       });
-
       demoCleanupRef.current?.();
       demoCleanupRef.current = streamDemoProfiles((p) => {
         if (searchIdRef.current !== thisSearch) return;
@@ -146,10 +192,24 @@ export default function Dashboard() {
         });
         setView("results");
       }, 1400);
+    };
+
+    if (!res.ok) {
+      triggerDemoFallback();
+    } else {
+      // OpenClaw returned 200 but profiles arrive async via webhook.
+      // If no profile appears within 6s, fall back to demo profiles.
+      if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
+      demoFallbackTimerRef.current = setTimeout(() => {
+        setProfiles((current) => {
+          if (current.length === 0) triggerDemoFallback();
+          return current;
+        });
+      }, 6000);
     }
 
     streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
-  }, [connectSSE]);
+  }, [connectSSE, sessionId]);
 
   // ─── Profile Q&A ──────────────────────────────────────────
 
@@ -158,32 +218,44 @@ export default function Dashboard() {
     setQaMessages([]);
     setView("profile");
 
-    if (profile.hrflow_key) {
-      setAsking(true);
-      fetch(`/api/hrflow/ask?profile_key=${profile.hrflow_key}&question=${encodeURIComponent("Donne-moi une synthèse de ce profil en 3 points clés pour un recruteur.")}`)
-        .then((r) => r.json())
-        .then((data) => {
-          const answer = data?.data?.response ?? "Profil analysé avec succès.";
-          setQaMessages([chatMsg("agent", answer)]);
-        })
-        .catch(() => {
-          setQaMessages([chatMsg("agent", `${profile.name} — ${profile.title} à ${profile.location}. ${profile.summary}`)]);
-        })
-        .finally(() => setAsking(false));
-    } else {
-      setQaMessages([chatMsg("agent", profile.summary)]);
-    }
+    setAsking(true);
+    const question = "Donne-moi une synthèse de ce profil en 3 points clés pour un recruteur.";
+    const fetchPromise = profile.hrflow_key
+      ? fetch(`/api/hrflow/ask?profile_key=${profile.hrflow_key}&question=${encodeURIComponent(question)}`).then((r) => r.json())
+      : fetch("/api/demo/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile, question }),
+        }).then((r) => r.json());
+
+    fetchPromise
+      .then((data) => {
+        const answer = data?.data?.response ?? profile.summary;
+        setQaMessages([chatMsg("agent", answer)]);
+      })
+      .catch(() => {
+        setQaMessages([chatMsg("agent", profile.summary)]);
+      })
+      .finally(() => setAsking(false));
   }, []);
 
   const handleAsk = useCallback(async (question: string) => {
     if (!selectedProfile || asking) return;
     setQaMessages((prev) => [...prev, chatMsg("user", question)]);
     setAsking(true);
-
     try {
-      const profileKey = selectedProfile.hrflow_key ?? selectedProfile.key;
-      const res = await fetch(`/api/hrflow/ask?profile_key=${encodeURIComponent(profileKey)}&question=${encodeURIComponent(question)}`);
-      const data = await res.json();
+      let data;
+      if (selectedProfile.hrflow_key) {
+        const res = await fetch(`/api/hrflow/ask?profile_key=${encodeURIComponent(selectedProfile.hrflow_key)}&question=${encodeURIComponent(question)}`);
+        data = await res.json();
+      } else {
+        const res = await fetch("/api/demo/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile: selectedProfile, question }),
+        });
+        data = await res.json();
+      }
       const answer = data?.data?.response ?? "Je n'ai pas pu obtenir de réponse.";
       setQaMessages((prev) => [...prev, chatMsg("agent", answer)]);
     } catch {
@@ -203,6 +275,7 @@ export default function Dashboard() {
     esRef.current?.close();
     demoCleanupRef.current?.();
     if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
+    if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
     setView("search");
     setProfiles([]);
     setQuery("");
@@ -211,40 +284,106 @@ export default function Dashboard() {
     setQaMessages([]);
   }, []);
 
+  // ─── Save / Shortlist ──────────────────────────────────────
+
+  const handleSave = useCallback((profile: SourcedProfile) => {
+    const isCurrentlySaved = savedProfiles.has(profile.key);
+
+    // Optimistic update
+    setSavedProfiles((prev) => {
+      const next = new Set(prev);
+      if (isCurrentlySaved) {
+        next.delete(profile.key);
+        setShortlistCount((c) => Math.max(0, c - 1));
+      } else {
+        next.add(profile.key);
+        setShortlistCount((c) => c + 1);
+      }
+      return next;
+    });
+
+    if (isCurrentlySaved) {
+      fetch("/api/account/shortlist", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, profile_key: profile.key }),
+      }).catch(() => {});
+    } else {
+      fetch("/api/account/shortlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, profile_key: profile.key, profile_data: profile }),
+      }).catch(() => {});
+    }
+  }, [savedProfiles, sessionId]);
+
+  // ─── Outreach ──────────────────────────────────────────────
+
+  const handleContact = useCallback((profile: SourcedProfile) => {
+    setOutreachTarget(profile);
+  }, []);
+
+  const handleOutreachClose = useCallback(() => {
+    setOutreachTarget(null);
+    fetch(`/api/account/outreach?session_id=${sessionId}`)
+      .then((r) => r.json())
+      .then((data) => setOutreachCount((data.data ?? []).length))
+      .catch(() => {});
+  }, [sessionId]);
+
   // ─── Render ────────────────────────────────────────────────
 
-  if (view === "search") {
-    return <SearchView onSearch={handleSearch} />;
-  }
-
-  if (view === "loading") {
-    return <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />;
-  }
-
-  if (view === "results") {
-    return (
-      <ResultsView
-        profiles={profiles}
-        query={query}
-        isStreaming={isStreaming}
-        agentStatuses={agentStatuses}
-        onSelect={handleSelectProfile}
-        onNewSearch={handleNewSearch}
+  return (
+    <>
+      <Header
+        sessionId={sessionId}
+        shortlistKeys={savedProfiles}
+        onRelaunchSearch={handleSearch}
+        onOpenProfile={handleSelectProfile}
+        shortlistCount={shortlistCount}
+        outreachCount={outreachCount}
       />
-    );
-  }
+      <div style={{ paddingTop: 56 }}>
+        {view === "search" && <SearchView onSearch={handleSearch} initialQuery={pendingQuery} />}
 
-  if (view === "profile" && selectedProfile) {
-    return (
-      <ProfileDetailView
-        profile={selectedProfile}
-        messages={qaMessages}
-        asking={asking}
-        onBack={handleBack}
-        onSend={handleAsk}
-      />
-    );
-  }
+        {view === "loading" && (
+          <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />
+        )}
 
-  return null;
+        {view === "results" && (
+          <ResultsView
+            profiles={profiles}
+            query={query}
+            isStreaming={isStreaming}
+            agentStatuses={agentStatuses}
+            savedProfiles={savedProfiles}
+            onSelect={handleSelectProfile}
+            onSave={handleSave}
+            onNewSearch={handleNewSearch}
+          />
+        )}
+
+        {view === "profile" && selectedProfile && (
+          <ProfileDetailView
+            profile={selectedProfile}
+            messages={qaMessages}
+            asking={asking}
+            isSaved={savedProfiles.has(selectedProfile.key)}
+            onBack={handleBack}
+            onSend={handleAsk}
+            onSave={handleSave}
+            onContact={handleContact}
+          />
+        )}
+      </div>
+
+      {outreachTarget && (
+        <OutreachModal
+          profile={outreachTarget}
+          sessionId={sessionId}
+          onClose={handleOutreachClose}
+        />
+      )}
+    </>
+  );
 }

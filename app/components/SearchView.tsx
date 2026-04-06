@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { SourceType } from "@/app/lib/types";
 
 interface SearchViewProps {
   onSearch: (query: string) => void;
+  initialQuery?: string;
 }
 
 const SUGGESTIONS = [
@@ -22,9 +23,13 @@ const CONNECTORS: { type: SourceType; label: string; color: string; active: bool
   { type: "hellowork", label: "HelloWork", color: "#e05c2a", active: false },
 ];
 
-export default function SearchView({ onSearch }: SearchViewProps) {
-  const [query, setQuery] = useState("");
+export default function SearchView({ onSearch, initialQuery }: SearchViewProps) {
+  const [query, setQuery] = useState(initialQuery ?? "");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (initialQuery) setQuery(initialQuery);
+  }, [initialQuery]);
 
   function handleSubmit() {
     const q = query.trim();
@@ -34,7 +39,7 @@ export default function SearchView({ onSearch }: SearchViewProps) {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4"
+      className="min-h-screen flex flex-col items-center justify-center px-4 pt-14"
       style={{ background: "var(--cream)" }}
     >
       {/* Logo */}

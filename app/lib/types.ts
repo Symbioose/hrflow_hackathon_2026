@@ -103,3 +103,30 @@ export interface ChatMessage {
   text: string;
   time: string;
 }
+
+// ─── Account / Supabase types ───────────────────────────────────
+
+export interface SavedSearch {
+  id: string;
+  session_id: string;
+  query: string;
+  profile_count: number;
+  created_at: string;
+}
+
+export interface ShortlistEntry {
+  id: string;
+  session_id: string;
+  profile_key: string;
+  profile_data: SourcedProfile;
+  saved_at: string;
+}
+
+export interface OutreachEntry {
+  id: string;
+  session_id: string;
+  profile_key: string;
+  profile_name: string;
+  message: string;
+  created_at: string;
+}
