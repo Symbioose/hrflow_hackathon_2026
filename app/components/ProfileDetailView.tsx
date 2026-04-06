@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { SourcedProfile, ChatMessage, SourceType } from "@/app/lib/types";
 import ScoreRing from "./ScoreRing";
 import QAPanel from "./QAPanel";
+import HrFlowSWOT from "./HrFlowSWOT";
 
 const SOURCE_COLORS: Record<SourceType, string> = {
   github: "#1a1a2e",
@@ -21,6 +23,8 @@ const SOURCE_LABELS: Record<SourceType, string> = {
   indeed: "Indeed",
   hellowork: "HelloWork",
 };
+
+type RightTab = "swot" | "chat";
 
 interface ProfileDetailViewProps {
   profile: SourcedProfile;
@@ -43,6 +47,8 @@ export default function ProfileDetailView({
   onSave,
   onContact,
 }: ProfileDetailViewProps) {
+  const [activeTab, setActiveTab] = useState<RightTab>("swot");
+
   const initials = profile.name
     .split(" ")
     .map((w) => w[0])
@@ -88,11 +94,7 @@ export default function ProfileDetailView({
           <button
             onClick={() => onContact(profile)}
             className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg transition-all ml-auto"
-            style={{
-              background: "#FF6B6B",
-              color: "#fff",
-              boxShadow: "0 2px 8px rgba(255,107,107,0.3)",
-            }}
+            style={{ background: "#FF6B6B", color: "#fff", boxShadow: "0 2px 8px rgba(255,107,107,0.3)" }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#CC4444")}
             onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#FF6B6B")}
           >
@@ -216,38 +218,88 @@ export default function ProfileDetailView({
         </div>
       </div>
 
-      {/* ─── Right panel: AI Q&A ──────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: "#f8f9fa" }}>
-        {/* Panel header */}
+      {/* ─── Right panel: tabs ────────────────────────────────── */}
+      <div className="flex flex-col overflow-hidden flex-shrink-0" style={{ width: 420, background: "#f8f9fa" }}>
+        {/* Tab bar */}
         <div
-          className="flex items-center gap-3 px-6 py-4 flex-shrink-0"
+          className="flex flex-shrink-0"
           style={{ background: "#fff", borderBottom: "1px solid #e5e7eb" }}
         >
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-white text-xs flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #FF6B6B, #CC4444)" }}
-          >
-            IA
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>Assistant IA</p>
-            <p className="text-[11px] font-mono" style={{ color: "#FF6B6B" }}>
-              Analyse de {profile.name.split(" ")[0]}
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: asking ? "#f59e0b" : "#10b981" }} />
-            <span className="text-[11px] font-mono" style={{ color: "#9ca3af" }}>
-              {asking ? "Analyse…" : "Prêt"}
-            </span>
-          </div>
+          <TabButton
+            label="Analyse HrFlow"
+            icon={
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            }
+            isActive={activeTab === "swot"}
+            onClick={() => setActiveTab("swot")}
+          />
+          <TabButton
+            label="Chat IA"
+            icon={
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            }
+            isActive={activeTab === "chat"}
+            onClick={() => setActiveTab("chat")}
+            badge={messages.length > 0 ? messages.length : undefined}
+          />
         </div>
 
-        {/* Q&A Panel fills remaining space */}
-        <div className="flex-1 overflow-hidden p-4 flex flex-col">
-          <QAPanel profile={profile} messages={messages} asking={asking} onSend={onSend} />
+        {/* Tab content */}
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "swot" && (
+            <div className="h-full overflow-y-auto p-5">
+              <HrFlowSWOT profile={profile} />
+            </div>
+          )}
+          {activeTab === "chat" && (
+            <div className="h-full p-4 flex flex-col">
+              <QAPanel profile={profile} messages={messages} asking={asking} onSend={onSend} />
+            </div>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function TabButton({
+  label,
+  icon,
+  isActive,
+  onClick,
+  badge,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  onClick: () => void;
+  badge?: number;
+}) {
+  const ACCENT = "#4f46e5";
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 px-4 py-3 text-xs font-semibold transition-all relative flex-1 justify-center"
+      style={{
+        color: isActive ? ACCENT : "#6b7280",
+        background: "transparent",
+        borderBottom: isActive ? `2px solid ${ACCENT}` : "2px solid transparent",
+      }}
+    >
+      <span style={{ color: isActive ? ACCENT : "#9ca3af" }}>{icon}</span>
+      {label}
+      {badge != null && badge > 0 && (
+        <span
+          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ background: `${ACCENT}20`, color: ACCENT }}
+        >
+          {badge}
+        </span>
+      )}
+    </button>
   );
 }
