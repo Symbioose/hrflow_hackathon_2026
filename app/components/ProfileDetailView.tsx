@@ -219,7 +219,7 @@ export default function ProfileDetailView({
       </div>
 
       {/* ─── Right panel: tabs ────────────────────────────────── */}
-      <div className="flex flex-col overflow-hidden flex-shrink-0" style={{ width: 420, background: "#f8f9fa" }}>
+      <div className="flex flex-col overflow-hidden flex-1" style={{ minWidth: 380, background: "#f8f9fa" }}>
         {/* Tab bar */}
         <div
           className="flex flex-shrink-0"
