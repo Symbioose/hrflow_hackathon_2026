@@ -48,12 +48,19 @@ export default function Dashboard() {
   const [shortlistCount, setShortlistCount] = useState(0);
   const [outreachCount, setOutreachCount] = useState(0);
   const [outreachTarget, setOutreachTarget] = useState<SourcedProfile | null>(null);
+  const [pendingQuery, setPendingQuery] = useState<string>("");
 
   const esRef = useRef<EventSource | null>(null);
   const demoCleanupRef = useRef<(() => void) | null>(null);
   const retriesRef = useRef(0);
   const streamTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchIdRef = useRef(0);
+
+  // ─── Connect SSE on mount to receive chat events from OpenClaw ──
+  useEffect(() => {
+    connectSSE(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ─── Load initial shortlist + outreach counts ──────────────
 
@@ -98,6 +105,9 @@ export default function Dashboard() {
           const source = event.payload.source as AgentSource;
           const status = event.payload.status as "running" | "done" | "error";
           setAgentStatuses((prev) => ({ ...prev, [source]: status }));
+        }
+        if (event.channel === "chat" && event.payload?.query) {
+          setPendingQuery(event.payload.query as string);
         }
       } catch {}
     };
@@ -299,7 +309,7 @@ export default function Dashboard() {
         outreachCount={outreachCount}
       />
       <div style={{ paddingTop: 56 }}>
-        {view === "search" && <SearchView onSearch={handleSearch} />}
+        {view === "search" && <SearchView onSearch={handleSearch} initialQuery={pendingQuery} />}
 
         {view === "loading" && (
           <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />
