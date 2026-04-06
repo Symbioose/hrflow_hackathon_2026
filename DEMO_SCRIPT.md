@@ -19,7 +19,7 @@
 
 | Profil | Score | Source | Ce qu'on montre |
 |--------|-------|--------|-----------------|
-| **Camille Fontaine** | 94% | LinkedIn | **Profil principal** — SWOT + Q&A + Shortlist + Outreach |
+| **Lina Faik** | 94% | LinkedIn ✅ RÉEL | **Profil principal** — clic sur lien LinkedIn live + SWOT + Q&A + Shortlist + Outreach |
 | **Lucas Moreau** | 79% | GitHub | Sourcing hors LinkedIn — "son code parle pour lui" |
 | **Marie Duplessis** | 83% | LinkedIn | Shortlistée en J-1 → visible dans Pipeline |
 | **Thomas Leroy** | 88% | LinkedIn | Outreach pré-envoyé → colonne "Contactés" dans Pipeline |
@@ -68,51 +68,57 @@ Lead Data Scientist, expert Python et ML, 5+ ans d'expérience en production, ba
 
 > *"Regardez — LinkedIn bien sûr, mais aussi GitHub. On va chercher les profils là où ils montrent vraiment ce qu'ils savent faire, pas juste ce qu'ils écrivent sur leur CV."*
 
-**→ Pointer la carte de Camille Fontaine (94% — Lead Data Scientist, Criteo).**
+**→ Pointer la carte de Lina Faik (94% — Senior ML Engineer, ex-Dataiku).**
 
-> *"HrFlow a analysé sémantiquement ce profil. 94% de match. Pas parce qu'elle a écrit 'Python' — parce qu'elle a 7 ans de ML en production, une équipe managée, des résultats business mesurables."*
+> *"HrFlow a analysé sémantiquement ce profil. 94% de match. Pas parce qu'elle a écrit 'Python' — parce qu'elle a 6 ans de ML en production sur des projets réels chez L'Oréal, Décathlon, Dataiku."*
 
-**→ Cliquer sur Camille Fontaine.**
+**→ Cliquer sur Lina Faik.**
 
 ---
 
 ### ⏱ 1:35 — 2:05 | Le Profil (ProfileDetailView)
 
-**Action :** Ouvrir la fiche. Montrer rapidement les expériences (Criteo → Artefact → Société Générale).
+**Action :** Ouvrir la fiche. Montrer rapidement les expériences.
 
 > *"Parcours complet, compétences vérifiées, contexte business. En 5 secondes j'ai ce qu'un recruteur met 20 minutes à construire."*
+
+**→ [MOMENT CLÉ] Cliquer sur le lien source LinkedIn sous son nom.**
+
+> *"Et si vous voulez vérifier — c'est un vrai profil LinkedIn. Claw4HR a trouvé cette personne réelle, en activité, qui ne postule pas."*
+
+**→ Laisser le profil LinkedIn s'ouvrir 3 secondes. Revenir sur l'app.**
 
 **Action :** Scroller vers le SWOT / Upskilling HrFlow, puis taper dans le Q&A :
 
 ```
-Est-ce qu'elle a une expérience de management d'équipe ?
+Est-ce qu'elle a une expérience en déploiement de LLMs en production ?
 ```
 
-> *"Je peux lui poser des questions en langage naturel. Pas besoin de lire le profil en entier."*
+> *"Je peux interroger ce profil en langage naturel. Pas besoin de lire le profil en entier."*
 
-**→ Laisser la réponse s'afficher : "Oui, elle lead une équipe de 4 data scientists chez Criteo depuis 2021."**
+**→ Laisser la réponse s'afficher.**
 
 **→ Cliquer "Shortlister". Puis "Retour".**
 
-> *"Shortlistée. On passe au suivant."*
+> *"Shortlistée."*
 
 **→ Revenir aux résultats. Cliquer sur Lucas Moreau (GitHub, 79%).**
 
-> *"Lui, il est sur GitHub — pas de poste LinkedIn visible. Il ne cherche pas activement. Mais son code parle pour lui : 40 repos publics, contributeur LangChain."*
+> *"Lui, il est sur GitHub — pas de poste LinkedIn visible. Il ne cherche pas activement. Mais son code parle pour lui."*
 
-**→ Shortlister Lucas Moreau également. Retour aux résultats.**
+**→ Shortlister Lucas Moreau. Retour aux résultats.**
 
 ---
 
 ### ⏱ 2:05 — 2:30 | L'Outreach (la conversion)
 
-**Action :** Sur la carte de Camille Fontaine, cliquer "Contacter".
+**Action :** Sur la carte de Lina Faik, cliquer "Contacter".
 
 > *"Maintenant le plus difficile : décrocher une réponse d'un talent passif qui ne cherche pas de travail."*
 
 **→ Le modal s'ouvre. Laisser 2 secondes pour que le jury lise le début du message.**
 
-> *"Notre IA génère un message personnalisé. Elle cite son projet chez Criteo, son passage chez Artefact, son stack exact. Ce n'est pas un template — c'est une approche chirurgicale."*
+> *"Notre IA génère un message personnalisé. Elle cite son passage chez Dataiku, ses missions L'Oréal, son stack exact. Ce n'est pas un template — c'est une approche chirurgicale."*
 
 > *"Taux de réponse d'un message générique : 8%. Personnalisé comme ça : 3 fois plus."*
 
