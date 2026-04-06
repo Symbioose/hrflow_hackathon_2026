@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 
-type NavSection = "search" | "shortlist" | "outreach" | "history" | "analyse" | "pipeline";
+type NavSection = "search" | "shortlist" | "outreach" | "history" | "analyse" | "pipeline" | "team";
 
 interface SidebarProps {
   activeSection: NavSection;
@@ -53,6 +53,21 @@ const INSIGHTS_ITEMS: { section: NavSection; label: string; icon: React.ReactNod
     section: "pipeline",
     label: "Pipeline",
     icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="7" rx="1"/></svg>,
+  },
+];
+
+const TEAM_ITEMS: { section: NavSection; label: string; icon: React.ReactNode }[] = [
+  {
+    section: "team",
+    label: "Équipe",
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    ),
   },
 ];
 
@@ -129,6 +144,22 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
           </p>
           <div className="flex flex-col gap-0.5">
             {INSIGHTS_ITEMS.map((item) => (
+              <NavItem
+                key={item.section}
+                item={item}
+                isActive={activeSection === item.section}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9ca3af" }}>
+            Équipe
+          </p>
+          <div className="flex flex-col gap-0.5">
+            {TEAM_ITEMS.map((item) => (
               <NavItem
                 key={item.section}
                 item={item}
