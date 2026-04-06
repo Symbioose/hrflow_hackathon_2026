@@ -19,6 +19,8 @@ export default function HrFlowSWOT({ profile, jobKey }: HrFlowSWOTProps) {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     setLoading(true);
     setError(false);
     setData(null);
@@ -27,7 +29,7 @@ export default function HrFlowSWOT({ profile, jobKey }: HrFlowSWOTProps) {
     const effectiveJobKey = jobKey ?? defaultJobKey;
 
     const fetchSwot = profile.hrflow_key && effectiveJobKey
-      ? fetch(`/api/hrflow/upskill?profile_key=${encodeURIComponent(profile.hrflow_key)}&job_key=${encodeURIComponent(effectiveJobKey)}`)
+      ? fetch(`/api/hrflow/upskill?profile_key=${encodeURIComponent(profile.hrflow_key)}&job_key=${encodeURIComponent(effectiveJobKey)}`, { signal: controller.signal })
           .then((r) => r.json())
           .then((res) => {
             const raw = res?.data ?? {};
@@ -39,14 +41,20 @@ export default function HrFlowSWOT({ profile, jobKey }: HrFlowSWOTProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ profile }),
+          signal: controller.signal,
         })
           .then((r) => r.json())
           .then((res) => res?.data ?? { strengths: [], improvements: [] });
 
     fetchSwot
       .then((swot) => setData(swot))
-      .catch(() => setError(true))
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setError(true);
+      })
       .finally(() => setLoading(false));
+
+    return () => controller.abort();
   }, [profile.key, profile.hrflow_key, jobKey]);
 
   if (loading) {
