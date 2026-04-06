@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/app/lib/supabase";
+
 type NavSection = "search" | "shortlist" | "outreach" | "history";
 
 interface SidebarProps {
@@ -7,6 +11,7 @@ interface SidebarProps {
   shortlistCount: number;
   outreachCount: number;
   sessionId: string;
+  userProfile: { name: string; company: string; email: string } | null;
   onNavigate: (section: NavSection) => void;
 }
 
@@ -63,7 +68,10 @@ const navItems: { section: NavSection; label: string; icon: React.ReactNode }[] 
 
 export type { NavSection };
 
-export default function Sidebar({ activeSection, shortlistCount, outreachCount, sessionId, onNavigate }: SidebarProps) {
+export default function Sidebar({ activeSection, shortlistCount, outreachCount, sessionId, userProfile, onNavigate }: SidebarProps) {
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const badges: Record<NavSection, number> = {
     search: 0,
     shortlist: shortlistCount,
@@ -71,7 +79,14 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
     history: 0,
   };
 
-  const initials = sessionId !== "ssr" ? sessionId.slice(0, 2).toUpperCase() : "HR";
+  const displayName = userProfile?.name || "Recruteur";
+  const displaySub = userProfile?.company || (sessionId !== "ssr" ? `#${sessionId.slice(0, 8)}` : "—");
+  const initials = displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "HR";
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
 
   return (
     <aside
@@ -163,10 +178,13 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
       <div className="mx-3 my-2" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} />
 
       {/* Account */}
-      <div className="px-3 pb-5 flex-shrink-0">
-        <div
-          className="flex items-center gap-3 px-3 py-3 rounded-xl"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.05)" }}
+      <div className="px-3 pb-5 flex-shrink-0 relative">
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left"
+          style={{ background: menuOpen ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.05)" }}
+          onMouseEnter={(e) => { if (!menuOpen) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
+          onMouseLeave={(e) => { if (!menuOpen) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
         >
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -175,14 +193,55 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
           >
             {initials}
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-white truncate">Recruteur</p>
-            <p className="text-[10px] font-mono truncate" style={{ color: "rgba(255,255,255,0.3)" }} suppressHydrationWarning>
-              Session #{sessionId !== "ssr" ? sessionId.slice(0, 8) : "—"}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-white truncate" suppressHydrationWarning>{displayName}</p>
+            <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.3)" }} suppressHydrationWarning>
+              {displaySub}
             </p>
           </div>
-          <div className="ml-auto w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#10b981" }} />
-        </div>
+          <svg
+            width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+            className="flex-shrink-0 transition-transform"
+            style={{ color: "rgba(255,255,255,0.25)", transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+          >
+            <path d="m18 15-6-6-6 6" />
+          </svg>
+        </button>
+
+        {/* Dropdown */}
+        {menuOpen && (
+          <div
+            className="absolute left-3 right-3 rounded-xl overflow-hidden z-50"
+            style={{
+              bottom: "calc(100% - 8px)",
+              background: "#1e1e35",
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxShadow: "0 -8px 32px rgba(0,0,0,0.4)",
+            }}
+          >
+            {/* Profile info */}
+            {userProfile?.email && (
+              <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{userProfile.email}</p>
+              </div>
+            )}
+            {/* Sign out */}
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-2.5 px-4 py-3 text-xs font-medium transition-all"
+              style={{ color: "#fca5a5" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,107,107,0.08)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Se déconnecter
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

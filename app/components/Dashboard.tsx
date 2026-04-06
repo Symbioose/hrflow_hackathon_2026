@@ -53,10 +53,24 @@ export default function Dashboard() {
 
   // ─── Account state ─────────────────────────────────────────
   const [sessionId, setSessionId] = useState<string>("ssr");
+  const [userProfile, setUserProfile] = useState<{ name: string; company: string; email: string } | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setSessionId(user?.id ?? getSessionId());
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      const id = user?.id ?? getSessionId();
+      setSessionId(id);
+      if (user?.id) {
+        const { data } = await supabase
+          .from("user_profiles")
+          .select("name, company")
+          .eq("id", user.id)
+          .single();
+        setUserProfile({
+          name: data?.name ?? "",
+          company: data?.company ?? "",
+          email: user.email ?? "",
+        });
+      }
     });
   }, []);
   const [savedProfiles, setSavedProfiles] = useState<Set<string>>(new Set());
@@ -351,6 +365,7 @@ export default function Dashboard() {
         shortlistCount={shortlistCount}
         outreachCount={outreachCount}
         sessionId={sessionId}
+        userProfile={userProfile}
         onNavigate={handleNavigate}
       />
 
