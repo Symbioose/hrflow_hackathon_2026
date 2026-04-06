@@ -55,3 +55,27 @@ export async function DELETE(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
+
+export async function PATCH(req: NextRequest) {
+  const body = await req.json();
+  const { session_id, profile_key, pipeline_stage } = body;
+  if (!session_id || !profile_key || !pipeline_stage) {
+    return NextResponse.json({ error: "missing fields" }, { status: 400 });
+  }
+
+  const VALID_STAGES = ["shortlisted", "contacted", "waiting", "discussing", "archived"] as const;
+  if (!VALID_STAGES.includes(pipeline_stage as typeof VALID_STAGES[number])) {
+    return NextResponse.json({ error: "invalid pipeline_stage" }, { status: 400 });
+  }
+
+  const { data, error } = await db()
+    .from("shortlist")
+    .update({ pipeline_stage })
+    .eq("session_id", session_id)
+    .eq("profile_key", profile_key)
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ data });
+}
