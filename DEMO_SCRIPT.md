@@ -8,12 +8,21 @@
 
 ## Avant de commencer (J-1)
 
-- [ ] Lancer le fallback démo (`demoProfiles.ts`) — ne PAS dépendre d'OpenClaw en live
-- [ ] Pré-remplir 3-4 profils dans la shortlist Supabase (pour que Pipeline et Analyse aient des données)
-- [ ] Pré-envoyer 1-2 outreach (pour montrer la colonne "Contactés" non vide)
-- [ ] Tester la requête exacte du script → vérifier que les profils démo s'affichent bien
-- [ ] Brancher sur le grand écran + vérifier la résolution (sidebar visible, pas de scroll horizontal)
-- [ ] Naviguer sur `/dashboard` en étant connecté → page prête, barre de recherche visible
+- [ ] Vérifier que le fallback démo est actif (`demoProfiles.ts`) — ne PAS dépendre d'OpenClaw en live
+- [ ] **Pré-shortlister** Camille Fontaine + Lucas Moreau + Marie Duplessis dans Supabase (Pipeline non vide)
+- [ ] **Pré-envoyer** 1 outreach vers Thomas Leroy (colonne "Contactés" visible dans Pipeline)
+- [ ] Taper la requête exacte une fois en test → vérifier que les 8 profils s'affichent dans l'ordre (94, 88, 83, 79, 76, 73, 70, 65)
+- [ ] Brancher sur le grand écran + vérifier la résolution (sidebar + contenu sans scroll horizontal)
+- [ ] Être connecté sur `/dashboard`, barre de recherche vide, prêt à taper
+
+### Profils à connaître par cœur
+
+| Profil | Score | Source | Ce qu'on montre |
+|--------|-------|--------|-----------------|
+| **Camille Fontaine** | 94% | LinkedIn | **Profil principal** — SWOT + Q&A + Shortlist + Outreach |
+| **Lucas Moreau** | 79% | GitHub | Sourcing hors LinkedIn — "son code parle pour lui" |
+| **Marie Duplessis** | 83% | LinkedIn | Shortlistée en J-1 → visible dans Pipeline |
+| **Thomas Leroy** | 88% | LinkedIn | Outreach pré-envoyé → colonne "Contactés" dans Pipeline |
 
 ---
 
@@ -32,7 +41,7 @@
 **Action :** Cliquer dans la barre, taper lentement et clairement :
 
 ```
-Lead Data Scientist NLP, Paris, 5 ans d'expérience
+Lead Data Scientist, expert Python et ML, 5+ ans d'expérience en production, basé Paris
 ```
 
 > *"Je n'écris pas de requête booléenne. Je parle à mon agent comme je parlerais à un chasseur de tête."*
@@ -55,43 +64,57 @@ Lead Data Scientist NLP, Paris, 5 ans d'expérience
 
 ### ⏱ 1:05 — 1:35 | Les Résultats (ResultsView)
 
-**Action :** Les profils apparaissent avec leurs scores. Pointer le score HrFlow sur la meilleure carte.
+**Action :** Les profils apparaissent avec leurs scores. 8 profils au total — 5 LinkedIn (badge bleu), 3 GitHub (badge gris).
 
-> *"Chaque profil est scoré par l'API HrFlow. Pas du matching de mots-clés — une analyse sémantique profonde des compétences réelles. Ce candidat à 87% ? HrFlow a lu son parcours, ses projets GitHub, et l'a comparé au poste."*
+> *"Regardez — LinkedIn bien sûr, mais aussi GitHub. On va chercher les profils là où ils montrent vraiment ce qu'ils savent faire, pas juste ce qu'ils écrivent sur leur CV."*
 
-> *"Ici on ne trie plus des CVs. On choisit parmi des profils déjà qualifiés."*
+**→ Pointer la carte de Camille Fontaine (94% — Lead Data Scientist, Criteo).**
 
-**→ Cliquer sur le profil avec le meilleur score.**
+> *"HrFlow a analysé sémantiquement ce profil. 94% de match. Pas parce qu'elle a écrit 'Python' — parce qu'elle a 7 ans de ML en production, une équipe managée, des résultats business mesurables."*
+
+**→ Cliquer sur Camille Fontaine.**
 
 ---
 
 ### ⏱ 1:35 — 2:05 | Le Profil (ProfileDetailView)
 
-**Action :** Ouvrir la fiche candidat. Scroller jusqu'à la section SWOT / Upskilling.
+**Action :** Ouvrir la fiche. Montrer rapidement les expériences (Criteo → Artefact → Société Générale).
 
-> *"Fiche complète : expériences, compétences, sources. Mais surtout — l'analyse HrFlow : Forces, axes de développement, adéquation avec le poste."*
+> *"Parcours complet, compétences vérifiées, contexte business. En 5 secondes j'ai ce qu'un recruteur met 20 minutes à construire."*
 
-**Action :** Taper une question dans le Q&A :
+**Action :** Scroller vers le SWOT / Upskilling HrFlow, puis taper dans le Q&A :
 
 ```
-Est-ce qu'il a de l'expérience en management d'équipe ?
+Est-ce qu'elle a une expérience de management d'équipe ?
 ```
 
-> *"Je peux interroger ce profil en langage naturel. Mon recruteur ne lit plus 200 pages de CV. Il pose des questions."*
+> *"Je peux lui poser des questions en langage naturel. Pas besoin de lire le profil en entier."*
 
-**→ Laisser la réponse s'afficher, puis cliquer "Shortlister".**
+**→ Laisser la réponse s'afficher : "Oui, elle lead une équipe de 4 data scientists chez Criteo depuis 2021."**
 
-> *"Je le sauvegarde."*
+**→ Cliquer "Shortlister". Puis "Retour".**
+
+> *"Shortlistée. On passe au suivant."*
+
+**→ Revenir aux résultats. Cliquer sur Lucas Moreau (GitHub, 79%).**
+
+> *"Lui, il est sur GitHub — pas de poste LinkedIn visible. Il ne cherche pas activement. Mais son code parle pour lui : 40 repos publics, contributeur LangChain."*
+
+**→ Shortlister Lucas Moreau également. Retour aux résultats.**
 
 ---
 
 ### ⏱ 2:05 — 2:30 | L'Outreach (la conversion)
 
-**Action :** Cliquer "Contacter". Le modal outreach s'ouvre avec le message pré-généré.
+**Action :** Sur la carte de Camille Fontaine, cliquer "Contacter".
 
-> *"Notre IA génère un message d'approche personnalisé — basé sur ce qu'elle a trouvé sur ce candidat spécifiquement. Elle cite son dernier projet, son stack, son contexte."*
+> *"Maintenant le plus difficile : décrocher une réponse d'un talent passif qui ne cherche pas de travail."*
 
-> *"Les messages génériques ont un taux de réponse de 8%. Un message personnalisé comme celui-ci : 3 fois plus."*
+**→ Le modal s'ouvre. Laisser 2 secondes pour que le jury lise le début du message.**
+
+> *"Notre IA génère un message personnalisé. Elle cite son projet chez Criteo, son passage chez Artefact, son stack exact. Ce n'est pas un template — c'est une approche chirurgicale."*
+
+> *"Taux de réponse d'un message générique : 8%. Personnalisé comme ça : 3 fois plus."*
 
 **→ Copier le message. Fermer le modal.**
 
