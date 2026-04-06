@@ -7,7 +7,11 @@ import GlobeEarth from "@/components/ui/globe-earth";
 
 type Mode = "login" | "signup";
 
-function Input({
+function ClawMark() {
+  return <span style={{ fontSize: 24, lineHeight: 1 }}>🦞</span>;
+}
+
+function GlassInput({
   label, type = "text", value, onChange, placeholder, hint,
 }: {
   label: string; type?: string; value: string;
@@ -15,7 +19,7 @@ function Input({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
+      <label className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>
         {label}
       </label>
       <input
@@ -23,16 +27,26 @@ function Input({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+        className="w-full px-4 py-3 rounded-2xl text-sm outline-none transition-all"
         style={{
-          background: "rgba(255,255,255,0.7)",
-          border: "1px solid rgba(0,0,0,0.08)",
-          color: "#1a1a2e",
+          background: "rgba(255,255,255,0.12)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          color: "#fff",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
         }}
-        onFocus={(e) => { e.currentTarget.style.borderColor = "#FF6B6B"; e.currentTarget.style.background = "rgba(255,255,255,0.95)"; }}
-        onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.08)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; }}
+        onFocus={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.18)";
+          e.currentTarget.style.borderColor = "rgba(255,107,107,0.7)";
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255,107,107,0.12)";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
       />
-      {hint && <p className="text-[11px]" style={{ color: "#9ca3af" }}>{hint}</p>}
+      {hint && <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{hint}</p>}
     </div>
   );
 }
@@ -79,52 +93,45 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
 
-      {/* ── Fond spatial ──────────────────────────────────── */}
+      {/* ── Fond spatial ─────────────────────────────────── */}
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, #0d1a35 0%, #060d1f 60%, #020610 100%)" }} />
 
       {/* Étoiles */}
       {[
-        { top: "8%", left: "12%", size: 2, delay: "0s" },
-        { top: "15%", left: "75%", size: 1.5, delay: "1.2s" },
-        { top: "25%", left: "30%", size: 1, delay: "0.5s" },
-        { top: "60%", left: "88%", size: 2, delay: "2s" },
-        { top: "72%", left: "5%", size: 1.5, delay: "0.8s" },
-        { top: "85%", left: "55%", size: 1, delay: "1.7s" },
-        { top: "40%", left: "92%", size: 2, delay: "0.3s" },
-        { top: "5%", left: "48%", size: 1, delay: "2.4s" },
-        { top: "90%", left: "22%", size: 1.5, delay: "1s" },
-        { top: "50%", left: "18%", size: 1, delay: "3s" },
-        { top: "33%", left: "62%", size: 2, delay: "1.5s" },
-        { top: "78%", left: "40%", size: 1, delay: "0.7s" },
-      ].map((s, i) => (
-        <div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            top: s.top, left: s.left,
-            width: s.size, height: s.size,
-            background: "#fff",
-            animation: `twinkling ${2 + i * 0.3}s infinite`,
-            animationDelay: s.delay,
-          }}
-        />
+        { top: "8%",  left: "12%", s: 2,   d: "0s"   },
+        { top: "15%", left: "75%", s: 1.5, d: "1.2s" },
+        { top: "25%", left: "30%", s: 1,   d: "0.5s" },
+        { top: "60%", left: "88%", s: 2,   d: "2s"   },
+        { top: "72%", left: "5%",  s: 1.5, d: "0.8s" },
+        { top: "85%", left: "55%", s: 1,   d: "1.7s" },
+        { top: "40%", left: "92%", s: 2,   d: "0.3s" },
+        { top: "5%",  left: "48%", s: 1,   d: "2.4s" },
+        { top: "90%", left: "22%", s: 1.5, d: "1s"   },
+        { top: "50%", left: "18%", s: 1,   d: "3s"   },
+        { top: "33%", left: "62%", s: 2,   d: "1.5s" },
+        { top: "78%", left: "40%", s: 1,   d: "0.7s" },
+      ].map((st, i) => (
+        <div key={i} className="absolute rounded-full" style={{
+          top: st.top, left: st.left, width: st.s, height: st.s,
+          background: "#fff", animation: `twinkling ${2 + i * 0.3}s infinite`, animationDelay: st.d,
+        }} />
       ))}
 
-      {/* Globe plein écran centré */}
+      {/* Globe */}
       <div className="absolute" style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
         <GlobeEarth size={680} />
       </div>
 
-      {/* Overlay très léger sur les bords uniquement */}
+      {/* Overlay bords */}
       <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(6,13,31,0.55) 100%)" }} />
 
-      {/* Bouton retour */}
+      {/* Retour */}
       <button
         onClick={() => router.push("/")}
         className="absolute top-6 left-6 flex items-center gap-1.5 text-xs font-medium transition-all z-20"
-        style={{ color: "rgba(255,255,255,0.45)" }}
+        style={{ color: "rgba(255,255,255,0.4)" }}
         onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#fff")}
-        onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.45)")}
+        onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.4)")}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="m15 18-6-6 6-6" />
@@ -132,32 +139,42 @@ export default function LoginPage() {
         Retour
       </button>
 
-      {/* Logo */}
+      {/* Logo top right */}
       <div className="absolute top-6 right-6 flex items-center gap-2 z-20">
-        <span style={{ fontSize: 18 }}>🦞</span>
-        <span className="text-sm font-bold text-white">Claw<span style={{ color: "#FF6B6B" }}>4HR</span></span>
+        <ClawMark />
+        <span className="text-sm font-bold tracking-tight text-white">
+          Claw<span style={{ color: "#FF6B6B" }}>4HR</span>
+        </span>
       </div>
 
-      {/* ── Bulle translucide centrée ─────────────────────── */}
+      {/* ── Liquid glass card ────────────────────────────── */}
       <div
         className="relative z-10 w-full mx-4 flex flex-col gap-6"
         style={{
           maxWidth: 420,
-          background: "rgba(255,255,255,0.88)",
-          backdropFilter: "blur(28px)",
-          WebkitBackdropFilter: "blur(28px)",
-          border: "1px solid rgba(255,255,255,0.6)",
-          borderRadius: 24,
-          padding: "36px 40px",
-          boxShadow: "0 8px 48px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.8) inset",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%)",
+          backdropFilter: "blur(48px) saturate(160%)",
+          WebkitBackdropFilter: "blur(48px) saturate(160%)",
+          border: "1px solid rgba(255,255,255,0.18)",
+          borderRadius: 28,
+          padding: "40px 40px",
+          boxShadow: [
+            "0 0 0 1px rgba(255,255,255,0.06) inset",
+            "0 1px 0 rgba(255,255,255,0.3) inset",
+            "0 32px 80px rgba(0,0,0,0.45)",
+            "0 2px 4px rgba(0,0,0,0.3)",
+          ].join(", "),
         }}
       >
+        {/* Reflet haut */}
+        <div className="absolute top-0 left-6 right-6 h-px rounded-full" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)" }} />
+
         {/* Header */}
         <div>
-          <h1 className="text-xl font-bold mb-1" style={{ color: "#1a1a2e" }}>
-            {mode === "login" ? "Bon retour 👋" : "Créer un compte"}
+          <h1 className="text-xl font-bold mb-1 text-white">
+            {mode === "login" ? "Welcome back!" : "Créer un compte"}
           </h1>
-          <p className="text-xs" style={{ color: "#6b7280" }}>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
             {mode === "login"
               ? "Connectez-vous pour accéder à votre espace."
               : "Accès restreint — un token est requis."}
@@ -165,16 +182,17 @@ export default function LoginPage() {
         </div>
 
         {/* Toggle */}
-        <div className="flex rounded-xl p-1" style={{ background: "rgba(0,0,0,0.05)" }}>
+        <div className="flex rounded-2xl p-1" style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.08)" }}>
           {(["login", "signup"] as Mode[]).map((m) => (
             <button
               key={m}
               onClick={() => { setMode(m); setError(""); }}
-              className="flex-1 py-2 text-xs font-semibold rounded-lg transition-all"
+              className="flex-1 py-2 text-xs font-semibold rounded-xl transition-all"
               style={{
-                background: mode === m ? "#fff" : "transparent",
-                color: mode === m ? "#1a1a2e" : "#9ca3af",
-                boxShadow: mode === m ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                background: mode === m ? "rgba(255,255,255,0.15)" : "transparent",
+                color: mode === m ? "#fff" : "rgba(255,255,255,0.35)",
+                backdropFilter: mode === m ? "blur(8px)" : "none",
+                boxShadow: mode === m ? "0 1px 0 rgba(255,255,255,0.2) inset, 0 2px 8px rgba(0,0,0,0.2)" : "none",
               }}
             >
               {m === "login" ? "Se connecter" : "Créer un compte"}
@@ -182,40 +200,52 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Form */}
+        {/* Forms */}
         {mode === "login" ? (
-          <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
-            <Input label="Email" type="email" value={email} onChange={setEmail} placeholder="vous@entreprise.com" />
-            <Input label="Mot de passe" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
-            {error && <p className="text-xs px-3 py-2.5 rounded-xl" style={{ background: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}>{error}</p>}
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <GlassInput label="Email" type="email" value={email} onChange={setEmail} placeholder="vous@entreprise.com" />
+            <GlassInput label="Mot de passe" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
+            {error && (
+              <p className="text-xs px-4 py-3 rounded-2xl" style={{ background: "rgba(239,68,68,0.15)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.25)" }}>
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "#FF6B6B", color: "#fff", boxShadow: "0 2px 12px rgba(255,107,107,0.3)" }}
-              onMouseEnter={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#e85555"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FF6B6B"; }}
+              className="w-full py-3.5 rounded-2xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: "linear-gradient(135deg, #FF6B6B, #e85555)",
+                color: "#fff",
+                boxShadow: "0 4px 20px rgba(255,107,107,0.35), 0 1px 0 rgba(255,255,255,0.2) inset",
+              }}
             >
               {loading ? "Connexion…" : "Se connecter →"}
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSignup} className="flex flex-col gap-3.5">
-            <Input label="Token d'accès" value={token} onChange={setToken} placeholder="akaten-xxxx" hint="Demandez votre token à l'équipe Claw4HR" />
+          <form onSubmit={handleSignup} className="flex flex-col gap-4">
+            <GlassInput label="Token d'accès" value={token} onChange={setToken} placeholder="akaten-xxxx" hint="Demandez votre token à l'équipe Claw4HR" />
             <div className="grid grid-cols-2 gap-3">
-              <Input label="Nom complet" value={name} onChange={setName} placeholder="Jean Dupont" />
-              <Input label="Entreprise" value={company} onChange={setCompany} placeholder="Acme Corp" />
+              <GlassInput label="Nom complet" value={name} onChange={setName} placeholder="Jean Dupont" />
+              <GlassInput label="Entreprise" value={company} onChange={setCompany} placeholder="Acme Corp" />
             </div>
-            <Input label="Email professionnel" type="email" value={email} onChange={setEmail} placeholder="vous@entreprise.com" />
-            <Input label="Mot de passe" type="password" value={password} onChange={setPassword} placeholder="8 caractères minimum" />
-            {error && <p className="text-xs px-3 py-2.5 rounded-xl" style={{ background: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}>{error}</p>}
+            <GlassInput label="Email professionnel" type="email" value={email} onChange={setEmail} placeholder="vous@entreprise.com" />
+            <GlassInput label="Mot de passe" type="password" value={password} onChange={setPassword} placeholder="8 caractères minimum" />
+            {error && (
+              <p className="text-xs px-4 py-3 rounded-2xl" style={{ background: "rgba(239,68,68,0.15)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.25)" }}>
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading || !token || !name || !company || !email || !password}
-              className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "#FF6B6B", color: "#fff", boxShadow: "0 2px 12px rgba(255,107,107,0.3)" }}
-              onMouseEnter={(e) => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#e85555"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FF6B6B"; }}
+              className="w-full py-3.5 rounded-2xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: "linear-gradient(135deg, #FF6B6B, #e85555)",
+                color: "#fff",
+                boxShadow: "0 4px 20px rgba(255,107,107,0.35), 0 1px 0 rgba(255,255,255,0.2) inset",
+              }}
             >
               {loading ? "Création…" : "Créer mon compte →"}
             </button>
