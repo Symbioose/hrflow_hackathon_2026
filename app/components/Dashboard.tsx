@@ -15,6 +15,7 @@ import HistoryView from "./HistoryView";
 import OutreachModal from "./OutreachModal";
 import { streamDemoProfiles } from "@/app/lib/demoProfiles";
 import { getSessionId } from "@/app/lib/session";
+import { supabase } from "@/app/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -51,10 +52,13 @@ export default function Dashboard() {
   const [asking, setAsking] = useState(false);
 
   // ─── Account state ─────────────────────────────────────────
-  const [sessionId] = useState<string>(() => {
-    if (typeof window !== "undefined") return getSessionId();
-    return "ssr";
-  });
+  const [sessionId, setSessionId] = useState<string>("ssr");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setSessionId(user?.id ?? getSessionId());
+    });
+  }, []);
   const [savedProfiles, setSavedProfiles] = useState<Set<string>>(new Set());
   const [shortlistCount, setShortlistCount] = useState(0);
   const [outreachCount, setOutreachCount] = useState(0);
