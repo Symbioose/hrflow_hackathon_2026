@@ -55,6 +55,9 @@ Pour que ça fonctionne, voici la stack à consolider demain :
 4. **Dashboard Next.js (L'Interface) :**
    - **Omni-Search Bar :** "Trouve-moi un DevOps AWS avec 3 ans d'XP."
    - **Agent Feed :** La console latérale qui rassure le recruteur en montrant le raisonnement de l'IA ("Je cherche sur GitHub...", "Je calcule le score HrFlow...").
+   - **Pipeline Kanban :** Vue 3 colonnes (Sourcés → Shortlistés → Contactés) pour suivre chaque campagne de recrutement.
+   - **Tableau Analyse :** KPIs live — profils sourcés, taux de conversion, score HrFlow moyen, entonnoir de recrutement, breakdown par source.
+   - **Authentification sécurisée :** Login/signup avec token d'invite, gestion du compte recruteur (nom, entreprise).
 
 ---
 
