@@ -402,10 +402,10 @@ function Hero() {
           {/* Headline */}
           <h1 className="animate-fade-in-up" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
             <span className="block leading-[0.92] tracking-[-0.03em]" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              Les talents que vous cherchez
+              Arrêtez de chercher.
             </span>
             <span className="block leading-[0.92] tracking-[-0.03em] mt-2" style={{ fontFamily: serif, fontSize: "clamp(3rem, 6.5vw, 6rem)", color: INK }}>
-              ne <span style={{ color: CORAL, fontStyle: "italic" }}>postulent jamais.</span>
+              Commencez à <span style={{ color: CORAL, fontStyle: "italic" }}>trouver.</span>
             </span>
           </h1>
 
