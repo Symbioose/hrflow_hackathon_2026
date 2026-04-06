@@ -229,15 +229,16 @@ function Avatar({ name, size = 40, bg = CORAL }: { name: string; size?: number; 
 const GH_PATH = "M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"
 const LI_PATH = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
 
-function BrandPill({ label, bg, svgPath, svgViewBox = "0 0 24 24" }: { label: string; bg: string; svgPath?: string; svgViewBox?: string }) {
+function SourceLogo({ svgPath, svgViewBox, text, bg }: { svgPath?: string; svgViewBox?: string; text?: string; bg: string }) {
   return (
-    <div className="inline-flex items-center gap-2 px-4 py-2" style={{ backgroundColor: bg, borderRadius: "100px" }}>
-      {svgPath && (
-        <svg width="14" height="14" viewBox={svgViewBox} fill="white" style={{ flexShrink: 0 }}>
+    <div className="w-10 h-10 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: bg, borderRadius: "10px" }}>
+      {svgPath ? (
+        <svg width="20" height="20" viewBox={svgViewBox} fill="white">
           <path d={svgPath} />
         </svg>
+      ) : (
+        <span className="font-mono font-bold text-sm" style={{ color: WHITE }}>{text}</span>
       )}
-      <span className="font-mono font-semibold text-xs" style={{ color: WHITE }}>{label}</span>
     </div>
   )
 }
@@ -469,42 +470,61 @@ function MetricsBar() {
 
 function SourcesVisual() {
   const sources = [
-    { name: "GitHub", sub: "Activité développeur & repos", bg: "#24292e", svgPath: GH_PATH, svgViewBox: "0 0 98 96", count: "2.4k profils" },
-    { name: "LinkedIn", sub: "Profils professionnels", bg: "#0A66C2", svgPath: LI_PATH, svgViewBox: "0 0 24 24", count: "5.1k profils" },
-    { name: "Indeed", sub: "Offres & candidatures", bg: "#2164F3", count: "1.8k profils" },
+    {
+      name: "GitHub",
+      sub: "Activité · Repos · Contributions",
+      bg: "#24292e",
+      count: "2.4k",
+      svgPath: GH_PATH,
+      svgViewBox: "0 0 98 96",
+    },
+    {
+      name: "LinkedIn",
+      sub: "Profils · Expériences · Réseau",
+      bg: "#0A66C2",
+      count: "5.1k",
+      svgPath: LI_PATH,
+      svgViewBox: "0 0 24 24",
+    },
+    {
+      name: "Indeed",
+      sub: "CVs indexés · Candidatures",
+      bg: "#2557A7",
+      count: "1.8k",
+      svgPath: undefined,
+      text: "in",
+    },
   ]
+
   return (
-    <div className="w-full" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06`, overflow: "hidden" }}>
+    <div className="w-full overflow-hidden" style={{ backgroundColor: CREAM, borderRadius: "16px", border: `1px solid ${INK}06` }}>
       <div className="px-8 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${INK}06` }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center font-mono font-bold text-xs text-white" style={{ backgroundColor: CORAL, borderRadius: "8px" }}>AI</div>
-          <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Agrégation multi-sources</span>
-        </div>
+        <span className="font-mono text-xs uppercase tracking-wider" style={{ color: MUTED }}>Agrégation multi-sources</span>
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2" style={{ backgroundColor: SUCCESS, borderRadius: "50%" }} />
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SUCCESS }} />
           <span className="text-xs font-mono" style={{ color: SUCCESS }}>Live</span>
         </div>
       </div>
-      <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+      <div className="p-6 grid grid-cols-3 gap-4">
         {sources.map((s) => (
-          <div key={s.name} className="p-5 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
-            <div className="flex items-center justify-between mb-4">
-              <BrandPill label={s.name} bg={s.bg} svgPath={s.svgPath} svgViewBox={s.svgViewBox} />
-              <span className="text-[10px] font-mono" style={{ color: MUTED }}>{s.count}</span>
+          <div key={s.name} className="p-5 flex flex-col gap-4 transition-all duration-200 hover:-translate-y-0.5" style={{ backgroundColor: WHITE, borderRadius: "12px", border: `1px solid ${INK}06` }}>
+            <SourceLogo svgPath={s.svgPath} svgViewBox={s.svgViewBox} text={s.text} bg={s.bg} />
+            <div>
+              <div className="font-mono font-bold text-sm" style={{ color: INK }}>{s.name}</div>
+              <div className="text-xs mt-0.5 leading-relaxed" style={{ color: MUTED }}>{s.sub}</div>
             </div>
-            <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{s.sub}</p>
+            <div className="font-mono font-bold text-xl" style={{ color: INK }}>
+              {s.count}
+              <span className="text-[11px] font-normal ml-1" style={{ color: MUTED }}>profils</span>
+            </div>
           </div>
         ))}
       </div>
-      <div className="px-8 py-4 flex items-center gap-3" style={{ backgroundColor: `${CORAL}06`, borderTop: `1px solid ${INK}06` }}>
-        <div className="flex -space-x-2">
-          {["#24292e", "#0A66C2", "#2164F3"].map((c, i) => (
-            <div key={i} className="w-6 h-6 flex items-center justify-center text-white text-[8px] font-bold border-2 border-white" style={{ backgroundColor: c, borderRadius: "50%" }}>
-              {["GH", "in", "IN"][i]}
-            </div>
-          ))}
-        </div>
-        <span className="text-xs" style={{ color: MUTED }}>Toutes les sources convergent en un seul pipeline classé</span>
+
+      <div className="px-8 py-4 flex items-center justify-between" style={{ backgroundColor: `${INK}03`, borderTop: `1px solid ${INK}06` }}>
+        <span className="text-xs font-mono" style={{ color: MUTED }}>3 sources · 9.3k profils agrégés</span>
+        <span className="text-xs font-mono" style={{ color: CORAL }}>→ Pipeline unifié</span>
       </div>
     </div>
   )
@@ -673,15 +693,15 @@ function PainBlock() {
               </div>
               <div className="space-y-3">
                 {[
-                  { icon: "📋", text: "300 CVs reçus" },
-                  { icon: "🔍", text: "Tri manuel — 2 jours" },
-                  { icon: "📞", text: "10 entretiens téléphoniques" },
-                  { icon: "😞", text: "3 profils pertinents" },
-                  { icon: "⏰", text: "Poste ouvert depuis 6 semaines" },
-                ].map((item) => (
-                  <div key={item.text} className="flex items-center gap-3 text-sm" style={{ color: "#374151" }}>
-                    <span className="text-base">{item.icon}</span>
-                    <span>{item.text}</span>
+                  "300 CVs reçus",
+                  "Tri manuel — 2 jours",
+                  "10 entretiens téléphoniques",
+                  "3 profils pertinents",
+                  "Poste ouvert depuis 6 semaines",
+                ].map((text) => (
+                  <div key={text} className="flex items-center gap-3 text-sm" style={{ color: "#374151" }}>
+                    <span className="font-mono font-bold flex-shrink-0" style={{ color: "#ef4444", fontSize: "16px", lineHeight: 1 }}>×</span>
+                    <span>{text}</span>
                   </div>
                 ))}
               </div>
@@ -703,15 +723,15 @@ function PainBlock() {
               </div>
               <div className="space-y-3">
                 {[
-                  { icon: "🤖", text: "Recherche GitHub + LinkedIn + Indeed" },
-                  { icon: "⚡", text: "Résultats en moins de 5 secondes" },
-                  { icon: "📊", text: "Score + analyse SWOT par candidat" },
-                  { icon: "🎯", text: "12 profils pertinents classés" },
-                  { icon: "📅", text: "Contact sous 24h" },
-                ].map((item) => (
-                  <div key={item.text} className="flex items-center gap-3 text-sm" style={{ color: `${WHITE}70` }}>
-                    <span className="text-base">{item.icon}</span>
-                    <span>{item.text}</span>
+                  "GitHub + LinkedIn + Indeed simultanément",
+                  "Résultats en moins de 5 secondes",
+                  "Score + analyse SWOT par candidat",
+                  "12 profils pertinents classés",
+                  "Contact sous 24h",
+                ].map((text) => (
+                  <div key={text} className="flex items-center gap-3 text-sm" style={{ color: `${WHITE}70` }}>
+                    <span className="font-mono font-bold flex-shrink-0" style={{ color: SUCCESS, fontSize: "16px", lineHeight: 1 }}>→</span>
+                    <span>{text}</span>
                   </div>
                 ))}
               </div>
@@ -844,9 +864,11 @@ function CTASection() {
           </p>
         </Reveal>
         <Reveal delay={300}>
-          <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
+          <div className="mt-10 flex flex-col items-center gap-4">
             <PixelBtn href="#demo" variant="coral" size="lg">Demander une démo &rarr;</PixelBtn>
-            <PixelBtn href="mailto:contact@claw4hr.ai" variant="white" size="lg">Contacter l'équipe</PixelBtn>
+            <a href="mailto:contact@claw4hr.ai" className="font-mono text-xs uppercase tracking-wider transition-colors" style={{ color: `${WHITE}35` }}>
+              ou contactez-nous par email
+            </a>
           </div>
         </Reveal>
         <Reveal delay={400}>
