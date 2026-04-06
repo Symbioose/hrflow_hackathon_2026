@@ -52,7 +52,7 @@ export default function AccountDropdown({
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-[calc(100%+8px)] w-80 rounded-xl overflow-hidden z-50 relative"
+      className="absolute right-0 top-[calc(100%+8px)] w-80 rounded-xl overflow-hidden z-50"
       style={{
         background: "#fff",
         border: "2px solid var(--ink)",
