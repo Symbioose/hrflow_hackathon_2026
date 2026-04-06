@@ -13,7 +13,8 @@
 - [ ] **Pré-envoyer** 1 outreach vers Thomas Leroy (colonne "Contactés" visible dans Pipeline)
 - [ ] Taper la requête exacte une fois en test → vérifier que les 8 profils s'affichent dans l'ordre (94, 88, 83, 79, 76, 73, 70, 65)
 - [ ] Brancher sur le grand écran + vérifier la résolution (sidebar + contenu sans scroll horizontal)
-- [ ] Être connecté sur `/dashboard`, barre de recherche vide, prêt à taper
+- [ ] **NE PAS être connecté** — commencer sur la landing page `/`, compte démo prêt à saisir (email + mdp connus par cœur)
+- [ ] Vérifier que la landing page s'affiche bien sans bug ni scroll cassé
 
 ### Profils à connaître par cœur
 
@@ -28,15 +29,27 @@
 
 ## Le Script
 
-### ⏱ 0:00 — 0:15 | Le Hook (parole, pas d'action)
+### ⏱ 0:00 — 0:20 | La Landing Page (le contexte)
 
-> *"Les meilleurs talents que vous cherchez — ils ne postulent pas. Ils ont la tête dans leur travail. Ils ne répondent pas à vos annonces. Claw4HR va les trouver pour vous."*
+**→ L'écran montre :** la landing page (`/`).
 
-**→ L'écran montre :** la barre de recherche vide, interface propre. Laisser le silence 1 seconde.
+> *"Les meilleurs talents ne postulent pas. Ils ont la tête dans leur travail. Claw4HR les trouve pour vous — partout où ils laissent une trace professionnelle."*
+
+**→ Scroller très légèrement pour montrer le hero, sans s'attarder.**
+
+> *"Un recruteur s'inscrit en 30 secondes."*
+
+**→ Cliquer sur "Commencer" ou "Se connecter". La page de login s'affiche.**
+
+> *"Token d'invitation, email, mot de passe — accès sécurisé, réservé aux recruteurs."*
+
+**→ Se connecter avec le compte démo préparé. Le dashboard s'ouvre.**
+
+> *"Et voilà l'interface. On cherche."*
 
 ---
 
-### ⏱ 0:15 — 0:35 | La Recherche (action 1)
+### ⏱ 0:20 — 0:38 | La Recherche (action 1)
 
 **Action :** Cliquer dans la barre, taper lentement et clairement :
 
@@ -50,7 +63,7 @@ Lead Data Scientist, expert Python et ML, 5+ ans d'expérience en production, ba
 
 ---
 
-### ⏱ 0:35 — 1:05 | Les Agents en action (LoadingView)
+### ⏱ 0:38 — 1:05 | Les Agents en action (LoadingView)
 
 **Action :** Laisser le LoadingView s'afficher. Pointer les agents PixelSprite un par un.
 
@@ -180,6 +193,7 @@ Est-ce qu'elle a piloté des projets en autonomie chez des grands comptes ?
 
 | Moment | Piège | Comment l'éviter |
 |--------|-------|-----------------|
+| Landing + Login | S'emmêler dans le mot de passe | Préparer un compte démo avec mdp ultra simple, le taper sans hésitation |
 | LoadingView | Silence gêné pendant le chargement | Parler des agents, de la transparence, du temps gagné — ne jamais se taire |
 | Score HrFlow | "C'est juste un chiffre" | Insister sur "sémantique, pas mots-clés" — c'est la différence vs LinkedIn |
 | Clic LinkedIn | La page met du temps à charger | Avoir le profil ouvert dans un autre onglet en avance |
