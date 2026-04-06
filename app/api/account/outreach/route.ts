@@ -22,3 +22,20 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ data });
 }
+
+export async function DELETE(req: NextRequest) {
+  const body = await req.json();
+  const { session_id, outreach_id } = body;
+  if (!session_id || !outreach_id) {
+    return NextResponse.json({ error: "missing fields" }, { status: 400 });
+  }
+
+  const { error } = await db()
+    .from("outreach")
+    .delete()
+    .eq("session_id", session_id)
+    .eq("id", outreach_id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
