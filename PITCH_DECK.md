@@ -10,20 +10,24 @@ Voici la structure de tes slides pour une présentation percutante de 4 minutes 
 - **Le vrai problème :** Les meilleurs candidats (les talents passifs) ne postulent jamais.
 
 ## Slide 2 : La Solution (La Révélation)
-- **Visuel :** Ton interface (Omni-Search Bar) au centre, claire et épurée.
+- **Visuel :** Ton interface (Omni-Search Bar) au centre, claire et épurée. Sidebar premium avec les 6 onglets.
 - **Message :** Voici notre "Passive Talent Intelligence Agent". Vous tapez ce que vous cherchez en langage naturel (ex: "Trouve moi un Lead Dev Python à Paris"), et l'IA fait le reste.
 - **Punchline :** On remplace les requêtes booléennes par un Agent IA autonome.
+- **Nouveauté :** Pas seulement un outil de sourcing — une plateforme RH complète avec Shortlist, Outreach personnalisé, Pipeline Kanban et tableaux de bord analytiques.
 
 ## Slide 3 : Le "Secret Sauce" (La Tech / L'Innovation)
 - **Visuel :** Schéma simple : Web (GitHub/LinkedIn) -> Agent d'Enrichissement -> Moteur Sémantique HrFlow -> Scoring.
 - **Message :** Contrairement aux outils classiques qui font du matching de mots-clés, nous faisons du "Just-in-Time Sourcing". Notre agent agrège les données publiques (GitHub, LinkedIn), crée un profil unifié, et le passe dans l'API HrFlow pour une compréhension sémantique profonde. On score la *compétence*, pas les *buzzwords*.
 
 ## Slide 4 : DEMO TIME (Le Moment Wow - 1min 30s)
-- **Action :** Fais la démo en live. 
-- 1. Tape la requête dans la barre.
-- 2. Montre le panneau de droite (l'Agent Feed) qui montre le sourcing en temps réel.
-- 3. Montre l'apparition des candidats avec leur Score de Matching (cercles animés).
-- 4. Ouvre un profil pour montrer l'analyse SWOT (Forces/Faiblesses) générée par l'IA HrFlow.
+- **Action :** Fais la démo en live.
+- 1. Tape la requête dans la barre de recherche en langage naturel.
+- 2. Montre les agents PixelSprite qui sourcent en temps réel (GitHub, LinkedIn, Reddit, Web).
+- 3. Montre l'apparition des candidats avec leur Score de Matching HrFlow (cercles animés).
+- 4. Ouvre un profil → analyse SWOT (Forces/Faiblesses) générée par l'IA HrFlow.
+- 5. **[NOUVEAU]** Shortliste 2-3 candidats → bascule sur l'onglet **Pipeline** pour montrer le Kanban (Sourcés → Shortlistés → Contactés). Fort pour une DRH.
+- 6. **[NOUVEAU]** Montre l'onglet **Analyse** : KPIs en temps réel (profils sourcés, taux de conversion, score moyen IA). Argument ROI immédiat pour une DRH.
+- 7. Génère un message outreach hyper-personnalisé → le candidat passe en colonne "Contacté" dans le Pipeline.
 
 ## Slide 5 : L'Outreach (La conversion)
 - **Visuel :** Un email généré automatiquement faisant référence au profil GitHub du candidat.

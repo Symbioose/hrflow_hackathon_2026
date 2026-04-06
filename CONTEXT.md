@@ -107,7 +107,7 @@ interface SourcedProfile {
 
 ---
 
-## Etat des composants (5 avril 2026)
+## Etat des composants (6 avril 2026)
 
 ### CE QUI FONCTIONNE
 
@@ -122,6 +122,11 @@ interface SourcedProfile {
 - [x] Tri profils (score desc/asc, >= 70%, ordre d'arrivée)
 - [x] Deploy Vercel : https://hrflowhackathon2026.vercel.app
 - [x] HrFlow connecté (10k profils démo, 1k jobs démo, scoring fonctionnel)
+- [x] Authentification Supabase (login/signup, token invite, AuthGuard)
+- [x] Sidebar premium claire (indigo #4f46e5, groupes Sourcing/Insights)
+- [x] Onglet **Analyse** — KPIs live (profils sourcés, shortlist, outreach, score moyen), entonnoir de recrutement, breakdown par source, historique recherches
+- [x] Onglet **Pipeline** — Kanban 3 colonnes : Sourcés → Shortlistés → Contactés (données Supabase temps réel)
+- [x] Modal **Mon compte** — édition nom/entreprise, sauvegarde Supabase `user_profiles`
 
 ### OPENCLAW — SITUATION ACTUELLE
 
@@ -222,6 +227,6 @@ Webhook URL production : `https://hrflowhackathon2026.vercel.app/api/openclaw/we
 
 1. **Demo demoable à tout instant** — jamais de "ça marche pas mais ça va marcher"
 2. **Fallback démo toujours actif** — si le trigger échoue, les profils démo s'affichent
-3. **Pas d'auth/login** — perte de temps
-4. **Pas de base de données custom** — HrFlow est le backend
+3. **Auth Supabase actif** — login/signup avec token d'invite, AuthGuard sur /dashboard
+4. **Supabase comme base de données** — user_profiles, searches, shortlist, outreach
 5. **Streaming partout** — les profils arrivent au fur et à mesure, pas tous à la fin
