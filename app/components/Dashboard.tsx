@@ -218,21 +218,25 @@ export default function Dashboard() {
     setQaMessages([]);
     setView("profile");
 
-    if (profile.hrflow_key) {
-      setAsking(true);
-      fetch(`/api/hrflow/ask?profile_key=${profile.hrflow_key}&question=${encodeURIComponent("Donne-moi une synthèse de ce profil en 3 points clés pour un recruteur.")}`)
-        .then((r) => r.json())
-        .then((data) => {
-          const answer = data?.data?.response ?? "Profil analysé avec succès.";
-          setQaMessages([chatMsg("agent", answer)]);
-        })
-        .catch(() => {
-          setQaMessages([chatMsg("agent", `${profile.name} — ${profile.title} à ${profile.location}. ${profile.summary}`)]);
-        })
-        .finally(() => setAsking(false));
-    } else {
-      setQaMessages([chatMsg("agent", profile.summary)]);
-    }
+    setAsking(true);
+    const question = "Donne-moi une synthèse de ce profil en 3 points clés pour un recruteur.";
+    const fetchPromise = profile.hrflow_key
+      ? fetch(`/api/hrflow/ask?profile_key=${profile.hrflow_key}&question=${encodeURIComponent(question)}`).then((r) => r.json())
+      : fetch("/api/demo/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile, question }),
+        }).then((r) => r.json());
+
+    fetchPromise
+      .then((data) => {
+        const answer = data?.data?.response ?? profile.summary;
+        setQaMessages([chatMsg("agent", answer)]);
+      })
+      .catch(() => {
+        setQaMessages([chatMsg("agent", profile.summary)]);
+      })
+      .finally(() => setAsking(false));
   }, []);
 
   const handleAsk = useCallback(async (question: string) => {
@@ -240,9 +244,18 @@ export default function Dashboard() {
     setQaMessages((prev) => [...prev, chatMsg("user", question)]);
     setAsking(true);
     try {
-      const profileKey = selectedProfile.hrflow_key ?? selectedProfile.key;
-      const res = await fetch(`/api/hrflow/ask?profile_key=${encodeURIComponent(profileKey)}&question=${encodeURIComponent(question)}`);
-      const data = await res.json();
+      let data;
+      if (selectedProfile.hrflow_key) {
+        const res = await fetch(`/api/hrflow/ask?profile_key=${encodeURIComponent(selectedProfile.hrflow_key)}&question=${encodeURIComponent(question)}`);
+        data = await res.json();
+      } else {
+        const res = await fetch("/api/demo/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile: selectedProfile, question }),
+        });
+        data = await res.json();
+      }
       const answer = data?.data?.response ?? "Je n'ai pas pu obtenir de réponse.";
       setQaMessages((prev) => [...prev, chatMsg("agent", answer)]);
     } catch {
