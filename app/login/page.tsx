@@ -191,18 +191,21 @@ export default function LoginPage() {
       <div
         className="hidden lg:flex flex-1 relative items-center justify-center overflow-hidden"
         style={{
-          background: "radial-gradient(ellipse at 60% 40%, #e8f0fe 0%, #f0f4ff 40%, #fdf0ee 100%)",
+          background: "radial-gradient(ellipse at 60% 40%, #ede9fe 0%, #f5f3ff 35%, #fff1f0 100%)",
         }}
       >
-        {/* Subtle grid */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: "linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+        {/* Grain texture */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.35'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "180px 180px",
+          opacity: 0.5,
+          mixBlendMode: "multiply",
         }} />
         {/* Glow */}
         <div className="absolute rounded-full" style={{
           width: 480, height: 480,
-          background: "radial-gradient(circle, rgba(255,107,107,0.08) 0%, rgba(99,102,241,0.05) 50%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(255,107,107,0.1) 0%, rgba(139,92,246,0.06) 50%, transparent 70%)",
           top: "50%", left: "50%", transform: "translate(-50%, -50%)",
         }} />
         <div className="relative z-10 flex flex-col items-center gap-10">
