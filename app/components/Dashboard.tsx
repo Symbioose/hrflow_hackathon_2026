@@ -16,7 +16,8 @@ import OutreachModal from "./OutreachModal";
 import AccountModal from "./AccountModal";
 import AnalyseView from "./AnalyseView";
 import PipelineView from "./PipelineView";
-import { streamDemoProfiles } from "@/app/lib/demoProfiles";
+import { runDemoSearch, type DemoLog } from "@/app/lib/demoSearch";
+// import { streamDemoProfiles } from "@/app/lib/demoProfiles"; // kept for reference
 import { getSessionId } from "@/app/lib/session";
 import { supabase } from "@/app/lib/supabase";
 
@@ -60,6 +61,9 @@ export default function Dashboard() {
   const [sessionId, setSessionId] = useState<string>("ssr");
   const [userProfile, setUserProfile] = useState<{ name: string; company: string; email: string } | null>(null);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
+
+  // ─── Demo feed logs ────────────────────────────────────────
+  const [feedLogs, setFeedLogs] = useState<DemoLog[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -171,20 +175,19 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleSearch = useCallback(async (q: string) => {
+  const handleSearch = useCallback((q: string) => {
     const thisSearch = ++searchIdRef.current;
     retriesRef.current = 0;
     if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
 
     setQuery(q);
     setProfiles([]);
+    setFeedLogs([]);
     setAgentStatuses({ github: "idle", linkedin: "idle", reddit: "idle", internet: "idle" });
     setView("loading");
     setIsStreaming(true);
 
-    connectSSE(0);
-    setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
-
+    // Save search to Supabase
     if (sessionId && sessionId !== "ssr") {
       fetch("/api/account/searches", {
         method: "POST",
@@ -193,47 +196,48 @@ export default function Dashboard() {
       }).catch(() => {});
     }
 
-    const res = await fetch("/api/openclaw/trigger", {
+    // ── Demo search script (OpenClaw disabled for demo) ──────────
+    // To re-enable OpenClaw: comment out runDemoSearch and restore the
+    // fetch("/api/openclaw/trigger") block below.
+    demoCleanupRef.current?.();
+    demoCleanupRef.current = runDemoSearch({
+      onLog: (log) => {
+        if (searchIdRef.current !== thisSearch) return;
+        setFeedLogs((prev) => [...prev, log]);
+      },
+      onAgentStatus: (source, status) => {
+        if (searchIdRef.current !== thisSearch) return;
+        setAgentStatuses((prev) => ({ ...prev, [source]: status }));
+      },
+      onProfile: (profile) => {
+        if (searchIdRef.current !== thisSearch) return;
+        setProfiles((prev) => {
+          if (prev.some((x) => x.key === profile.key)) return prev;
+          return [...prev, profile];
+        });
+        setView("results");
+      },
+      onDone: () => {
+        if (searchIdRef.current !== thisSearch) return;
+        setIsStreaming(false);
+      },
+    });
+
+    /* ── OpenClaw (disabled for demo — uncomment to re-enable) ──────────────
+    connectSSE(0);
+    setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
+    fetch("/api/openclaw/trigger", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: q }),
-    });
-
-    if (searchIdRef.current !== thisSearch) return;
-
-    const triggerDemoFallback = () => {
+    }).then((res) => {
       if (searchIdRef.current !== thisSearch) return;
-      (["github", "linkedin", "reddit", "internet"] as AgentSource[]).forEach((src, i) => {
-        setTimeout(() => {
-          if (searchIdRef.current !== thisSearch) return;
-          setAgentStatuses((prev) => ({ ...prev, [src]: "done" }));
-        }, i * 1500);
-      });
-      demoCleanupRef.current?.();
-      demoCleanupRef.current = streamDemoProfiles((p) => {
-        if (searchIdRef.current !== thisSearch) return;
-        setProfiles((prev) => {
-          if (prev.some((x) => x.key === p.key)) return prev;
-          return [...prev, p];
-        });
-        setView("results");
-      }, 1400);
-    };
-
-    if (!res.ok) {
-      triggerDemoFallback();
-    } else {
-      if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
-      demoFallbackTimerRef.current = setTimeout(() => {
-        setProfiles((current) => {
-          if (current.length === 0) triggerDemoFallback();
-          return current;
-        });
-      }, 6000);
-    }
+      if (!res.ok) { ... triggerDemoFallback() ... }
+    });
+    ── ─────────────────────────────────────────────────────────────────────── */
 
     streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
-  }, [connectSSE, sessionId]);
+  }, [sessionId]);
 
   const handleSelectProfile = useCallback((profile: SourcedProfile) => {
     setSelectedProfile(profile);
@@ -383,7 +387,7 @@ export default function Dashboard() {
         )}
 
         {view === "loading" && (
-          <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />
+          <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} feedLogs={feedLogs} />
         )}
 
         {view === "results" && (
