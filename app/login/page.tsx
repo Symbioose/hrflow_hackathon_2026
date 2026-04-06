@@ -61,14 +61,22 @@ export default function LoginPage() {
   const [token, setToken] = useState("");
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError("Email ou mot de passe incorrect.");
-    else router.replace("/dashboard");
+    if (error) {
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        setError("Confirmez votre email avant de vous connecter.");
+      } else {
+        setError("Email ou mot de passe incorrect.");
+      }
+    } else {
+      router.replace("/dashboard");
+    }
     setLoading(false);
   }
 
@@ -76,17 +84,39 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/validate-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    });
-    const { valid } = await res.json();
-    if (!valid) { setError("Token d'accès invalide."); setLoading(false); return; }
+
+    // 1. Validate invite token
+    let valid = false;
+    try {
+      const res = await fetch("/api/auth/validate-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      ({ valid } = await res.json());
+    } catch {
+      setError("Erreur réseau lors de la validation du token.");
+      setLoading(false);
+      return;
+    }
+    if (!valid) { setError("Token d'accès invalide ou déjà utilisé."); setLoading(false); return; }
+
+    // 2. Create Supabase account
     const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
     if (signUpError) { setError(signUpError.message); setLoading(false); return; }
-    if (data.user) await supabase.from("user_profiles").insert({ id: data.user.id, name, company });
-    router.replace("/dashboard");
+
+    // 3. Insert profile (best-effort)
+    if (data.user) {
+      await supabase.from("user_profiles").upsert({ id: data.user.id, name, company });
+    }
+
+    // 4. If session exists → go straight to dashboard (email confirmation disabled)
+    //    Otherwise → show "check your email" message
+    if (data.session) {
+      router.replace("/dashboard");
+    } else {
+      setSuccess("Compte créé ! Vérifiez votre boîte email pour confirmer votre adresse.");
+    }
     setLoading(false);
   }
 
@@ -237,9 +267,14 @@ export default function LoginPage() {
                 {error}
               </p>
             )}
+            {success && (
+              <p className="text-xs px-4 py-3 rounded-2xl" style={{ background: "rgba(34,197,94,0.15)", color: "#86efac", border: "1px solid rgba(34,197,94,0.25)" }}>
+                {success}
+              </p>
+            )}
             <button
               type="submit"
-              disabled={loading || !token || !name || !company || !email || !password}
+              disabled={loading || !token || !name || !company || !email || !password || !!success}
               className="w-full py-3.5 rounded-2xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 background: "linear-gradient(135deg, #FF6B6B, #e85555)",
