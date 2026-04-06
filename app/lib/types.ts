@@ -119,6 +119,7 @@ export interface ShortlistEntry {
   session_id: string;
   profile_key: string;
   profile_data: SourcedProfile;
+  pipeline_stage?: string;
   saved_at: string;
 }
 

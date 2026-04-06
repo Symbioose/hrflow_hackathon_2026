@@ -63,6 +63,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "missing fields" }, { status: 400 });
   }
 
+  const VALID_STAGES = ["shortlisted", "contacted", "waiting", "discussing", "archived"] as const;
+  if (!VALID_STAGES.includes(pipeline_stage as typeof VALID_STAGES[number])) {
+    return NextResponse.json({ error: "invalid pipeline_stage" }, { status: 400 });
+  }
+
   const { data, error } = await db()
     .from("shortlist")
     .update({ pipeline_stage })
