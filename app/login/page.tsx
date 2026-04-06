@@ -214,8 +214,8 @@ export default function LoginPage() {
             <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: "#FF6B6B" }}>
               Sourcing mondial
             </p>
-            <p className="text-sm max-w-[240px] text-center leading-relaxed" style={{ color: "#9ca3af" }}>
-              Accédez aux meilleurs talents sur GitHub, LinkedIn, Reddit et le web ouvert.
+            <p className="text-sm max-w-[280px] text-center leading-relaxed" style={{ color: "#6b7280" }}>
+              Sourcing automatique sur <span style={{ color: "#1a1a2e", fontWeight: 600 }}>LinkedIn, GitHub, Indeed, HelloWork, Reddit</span> et tout le web — en quelques secondes.
             </p>
           </div>
         </div>
