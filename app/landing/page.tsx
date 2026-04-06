@@ -809,7 +809,7 @@ function DemoSection() {
                   <polygon points="9,5 20,12 9,19" />
                 </svg>
               </div>
-              <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}50` }}>Regarder la démo de 2 min</span>
+              <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}50` }}>3 minutes. De la fiche de poste aux candidats classés.</span>
             </div>
           </div>
         </Reveal>
@@ -881,8 +881,8 @@ function CTASection() {
       <div className="relative z-10 text-center px-8 max-w-3xl mx-auto">
         <Reveal>
           <h2 className="leading-[0.95] tracking-[-0.03em] text-white" style={{ fontFamily: serif, fontSize: "clamp(2.8rem, 5.5vw, 5rem)" }}>
-            Prêt à trouver les talents<br />
-            <span style={{ fontStyle: "italic", color: CORAL }}>avant qu'ils ne postulent ?</span>
+            Vos prochains recrutements.<br />
+            <span style={{ fontStyle: "italic", color: CORAL }}>Sans job board.</span>
           </h2>
         </Reveal>
         <Reveal delay={150}>
