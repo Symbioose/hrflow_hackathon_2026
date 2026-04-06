@@ -1,10 +1,10 @@
-# Claw4HR — Passive Talent Intelligence Agent
+# Claw4HR — AI Talent Sourcing Platform
 
-Agent IA de sourcing de talents passifs. Hackathon HrFlow GenAI & RH (mars 2026).
+Passive talent sourcing agent. Built for the HrFlow GenAI & RH Hackathon 2026.
 
-Le recruteur décrit un poste en langage naturel → des agents IA sourcent des profils sur GitHub, LinkedIn, Reddit, web → HrFlow score chaque candidat → le recruteur interagit avec les profils via Q&A.
+A recruiter describes a role in natural language → multi-source agents discover matching profiles on GitHub, LinkedIn, Reddit, and the web → HrFlow scores each candidate → the recruiter interacts with profiles via Q&A and manages a pipeline.
 
-**Deploy :** https://hrflowhackathon2026.vercel.app
+**Deploy:** https://hrflowhackathon2026.vercel.app
 
 ---
 
@@ -12,160 +12,136 @@ Le recruteur décrit un poste en langage naturel → des agents IA sourcent des 
 
 ```bash
 npm install
-cp .env.example .env.local   # Remplir les clés (voir tableau ci-dessous)
+cp .env.example .env.local   # fill in your keys
 npm run dev                   # http://localhost:3000
 ```
 
-## Variables d'environnement
+## Environment variables
 
-| Variable | Description | Statut |
-|---|---|---|
-| `HRFLOW_API_KEY` | Clé API HrFlow (`ask_...`) | ✅ Configuré |
-| `HRFLOW_API_EMAIL` | Email compte HrFlow | ✅ Configuré |
-| `HRFLOW_SOURCE_KEY` | Source profils démo (10k profils) | ✅ Configuré |
-| `HRFLOW_LIVE_SOURCE_KEY` | Source profils live (Indeed CVs) | ✅ Configuré |
-| `HRFLOW_BOARD_KEY` | Board jobs démo (1k jobs) | ✅ Configuré |
-| `HRFLOW_ALGORITHM_KEY` | Algorithme scoring IA | ✅ Configuré |
-| `OPENCLAW_GATEWAY_URL` | URL tunnel Cloudflare OpenClaw | ⚠️ Change à chaque restart |
-| `OPENCLAW_GATEWAY_TOKEN` | Token Gateway OpenClaw | ✅ Configuré |
-| `OPENCLAW_WEBHOOK_SECRET` | Secret webhook (optionnel) | — |
-| `PROXYCURL_API_KEY` | Enrichissement LinkedIn | ❌ À configurer |
-| `GITHUB_TOKEN` | Sourcing GitHub | ❌ À configurer |
-| `OLLAMA_BASE_URL` | URL Ollama Mac Mini | `http://localhost:11434` |
-| `OLLAMA_MODEL` | Modèle LLM | `qwen3:14b` |
+| Variable | Description |
+|---|---|
+| `HRFLOW_API_KEY` | HrFlow API key (`ask_...`) |
+| `HRFLOW_API_EMAIL` | HrFlow account email |
+| `HRFLOW_SOURCE_KEY` | HrFlow profile source key |
+| `HRFLOW_BOARD_KEY` | HrFlow job board key |
+| `TRIGGER_SECRET_KEY` | trigger.dev secret key (sourcing pipeline) |
+| `TRIGGER_PROJECT_ID` | trigger.dev project ID |
+| `TRIGGER_WEBHOOK_SECRET` | Shared secret for webhook auth (optional) |
+| `NEXT_PUBLIC_APP_URL` | App URL used to build the webhook callback |
 
 ---
 
 ## Architecture
 
-### Flow utilisateur
+### User flow
 
 ```
 SearchView → LoadingView → ResultsView → ProfileDetailView
 ```
 
-1. **SearchView** — barre de recherche en langage naturel
-2. **LoadingView** — agents PixelSprite animés (github / linkedin / reddit / internet)
-3. **ResultsView** — grille de profils avec scores, tri, analytics
-4. **ProfileDetailView** — fiche complète + Q&A HrFlow en temps réel
+1. **SearchView** — natural language search bar
+2. **LoadingView** — animated agents (GitHub / LinkedIn / Reddit / Web) with live terminal feed
+3. **ResultsView** — scored candidate grid with filters and analytics
+4. **ProfileDetailView** — full profile + HrFlow Q&A + SWOT analysis
 
-### Flow de données
+### Data flow
 
 ```
-Recruteur tape une query
+Recruiter types a query
         ↓
-POST /api/openclaw/trigger
-        ↓                          ↓ (si trigger OK)
-Demo fallback                  OpenClaw ou Trigger.dev
-(demoProfiles.ts)              sourcent les candidats
-        ↓                          ↓
-        →  POST /api/openclaw/webhook (profils + feed events)
-                    ↓
-        GET /api/openclaw/stream (SSE → Dashboard)
-                    ↓
-        Dashboard met à jour les vues en temps réel
+POST /api/trigger/run          → triggers sourcing-task on trigger.dev
+        ↓
+sourcing-task runs externally  → POSTs profiles + agent events to webhook
+        ↓
+POST /api/trigger/webhook      → pushes to in-memory event store
+        ↓
+GET  /api/trigger/stream (SSE) → dashboard updates in real time
 ```
 
-### Structure des fichiers
+### File structure
 
 ```
 app/
-  page.tsx                         Entrée — render Dashboard
-  layout.tsx
   components/
-    Dashboard.tsx                  Orchestrateur (state, SSE, handlers)
-    SearchView.tsx                 Page d'accueil — barre de recherche
-    LoadingView.tsx                Agents animés pendant le sourcing
-    ResultsView.tsx                Grille profils + strip agents live
-    CandidateCard.tsx              Carte candidat (score, skills, sources)
-    ProfileDetailView.tsx          Fiche complète + Q&A
-    PixelAgent.tsx                 Sprites pixel art par source + config
-    ScoreRing.tsx                  Anneau de score animé
-    QAPanel.tsx                    Panel Q&A recruteur
+    Dashboard.tsx              Orchestrator (state, SSE, handlers)
+    SearchView.tsx             Search bar
+    LoadingView.tsx            Animated agents + live terminal
+    ResultsView.tsx            Profile grid + live agent strip
+    CandidateCard.tsx          Candidate card (score, skills, sources)
+    ProfileDetailView.tsx      Full profile + Q&A
+    PixelAgent.tsx             Pixel art sprites per source
+    ScoreRing.tsx              Animated score ring
   lib/
-    types.ts                       Types TypeScript (SourcedProfile, etc.)
-    hrflow.ts                      Client HrFlow centralisé
-    demoProfiles.ts                Profils démo hardcodés (fallback)
-    eventStore.ts                  Store in-memory SSE (webhook → dashboard)
-    sourcing.ts                    Pipeline JIT (simulé pour l'instant)
+    types.ts                   TypeScript types (SourcedProfile, FeedLog, ...)
+    hrflow.ts                  HrFlow API client
+    eventStore.ts              In-memory pub/sub (webhook → SSE stream)
   api/
-    openclaw/
-      trigger/route.ts             POST — Déclencher une recherche
-      webhook/route.ts             POST — Recevoir profils + events
-      stream/route.ts              GET  — SSE stream vers dashboard
-      events/route.ts              GET  — Polling cursor-based
+    trigger/
+      run/route.ts             POST — start a sourcing run via trigger.dev
+      webhook/route.ts         POST — receive profiles + events from the task
+      stream/route.ts          GET  — SSE stream to dashboard
+      events/route.ts          GET  — cursor-based polling alternative
     hrflow/
-      parse/route.ts               POST — Parser un CV
-      score/route.ts               GET  — Scorer profils vs job
-      ask/route.ts                 GET  — Q&A sur un profil
-      upskill/route.ts             GET  — Analyse SWOT forces/gaps
-      profiles/route.ts            GET  — Lister les profils
-      jobs/route.ts                GET  — Lister les jobs
-    sourcing/
-      pipeline/route.ts            POST — Pipeline de sourcing JIT
+      parse/route.ts           POST — parse a resume
+      score/route.ts           GET  — score profiles against a job
+      ask/route.ts             GET  — Q&A on a profile
+      upskill/route.ts         GET  — SWOT strengths/gaps analysis
+      profiles/route.ts        GET  — list profiles
+      jobs/route.ts            GET  — list jobs
+    account/
+      searches/route.ts        Search history (Supabase)
+      shortlist/route.ts       Shortlisted candidates (Supabase)
+      outreach/route.ts        Outreach messages (Supabase)
+    demo/
+      ask/route.ts             Q&A fallback (Mistral)
+      swot/route.ts            SWOT fallback (Mistral)
+    outreach/
+      generate/route.ts        Outreach message generation (Mistral)
+trigger/
+  sourcing-task.ts             trigger.dev task — multi-source candidate discovery
 ```
 
 ---
 
-## Intégration agent externe (OpenClaw / Trigger.dev / bot Telegram)
+## Connecting the sourcing pipeline
 
-### Envoyer des profils au dashboard
+The sourcing task (`trigger/sourcing-task.ts`) is a trigger.dev v3 task. Once configured, it receives a query and webhook URL, runs the multi-source sourcing logic, and POSTs each discovered profile back to the dashboard.
 
-```bash
-curl -X POST https://hrflowhackathon2026.vercel.app/api/openclaw/webhook \
-  -H "Content-Type: application/json" \
-  -d '{"profiles": [{
-    "key": "uuid-unique",
-    "name": "Prénom Nom",
-    "title": "Data Scientist NLP",
-    "location": "Paris, France",
-    "experience_years": 5,
-    "summary": "2-3 phrases sur le profil",
-    "sources": [{"type":"github","url":"https://github.com/...","label":"github.com/..."}],
-    "skills": ["Python","NLP","PyTorch"],
-    "experiences": [{"title":"...","company":"...","location":"Paris","period":"2021 — 2024","description":"..."}],
-    "educations": [{"degree":"...","school":"...","period":"..."}],
-    "hrflow_score": -1,
-    "hrflow_key": null,
-    "avatar_color": "#FF6B6B"
-  }]}'
-```
-
-### Notifier le statut d'un agent
+### Sending profiles to the dashboard
 
 ```bash
-curl -X POST https://hrflowhackathon2026.vercel.app/api/openclaw/webhook \
+curl -X POST https://your-app.vercel.app/api/trigger/webhook \
   -H "Content-Type: application/json" \
-  -d '{"channel":"feed","payload":{"source":"github","status":"done"}}'
-# source: "github" | "linkedin" | "reddit" | "internet"
-# status: "running" | "done" | "error"
+  -H "x-trigger-secret: YOUR_WEBHOOK_SECRET" \
+  -d '{
+    "channel": "profile",
+    "payload": {
+      "profile": {
+        "key": "unique-uuid",
+        "name": "Jane Doe",
+        "title": "Senior Data Scientist",
+        "location": "Paris, France",
+        "experience_years": 6,
+        "summary": "3-sentence recruiter summary",
+        "sources": [{"type": "github", "url": "https://github.com/...", "label": "github.com/..."}],
+        "skills": ["Python", "NLP", "PyTorch"],
+        "experiences": [{"title": "...", "company": "...", "location": "Paris", "period": "2021 — 2024", "description": "..."}],
+        "educations": [{"degree": "...", "school": "...", "period": "..."}],
+        "hrflow_score": -1,
+        "hrflow_key": null,
+        "avatar_color": "#1f2937"
+      }
+    }
+  }'
 ```
-
-### avatar_color par source
-
-| Source | Couleur |
-|---|---|
-| github | `#FF6B6B` |
-| linkedin | `#0077b5` |
-| reddit | `#ff4500` |
-| internet | `#7C3AED` |
 
 ---
 
 ## Stack
 
-- **Frontend/Backend** : Next.js 16, React 19, Tailwind CSS v4, TypeScript
-- **IA RH** : HrFlow.ai (parsing, scoring, asking, upskilling)
-- **Orchestration** : OpenClaw (Mac Mini M4 Pro, Qwen3 14B via Ollama) + Trigger.dev (en cours)
-- **Sourcing** : GitHub API, Agent-Reach (LinkedIn via OpenClaw), Proxycurl
-- **Messaging** : Telegram
-- **Deploy** : Vercel
-
----
-
-## Documentation
-
-- `CONTEXT.md` — état d'avancement détaillé, décisions d'architecture, TODO
-- `CLAW4HR_VISION.md` — business vision, pitch, modèle économique
-- `OPENCLAW_PROMPT.md` — format exact attendu par le dashboard (pour configurer OpenClaw)
-- `hrflow_api_reference.md` — doc complète API HrFlow
+- **Frontend / Backend:** Next.js 16, React 19, Tailwind CSS v4, TypeScript
+- **HR AI:** HrFlow.ai (parsing, scoring, Q&A, SWOT)
+- **Sourcing pipeline:** trigger.dev v3
+- **Outreach generation:** Mistral AI
+- **Persistence:** Supabase (search history, shortlist, outreach)
+- **Deploy:** Vercel
