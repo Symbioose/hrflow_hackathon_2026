@@ -821,53 +821,6 @@ function DemoSection() {
 }
 
 /* ═══════════════════════════════════════════
-   Stack / Integrations
-   ═══════════════════════════════════════════ */
-
-function StackSection() {
-  const items = [
-    { name: "HrFlow.ai", desc: "Parsing CV, indexation & moteur de scoring IA", bg: CORAL },
-    { name: "OpenClaw", desc: "Orchestration multi-agents & bot Telegram", bg: "#7C3AED" },
-    { name: "GitHub", desc: "Activité développeur & analyse de repos", bg: "#24292e", svgPath: GH_PATH, svgViewBox: "0 0 98 96" },
-    { name: "LinkedIn", desc: "Enrichissement de profils professionnels", bg: "#0A66C2", svgPath: LI_PATH, svgViewBox: "0 0 24 24" },
-    { name: "Indeed", desc: "Scraping job boards & découverte de candidats", bg: "#2164F3" },
-    { name: "Ollama", desc: "Inférence LLM locale — Qwen3 14B", bg: "#10b981" },
-  ]
-
-  return (
-    <section id="stack" className="py-28 md:py-36" style={{ backgroundColor: WHITE }}>
-      <div className="mx-auto max-w-7xl px-8">
-        <Reveal>
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] mb-5" style={{ color: CORAL }}>Integrations</p>
-            <h2 className="leading-[1.05] tracking-[-0.02em]" style={{ fontFamily: serif, fontSize: "clamp(2.2rem, 4.5vw, 3.5rem)", color: INK }}>
-              Construit sur <span style={{ color: CORAL, fontStyle: "italic" }}>les meilleurs.</span>
-            </h2>
-            <p className="mt-5 text-lg leading-relaxed" style={{ color: MUTED }}>
-              Claw4HR connecte les meilleurs outils de recrutement, d'IA et de plateformes développeur en un seul pipeline.
-            </p>
-          </div>
-        </Reveal>
-
-        <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 gap-5">
-          {items.map((x, i) => (
-            <Reveal key={x.name} delay={i * 60}>
-              <div className="p-7 transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: CREAM, borderRadius: "14px", border: `1px solid ${INK}06` }}>
-                <div className="mb-5">
-                  <BrandPill label={x.name} bg={x.bg} svgPath={(x as { svgPath?: string }).svgPath} svgViewBox={(x as { svgViewBox?: string }).svgViewBox} />
-                </div>
-                <p className="font-semibold text-lg" style={{ color: INK }}>{x.name}</p>
-                <p className="text-sm mt-1.5 leading-relaxed" style={{ color: MUTED }}>{x.desc}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════
    CTA — Dark, aspirational
    ═══════════════════════════════════════════ */
 
@@ -1025,12 +978,12 @@ export default function LandingPage() {
       <Grain />
       <Nav />
       <Hero />
-      <MetricsBar />
+      <PainBlock />
       <FeaturesSection />
       <DemoSection />
-      <StackSection />
-      <FAQSection />
+      <MetricsBar />
       <CTASection />
+      <FAQSection />
       <Footer />
     </div>
   )
