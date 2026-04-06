@@ -284,6 +284,82 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     hrflow_key: null,
     avatar_color: "#1f2937",
   },
+  {
+    key: "demo-julien-renard",
+    name: "Julien Renard",
+    title: "Senior Data Scientist — Criteo",
+    location: "Paris, Île-de-France",
+    experience_years: 6,
+    summary: "Senior Data Scientist chez Criteo sur les algorithmes de bidding et de ciblage publicitaire. Expertise en modèles de propension au clic (CTR), ranking et optimisation en temps réel sur des volumes massifs (10B+ prédictions/jour). Ancien chez Oodrive et Orange. Fort background en statistiques bayésiennes et optimisation stochastique.",
+    sources: [
+      { type: "linkedin", url: "https://www.linkedin.com/in/julien-renard-criteo-ds/", label: "linkedin.com/in/julien-renard-criteo-ds" },
+    ],
+    skills: ["Python", "Scala", "Spark", "XGBoost", "Bayesian Methods", "A/B Testing", "Real-Time ML", "Kafka", "Hadoop", "SQL"],
+    experiences: [
+      {
+        title: "Senior Data Scientist — Bidding & Targeting",
+        company: "Criteo",
+        location: "Paris",
+        period: "2021 — Présent",
+        description: "Modèles de scoring CTR en temps réel (< 5ms de latence) sur infrastructure distribuée. Développement d'algorithmes de bidding adaptatif. Déploiement de modèles Spark ML en production. Optimisation du ROAS sur 8 000+ clients annonceurs.",
+      },
+      {
+        title: "Data Scientist",
+        company: "Oodrive",
+        location: "Paris",
+        period: "2019 — 2021",
+        description: "Détection d'anomalies comportementales pour la cybersécurité (DLP). Modèles de classification sur logs d'accès, isolation forest, LSTM.",
+      },
+      {
+        title: "Data Analyst",
+        company: "Orange Business Services",
+        location: "Paris",
+        period: "2017 — 2019",
+        description: "Analyse de churn télécom et modèles de prédiction de résiliation. Premières expériences en ML supervisé sur données clientèle.",
+      },
+    ],
+    educations: [
+      { degree: "MSc Data Science & Business Analytics", school: "HEC Paris / Polytechnique (DSBA)", period: "2015 — 2017" },
+      { degree: "Licence Mathématiques & Informatique", school: "Université Paris VI (Sorbonne)", period: "2012 — 2015" },
+    ],
+    hrflow_score: 62,
+    hrflow_key: null,
+    avatar_color: "#0077b5",
+  },
+  {
+    key: "demo-camille-morel",
+    name: "Camille Morel",
+    title: "ML Engineer — Thales",
+    location: "Île-de-France",
+    experience_years: 5,
+    summary: "ML Engineer chez Thales sur des problèmes de vision par ordinateur et de classification de signaux pour des applications de défense et de sécurité. Expérience rare en ML embarqué et edge computing (contraintes mémoire et latence extrêmes). GitHub avec des projets sur la quantification de modèles et l'inférence efficace. Clearance secret défense.",
+    sources: [
+      { type: "github", url: "https://github.com/cmorel-ml", label: "github.com/cmorel-ml" },
+    ],
+    skills: ["Python", "PyTorch", "ONNX", "TensorRT", "Computer Vision", "Signal Processing", "Edge ML", "C++", "OpenCV", "Model Quantization"],
+    experiences: [
+      {
+        title: "ML Engineer — Computer Vision & Signals",
+        company: "Thales",
+        location: "Palaiseau",
+        period: "2022 — Présent",
+        description: "Développement de modèles de détection et classification sur systèmes embarqués (FPGA, GPU edge). Quantification et pruning de réseaux de neurones pour inférence temps réel sous contraintes strictes. Stack : PyTorch, ONNX, TensorRT.",
+      },
+      {
+        title: "Research Engineer",
+        company: "CEA List",
+        location: "Saclay",
+        period: "2019 — 2022",
+        description: "Ingénieure de recherche sur l'optimisation de réseaux de neurones pour systèmes embarqués. Contributions à des projets européens (H2020). Publications IEEE sur la compression de modèles.",
+      },
+    ],
+    educations: [
+      { degree: "MSc Traitement du Signal & Machine Learning", school: "CentraleSupélec", period: "2017 — 2019" },
+    ],
+    hrflow_score: 58,
+    hrflow_key: null,
+    avatar_color: "#1f2937",
+  },
 ];
 
 /**

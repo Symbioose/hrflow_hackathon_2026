@@ -28,7 +28,7 @@ export default function AnalyseView({ sessionId }: AnalyseViewProps) {
     ]).then(([s, sl, o]) => {
       setStats({ searches: s.data ?? [], shortlist: sl.data ?? [], outreach: o.data ?? [] });
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [sessionId]);
 
   if (loading || !stats) {
@@ -65,12 +65,30 @@ export default function AnalyseView({ sessionId }: AnalyseViewProps) {
   // Recent activity (last 5 searches)
   const recentSearches = [...stats.searches].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
 
+  const stageCounts: Record<string, number> = {};
+  stats.shortlist.forEach((e) => {
+    const stage = (e as { pipeline_stage?: string }).pipeline_stage ?? "shortlisted";
+    stageCounts[stage] = (stageCounts[stage] ?? 0) + 1;
+  });
+  const STAGE_META: Record<string, { label: string; color: string }> = {
+    shortlisted: { label: "Shortlistés",    color: "#4f46e5" },
+    contacted:   { label: "Contactés",      color: "#f59e0b" },
+    waiting:     { label: "En attente",     color: "#3b82f6" },
+    discussing:  { label: "En discussion",  color: "#10b981" },
+    archived:    { label: "Archivés",       color: "#6b7280" },
+  };
+
   return (
     <div className="min-h-screen p-8 overflow-y-auto" style={{ background: "#f8f9fa" }}>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tableau de bord</h1>
-        <p className="text-sm mt-1" style={{ color: "#6b7280" }}>Vue d'ensemble de votre activité de sourcing</p>
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Analyse de campagne</h1>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wide" style={{ background: "rgba(79,70,229,0.1)", color: "#4f46e5" }}>
+            Powered by HrFlow
+          </span>
+        </div>
+        <p className="text-sm mt-1" style={{ color: "#6b7280" }}>Suivi en temps réel de votre activité de sourcing</p>
       </div>
 
       {/* KPI Row */}
@@ -96,13 +114,15 @@ export default function AnalyseView({ sessionId }: AnalyseViewProps) {
           sub={`${outreachRate}% du shortlist`}
           accent="#f59e0b"
         />
-        <KpiCard
-          label="Score IA moyen"
-          value={avgScore !== null ? `${avgScore}%` : "—"}
-          icon={<ScoreIcon />}
-          sub={scored.length > 0 ? `sur ${scored.length} profil${scored.length > 1 ? "s" : ""} scoré${scored.length > 1 ? "s" : ""}` : "Aucun score HrFlow"}
-          accent={ACCENT}
-        />
+        <div className="rounded-2xl" style={{ boxShadow: `0 0 0 2px rgba(79,70,229,0.2)` }}>
+          <KpiCard
+            label="Score IA moyen HrFlow"
+            value={avgScore !== null ? `${avgScore}%` : "—"}
+            icon={<ScoreIcon />}
+            sub={scored.length > 0 ? `sur ${scored.length} profil${scored.length > 1 ? "s" : ""} scoré${scored.length > 1 ? "s" : ""}` : "Aucun score HrFlow"}
+            accent={ACCENT}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -132,6 +152,28 @@ export default function AnalyseView({ sessionId }: AnalyseViewProps) {
           )}
         </div>
       </div>
+
+      {/* Pipeline stage breakdown */}
+      {Object.keys(stageCounts).length > 0 && (
+        <div className="bg-white rounded-2xl p-6 mb-8" style={{ border: "1px solid #e5e7eb" }}>
+          <h2 className="text-sm font-semibold text-gray-900 mb-5">Répartition par étape (Pipeline)</h2>
+          <div className="flex flex-col gap-3">
+            {Object.entries(stageCounts).map(([stage, count]) => {
+              const meta = STAGE_META[stage] ?? { label: stage, color: "#6b7280" };
+              return (
+                <div key={stage} className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: meta.color }} />
+                  <span className="text-xs font-medium w-28 flex-shrink-0" style={{ color: "#374151" }}>{meta.label}</span>
+                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#f3f4f6" }}>
+                    <div className="h-full rounded-full" style={{ width: `${Math.max((count / shortlistCount) * 100, 4)}%`, background: meta.color }} />
+                  </div>
+                  <span className="text-xs font-semibold w-6 text-right flex-shrink-0" style={{ color: "#374151" }}>{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Recent searches */}
       <div className="bg-white rounded-2xl p-6" style={{ border: "1px solid #e5e7eb" }}>
@@ -182,13 +224,17 @@ function KpiCard({ label, value, icon, sub, accent }: { label: string; value: nu
 
 function FunnelBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.max((value / max) * 100, value > 0 ? 4 : 0) : 0;
+  const displayPct = max > 0 && value > 0 ? Math.round((value / max) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs font-medium w-24 flex-shrink-0" style={{ color: "#374151" }}>{label}</span>
       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#f3f4f6" }}>
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
       </div>
-      <span className="text-xs font-semibold w-6 text-right flex-shrink-0" style={{ color: "#374151" }}>{value}</span>
+      <div className="flex items-center gap-1.5 w-16 justify-end flex-shrink-0">
+        <span className="text-xs font-semibold" style={{ color: "#374151" }}>{value}</span>
+        {max > 0 && <span className="text-[10px]" style={{ color: "#9ca3af" }}>({displayPct}%)</span>}
+      </div>
     </div>
   );
 }

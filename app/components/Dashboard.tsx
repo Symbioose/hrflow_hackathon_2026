@@ -177,7 +177,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleSearch = useCallback((q: string) => {
+  const handleSearch = useCallback((q: string, count: number = 10) => {
     const thisSearch = ++searchIdRef.current;
     retriesRef.current = 0;
     if (streamTimerRef.current) clearTimeout(streamTimerRef.current);
@@ -223,7 +223,7 @@ export default function Dashboard() {
         if (searchIdRef.current !== thisSearch) return;
         setIsStreaming(false);
       },
-    });
+    }, count);
 
     /* ── OpenClaw (disabled for demo — uncomment to re-enable) ──────────────
     connectSSE(0);
