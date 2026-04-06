@@ -18,7 +18,7 @@ const CONNECTORS: { type: SourceType; label: string; color: string; active: bool
   { type: "github", label: "GitHub", color: "#1a1a2e", active: true },
   { type: "linkedin", label: "LinkedIn", color: "#0077b5", active: true },
   { type: "reddit", label: "Reddit", color: "#ff4500", active: true },
-  { type: "internet", label: "Internet", color: "#6b7280", active: true },
+  { type: "internet", label: "Web", color: "#6b7280", active: true },
   { type: "indeed", label: "Indeed", color: "#2164f3", active: false },
   { type: "hellowork", label: "HelloWork", color: "#e05c2a", active: false },
 ];
@@ -39,105 +39,113 @@ export default function SearchView({ onSearch, initialQuery }: SearchViewProps) 
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 pt-14"
-      style={{ background: "var(--cream)" }}
+      className="min-h-screen flex flex-col items-center justify-center px-8"
+      style={{ background: "#f8f9fa" }}
     >
-      {/* Logo */}
-      <div className="mb-12 text-center animate-card-reveal">
-        <div className="inline-flex items-center gap-3 mb-4">
-          <span style={{ fontSize: 40 }}>🦞</span>
-          <h1
-            className="text-5xl font-bold tracking-tight"
-            style={{ fontFamily: "var(--font-display, Georgia, serif)", color: "var(--ink)" }}
-          >
-            Claw<span style={{ color: "var(--coral)" }}>4HR</span>
+      <div className="w-full max-w-2xl">
+        {/* Headline */}
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-bold mb-2 tracking-tight" style={{ color: "#1a1a2e" }}>
+            Votre prochain recrutement commence ici.
           </h1>
+          <p className="text-sm" style={{ color: "#6b7280" }}>
+            Décrivez le profil idéal en langage naturel — nos agents s&apos;occupent du reste.
+          </p>
         </div>
-        <p className="text-lg" style={{ color: "var(--muted-text)", fontFamily: "Georgia, serif" }}>
-          Trouvez les talents passifs que vos concurrents ne voient pas.
-        </p>
-      </div>
 
-      {/* Search bar */}
-      <div
-        className="w-full max-w-2xl flex items-center gap-3 px-5 py-4 rounded-2xl animate-card-reveal"
-        style={{
-          background: "#fff",
-          boxShadow: "6px 6px 0 0 var(--ink)",
-          border: "2px solid var(--ink)",
-          animationDelay: "100ms",
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--coral)" strokeWidth="2.5" strokeLinecap="round">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="Dev Python senior à Paris avec 5 ans d'XP..."
-          className="flex-1 bg-transparent outline-none text-base"
-          style={{ color: "var(--ink)", fontFamily: "Georgia, serif" }}
-          autoFocus
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={!query.trim()}
-          className="px-6 py-2 font-mono font-bold text-sm uppercase tracking-wider transition-all duration-100 active:translate-x-1 active:translate-y-1 disabled:opacity-40 disabled:cursor-not-allowed"
+        {/* Search card */}
+        <div
+          className="rounded-2xl p-2"
           style={{
-            background: query.trim() ? "var(--coral)" : "#e5e7eb",
-            color: query.trim() ? "#fff" : "var(--muted-text)",
-            boxShadow: query.trim() ? "3px 3px 0 0 var(--coral-deep)" : "none",
+            background: "#fff",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
           }}
         >
-          Chercher
-        </button>
-      </div>
-
-      {/* Suggestions */}
-      <div
-        className="flex flex-wrap gap-2 mt-4 justify-center animate-card-reveal"
-        style={{ animationDelay: "200ms" }}
-      >
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            onClick={() => { setQuery(s); inputRef.current?.focus(); }}
-            className="px-4 py-2 rounded-full text-sm font-mono transition-all duration-150 hover:border-[var(--coral)] hover:text-[var(--coral)]"
-            style={{ border: "1px solid var(--ink)", color: "var(--ink)", background: "transparent" }}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      {/* Connectors */}
-      <div
-        className="mt-16 flex flex-wrap gap-3 justify-center animate-card-reveal"
-        style={{ animationDelay: "350ms" }}
-      >
-        {CONNECTORS.map((c) => (
-          <div
-            key={c.type}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{
-              border: `1px solid ${c.active ? c.color : "#e5e7eb"}`,
-              background: c.active ? `${c.color}10` : "transparent",
-              opacity: c.active ? 1 : 0.5,
-            }}
-          >
-            <div
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: c.active ? c.color : "#d1d5db" }}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              placeholder="Ex: Dev Python senior à Paris avec 5 ans d'XP..."
+              className="flex-1 bg-transparent outline-none text-[15px]"
+              style={{ color: "#1a1a2e", fontFamily: "var(--font-sans)" }}
+              autoFocus
             />
-            <span className="text-xs font-mono" style={{ color: c.active ? c.color : "#9ca3af" }}>
-              {c.label}
-              {!c.active && " (bientôt)"}
-            </span>
+            <button
+              onClick={handleSubmit}
+              disabled={!query.trim()}
+              className="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: query.trim() ? "#FF6B6B" : "#e5e7eb",
+                color: query.trim() ? "#fff" : "#9ca3af",
+                boxShadow: query.trim() ? "0 2px 8px rgba(255,107,107,0.35)" : "none",
+              }}
+            >
+              Chercher →
+            </button>
           </div>
-        ))}
+        </div>
+
+        {/* Suggestions */}
+        <div className="flex flex-wrap gap-2 mt-4 justify-center">
+          {SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => { setQuery(s); inputRef.current?.focus(); }}
+              className="px-4 py-2 rounded-full text-xs font-medium transition-all duration-150"
+              style={{
+                border: "1px solid #e5e7eb",
+                color: "#6b7280",
+                background: "#fff",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#FF6B6B";
+                (e.currentTarget as HTMLButtonElement).style.color = "#FF6B6B";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#e5e7eb";
+                (e.currentTarget as HTMLButtonElement).style.color = "#6b7280";
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* Connectors */}
+        <div className="mt-12 flex flex-wrap gap-2.5 justify-center">
+          <p className="w-full text-center text-[11px] font-mono uppercase tracking-widest mb-1" style={{ color: "#d1d5db" }}>
+            Sources connectées
+          </p>
+          {CONNECTORS.map((c) => (
+            <div
+              key={c.type}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+              style={{
+                border: `1px solid ${c.active ? `${c.color}30` : "#e5e7eb"}`,
+                background: c.active ? `${c.color}08` : "transparent",
+                opacity: c.active ? 1 : 0.45,
+              }}
+            >
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: c.active ? c.color : "#d1d5db" }}
+              />
+              <span
+                className="text-xs font-mono"
+                style={{ color: c.active ? c.color : "#9ca3af" }}
+              >
+                {c.label}
+                {!c.active && " (bientôt)"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

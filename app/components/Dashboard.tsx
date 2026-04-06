@@ -7,14 +7,18 @@ import SearchView from "./SearchView";
 import LoadingView from "./LoadingView";
 import ResultsView from "./ResultsView";
 import ProfileDetailView from "./ProfileDetailView";
-import Header from "./Header";
+import Sidebar from "./Sidebar";
+import type { NavSection } from "./Sidebar";
+import ShortlistView from "./ShortlistView";
+import OutreachView from "./OutreachView";
+import HistoryView from "./HistoryView";
 import OutreachModal from "./OutreachModal";
 import { streamDemoProfiles } from "@/app/lib/demoProfiles";
 import { getSessionId } from "@/app/lib/session";
 
 // ─── Types ────────────────────────────────────────────────────
 
-type DashboardState = "search" | "loading" | "results" | "profile";
+type DashboardView = "search" | "loading" | "results" | "profile" | "shortlist" | "outreach" | "history";
 
 function chatMsg(type: "user" | "agent", text: string): ChatMessage {
   return {
@@ -25,10 +29,17 @@ function chatMsg(type: "user" | "agent", text: string): ChatMessage {
   };
 }
 
+function viewToSection(view: DashboardView): NavSection {
+  if (view === "shortlist") return "shortlist";
+  if (view === "outreach") return "outreach";
+  if (view === "history") return "history";
+  return "search";
+}
+
 // ─── Dashboard ────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [view, setView] = useState<DashboardState>("search");
+  const [view, setView] = useState<DashboardView>("search");
   const [query, setQuery] = useState("");
   const [profiles, setProfiles] = useState<SourcedProfile[]>([]);
   const [agentStatuses, setAgentStatuses] = useState<Record<AgentSource, AgentState>>({
@@ -57,13 +68,10 @@ export default function Dashboard() {
   const demoFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchIdRef = useRef(0);
 
-  // ─── Connect SSE on mount to receive chat events from OpenClaw ──
   useEffect(() => {
     connectSSE(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ─── Load initial shortlist + outreach counts ──────────────
 
   useEffect(() => {
     if (!sessionId || sessionId === "ssr") return;
@@ -82,8 +90,6 @@ export default function Dashboard() {
       .catch(() => {});
   }, [sessionId]);
 
-  // ─── SSE connection ────────────────────────────────────────
-
   const connectSSE = useCallback((cursor = 0) => {
     if (esRef.current) esRef.current.close();
     const thisSearch = searchIdRef.current;
@@ -96,7 +102,6 @@ export default function Dashboard() {
         const event = JSON.parse(e.data);
         if (event.channel === "profile" && event.payload?.profile) {
           const p = event.payload.profile as SourcedProfile;
-          // A real profile arrived — cancel demo fallback timer
           if (demoFallbackTimerRef.current) {
             clearTimeout(demoFallbackTimerRef.current);
             demoFallbackTimerRef.current = null;
@@ -142,8 +147,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  // ─── Search handler ────────────────────────────────────────
-
   const handleSearch = useCallback(async (q: string) => {
     const thisSearch = ++searchIdRef.current;
     retriesRef.current = 0;
@@ -158,7 +161,6 @@ export default function Dashboard() {
     connectSSE(0);
     setAgentStatuses({ github: "running", linkedin: "running", reddit: "running", internet: "running" });
 
-    // Log search to Supabase
     if (sessionId && sessionId !== "ssr") {
       fetch("/api/account/searches", {
         method: "POST",
@@ -197,8 +199,6 @@ export default function Dashboard() {
     if (!res.ok) {
       triggerDemoFallback();
     } else {
-      // OpenClaw returned 200 but profiles arrive async via webhook.
-      // If no profile appears within 6s, fall back to demo profiles.
       if (demoFallbackTimerRef.current) clearTimeout(demoFallbackTimerRef.current);
       demoFallbackTimerRef.current = setTimeout(() => {
         setProfiles((current) => {
@@ -210,8 +210,6 @@ export default function Dashboard() {
 
     streamTimerRef.current = setTimeout(() => setIsStreaming(false), 30_000);
   }, [connectSSE, sessionId]);
-
-  // ─── Profile Q&A ──────────────────────────────────────────
 
   const handleSelectProfile = useCallback((profile: SourcedProfile) => {
     setSelectedProfile(profile);
@@ -266,10 +264,10 @@ export default function Dashboard() {
   }, [selectedProfile, asking]);
 
   const handleBack = useCallback(() => {
-    setView("results");
+    setView(profiles.length > 0 ? "results" : "search");
     setSelectedProfile(null);
     setQaMessages([]);
-  }, []);
+  }, [profiles.length]);
 
   const handleNewSearch = useCallback(() => {
     esRef.current?.close();
@@ -284,12 +282,8 @@ export default function Dashboard() {
     setQaMessages([]);
   }, []);
 
-  // ─── Save / Shortlist ──────────────────────────────────────
-
   const handleSave = useCallback((profile: SourcedProfile) => {
     const isCurrentlySaved = savedProfiles.has(profile.key);
-
-    // Optimistic update
     setSavedProfiles((prev) => {
       const next = new Set(prev);
       if (isCurrentlySaved) {
@@ -301,7 +295,6 @@ export default function Dashboard() {
       }
       return next;
     });
-
     if (isCurrentlySaved) {
       fetch("/api/account/shortlist", {
         method: "DELETE",
@@ -317,8 +310,6 @@ export default function Dashboard() {
     }
   }, [savedProfiles, sessionId]);
 
-  // ─── Outreach ──────────────────────────────────────────────
-
   const handleContact = useCallback((profile: SourcedProfile) => {
     setOutreachTarget(profile);
   }, []);
@@ -331,20 +322,39 @@ export default function Dashboard() {
       .catch(() => {});
   }, [sessionId]);
 
+  const handleNavigate = useCallback((section: NavSection) => {
+    if (section === "search") {
+      // If we have results, go back to results; otherwise search
+      if (profiles.length > 0 && view !== "profile") {
+        setView("results");
+      } else if (view === "profile") {
+        handleBack();
+      } else {
+        setView("search");
+      }
+    } else {
+      setView(section);
+    }
+  }, [profiles.length, view, handleBack]);
+
   // ─── Render ────────────────────────────────────────────────
 
   return (
-    <>
-      <Header
-        sessionId={sessionId}
-        shortlistKeys={savedProfiles}
-        onRelaunchSearch={handleSearch}
-        onOpenProfile={handleSelectProfile}
+    <div className="flex min-h-screen" style={{ background: "#f8f9fa" }}>
+      {/* Sidebar */}
+      <Sidebar
+        activeSection={viewToSection(view)}
         shortlistCount={shortlistCount}
         outreachCount={outreachCount}
+        sessionId={sessionId}
+        onNavigate={handleNavigate}
       />
-      <div style={{ paddingTop: 56 }}>
-        {view === "search" && <SearchView onSearch={handleSearch} initialQuery={pendingQuery} />}
+
+      {/* Main content */}
+      <main className="flex-1 overflow-hidden" style={{ marginLeft: 240 }}>
+        {view === "search" && (
+          <SearchView onSearch={handleSearch} initialQuery={pendingQuery} />
+        )}
 
         {view === "loading" && (
           <LoadingView query={query} profileCount={profiles.length} agentStatuses={agentStatuses} />
@@ -359,6 +369,7 @@ export default function Dashboard() {
             savedProfiles={savedProfiles}
             onSelect={handleSelectProfile}
             onSave={handleSave}
+            onContact={handleContact}
             onNewSearch={handleNewSearch}
           />
         )}
@@ -375,8 +386,28 @@ export default function Dashboard() {
             onContact={handleContact}
           />
         )}
-      </div>
 
+        {view === "shortlist" && (
+          <ShortlistView
+            sessionId={sessionId}
+            onOpenProfile={handleSelectProfile}
+            onContact={handleContact}
+          />
+        )}
+
+        {view === "outreach" && (
+          <OutreachView sessionId={sessionId} />
+        )}
+
+        {view === "history" && (
+          <HistoryView
+            sessionId={sessionId}
+            onRelaunch={(q) => { handleSearch(q); }}
+          />
+        )}
+      </main>
+
+      {/* Outreach modal */}
       {outreachTarget && (
         <OutreachModal
           profile={outreachTarget}
@@ -384,6 +415,6 @@ export default function Dashboard() {
           onClose={handleOutreachClose}
         />
       )}
-    </>
+    </div>
   );
 }
