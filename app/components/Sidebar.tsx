@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 
-type NavSection = "search" | "shortlist" | "outreach" | "history";
+type NavSection = "search" | "shortlist" | "outreach" | "history" | "analyse" | "pipeline";
 
 interface SidebarProps {
   activeSection: NavSection;
@@ -13,75 +13,65 @@ interface SidebarProps {
   sessionId: string;
   userProfile: { name: string; company: string; email: string } | null;
   onNavigate: (section: NavSection) => void;
+  onOpenAccount: () => void;
 }
 
-function ClawIcon({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M8 3C6 3 4.5 4.5 4.5 7v6c0 1.5.8 2.5 2 2.5" stroke="#FF6B6B" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M6.5 15.5C7.5 18.5 9.5 20.5 12 20.5s4.5-2 5.5-5" stroke="#FF6B6B" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M16 3C18 3 19.5 4.5 19.5 7v6c0 1.5-.8 2.5-2 2.5" stroke="#FF6B6B" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M12 6v5" stroke="#FF6B6B" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
-  );
-}
+const ACCENT = "#4f46e5";
+const ACCENT_BG = "rgba(79,70,229,0.08)";
+const ACCENT_MUTED = "rgba(79,70,229,0.15)";
 
-const navItems: { section: NavSection; label: string; icon: React.ReactNode }[] = [
+const SOURCING_ITEMS: { section: NavSection; label: string; icon: React.ReactNode }[] = [
   {
     section: "search",
     label: "Recherche",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-      </svg>
-    ),
+    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
   },
   {
     section: "shortlist",
     label: "Shortlist",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    ),
+    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   },
   {
     section: "outreach",
     label: "Outreach",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-        <polyline points="22,6 12,13 2,6" />
-      </svg>
-    ),
+    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
   },
   {
     section: "history",
     label: "Historique",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-      </svg>
-    ),
+    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  },
+];
+
+const INSIGHTS_ITEMS: { section: NavSection; label: string; icon: React.ReactNode }[] = [
+  {
+    section: "analyse",
+    label: "Analyse",
+    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  },
+  {
+    section: "pipeline",
+    label: "Pipeline",
+    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="7" rx="1"/></svg>,
   },
 ];
 
 export type { NavSection };
 
-export default function Sidebar({ activeSection, shortlistCount, outreachCount, sessionId, userProfile, onNavigate }: SidebarProps) {
+export default function Sidebar({ activeSection, shortlistCount, outreachCount, sessionId, userProfile, onNavigate, onOpenAccount }: SidebarProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const badges: Record<NavSection, number> = {
-    search: 0,
+  const badges: Partial<Record<NavSection, number>> = {
     shortlist: shortlistCount,
     outreach: outreachCount,
-    history: 0,
   };
 
-  const displayName = userProfile?.name || "Recruteur";
-  const displaySub = userProfile?.company || (sessionId !== "ssr" ? `#${sessionId.slice(0, 8)}` : "—");
-  const initials = displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "HR";
+  const displayName = userProfile?.name || "Mon compte";
+  const displaySub = userProfile?.company || userProfile?.email?.split("@")[0] || (sessionId !== "ssr" ? `#${sessionId.slice(0, 8)}` : "—");
+  const initials = userProfile?.name
+    ? userProfile.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    : null;
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -93,118 +83,104 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
       className="fixed left-0 top-0 h-screen flex flex-col z-40 select-none"
       style={{
         width: 240,
-        background: "#1a1a2e",
-        borderRight: "1px solid rgba(255,255,255,0.05)",
+        background: "#f9fafb",
+        borderRight: "1px solid #e5e7eb",
       }}
     >
       {/* Logo */}
       <div
         className="flex items-center gap-2.5 px-5 py-5 flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+        style={{ borderBottom: "1px solid #e5e7eb" }}
       >
-        <span style={{ fontSize: 22, lineHeight: 1 }}>🦞</span>
-        <span
-          className="text-[17px] font-bold tracking-tight text-white"
-          style={{ fontFamily: "var(--font-sans)" }}
-        >
-          Claw<span style={{ color: "#FF6B6B" }}>4HR</span>
+        <span style={{ fontSize: 21, lineHeight: 1 }}>🦞</span>
+        <span className="text-[16px] font-bold tracking-tight" style={{ color: "#111827", fontFamily: "var(--font-sans)" }}>
+          Claw<span style={{ color: ACCENT }}>4HR</span>
         </span>
         <span
-          className="ml-auto text-[9px] font-mono font-bold px-1.5 py-0.5 rounded tracking-wider"
-          style={{ background: "rgba(255,107,107,0.15)", color: "#FF6B6B" }}
+          className="ml-auto text-[9px] font-semibold px-1.5 py-0.5 rounded-md tracking-wider"
+          style={{ background: ACCENT_MUTED, color: ACCENT }}
         >
           BETA
         </span>
       </div>
 
-      {/* Section label */}
-      <div className="px-5 pt-5 pb-2">
-        <span className="text-[10px] font-mono font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>
-          Navigation
-        </span>
-      </div>
-
       {/* Nav */}
-      <nav className="flex-1 px-3 flex flex-col gap-0.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = activeSection === item.section;
-          const badge = badges[item.section];
-          return (
-            <button
-              key={item.section}
-              onClick={() => onNavigate(item.section)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 w-full text-left relative group"
-              style={{
-                background: isActive ? "rgba(255,107,107,0.1)" : "transparent",
-                color: isActive ? "#FF6B6B" : "rgba(255,255,255,0.55)",
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-              }}
-            >
-              {isActive && (
-                <div
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
-                  style={{ background: "#FF6B6B" }}
-                />
-              )}
-              <span
-                className="flex-shrink-0 transition-colors"
-                style={{ color: isActive ? "#FF6B6B" : "rgba(255,255,255,0.3)" }}
-              >
-                {item.icon}
-              </span>
-              <span>{item.label}</span>
-              {badge > 0 && (
-                <span
-                  className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none py-1"
-                  style={{
-                    background: isActive ? "#FF6B6B" : "rgba(255,107,107,0.18)",
-                    color: isActive ? "#fff" : "#FF6B6B",
-                  }}
-                >
-                  {badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      <nav className="flex-1 px-3 pt-4 flex flex-col gap-5 overflow-y-auto">
+        <div>
+          <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9ca3af" }}>
+            Sourcing
+          </p>
+          <div className="flex flex-col gap-0.5">
+            {SOURCING_ITEMS.map((item) => (
+              <NavItem
+                key={item.section}
+                item={item}
+                isActive={activeSection === item.section}
+                badge={badges[item.section]}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9ca3af" }}>
+            Insights
+          </p>
+          <div className="flex flex-col gap-0.5">
+            {INSIGHTS_ITEMS.map((item) => (
+              <NavItem
+                key={item.section}
+                item={item}
+                isActive={activeSection === item.section}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </div>
       </nav>
 
       {/* Divider */}
-      <div className="mx-3 my-2" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} />
+      <div className="mx-3 mb-3" style={{ borderTop: "1px solid #e5e7eb" }} />
 
       {/* Account */}
-      <div className="px-3 pb-5 flex-shrink-0 relative">
+      <div className="px-3 pb-4 flex-shrink-0 relative">
         <button
           onClick={() => setMenuOpen((v) => !v)}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left"
-          style={{ background: menuOpen ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.05)" }}
-          onMouseEnter={(e) => { if (!menuOpen) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
-          onMouseLeave={(e) => { if (!menuOpen) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 text-left"
+          style={{
+            background: menuOpen ? "#f3f4f6" : "#ffffff",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+          }}
+          onMouseEnter={(e) => { if (!menuOpen) (e.currentTarget as HTMLButtonElement).style.background = "#f9fafb"; }}
+          onMouseLeave={(e) => { if (!menuOpen) (e.currentTarget as HTMLButtonElement).style.background = "#ffffff"; }}
         >
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #FF6B6B, #CC4444)" }}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #7c3aed)` }}
             suppressHydrationWarning
           >
-            {initials}
+            {initials ?? (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+            )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-white truncate" suppressHydrationWarning>{displayName}</p>
-            <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.3)" }} suppressHydrationWarning>
+            <p className="text-xs font-semibold truncate leading-tight" style={{ color: "#111827" }} suppressHydrationWarning>
+              {displayName}
+            </p>
+            <p className="text-[10px] truncate leading-tight mt-0.5" style={{ color: "#9ca3af" }} suppressHydrationWarning>
               {displaySub}
             </p>
           </div>
           <svg
-            width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-            className="flex-shrink-0 transition-transform"
-            style={{ color: "rgba(255,255,255,0.25)", transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+            className="flex-shrink-0 transition-transform duration-200"
+            style={{ color: "#d1d5db", transform: menuOpen ? "rotate(180deg)" : "rotate(0deg)" }}
           >
-            <path d="m18 15-6-6-6 6" />
+            <path d="m18 15-6-6-6 6"/>
           </svg>
         </button>
 
@@ -213,27 +189,37 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
           <div
             className="absolute left-3 right-3 rounded-xl overflow-hidden z-50"
             style={{
-              bottom: "calc(100% - 8px)",
-              background: "#1e1e35",
-              border: "1px solid rgba(255,255,255,0.1)",
-              boxShadow: "0 -8px 32px rgba(0,0,0,0.4)",
+              bottom: "calc(100% - 6px)",
+              background: "#ffffff",
+              border: "1px solid #e5e7eb",
+              boxShadow: "0 -8px 32px rgba(0,0,0,0.1)",
             }}
           >
-            {/* Profile info */}
             {userProfile?.email && (
-              <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>{userProfile.email}</p>
+              <div className="px-4 py-2.5" style={{ borderBottom: "1px solid #f3f4f6" }}>
+                <p className="text-[10px] truncate" style={{ color: "#9ca3af" }}>{userProfile.email}</p>
               </div>
             )}
-            {/* Sign out */}
             <button
-              onClick={handleSignOut}
-              className="w-full flex items-center gap-2.5 px-4 py-3 text-xs font-medium transition-all"
-              style={{ color: "#fca5a5" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,107,107,0.08)"; }}
+              onClick={() => { setMenuOpen(false); onOpenAccount(); }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-all"
+              style={{ color: "#374151", borderBottom: "1px solid #f3f4f6" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#f9fafb"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+              Mon compte
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-all"
+              style={{ color: "#ef4444" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#fef2f2"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>
@@ -244,5 +230,52 @@ export default function Sidebar({ activeSection, shortlistCount, outreachCount, 
         )}
       </div>
     </aside>
+  );
+}
+
+function NavItem({
+  item,
+  isActive,
+  badge,
+  onNavigate,
+}: {
+  item: { section: NavSection; label: string; icon: React.ReactNode };
+  isActive: boolean;
+  badge?: number;
+  onNavigate: (s: NavSection) => void;
+}) {
+  return (
+    <button
+      onClick={() => onNavigate(item.section)}
+      className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 w-full text-left relative"
+      style={{
+        background: isActive ? ACCENT_BG : "transparent",
+        color: isActive ? ACCENT : "#6b7280",
+      }}
+      onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "#f3f4f6"; }}
+      onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+    >
+      {isActive && (
+        <div
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full"
+          style={{ background: ACCENT }}
+        />
+      )}
+      <span className="flex-shrink-0" style={{ color: isActive ? ACCENT : "#9ca3af" }}>
+        {item.icon}
+      </span>
+      <span className="flex-1">{item.label}</span>
+      {badge != null && badge > 0 && (
+        <span
+          className="text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none"
+          style={{
+            background: isActive ? ACCENT : ACCENT_MUTED,
+            color: isActive ? "#fff" : ACCENT,
+          }}
+        >
+          {badge}
+        </span>
+      )}
+    </button>
   );
 }

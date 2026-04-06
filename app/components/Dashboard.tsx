@@ -13,13 +13,16 @@ import ShortlistView from "./ShortlistView";
 import OutreachView from "./OutreachView";
 import HistoryView from "./HistoryView";
 import OutreachModal from "./OutreachModal";
+import AccountModal from "./AccountModal";
+import AnalyseView from "./AnalyseView";
+import PipelineView from "./PipelineView";
 import { streamDemoProfiles } from "@/app/lib/demoProfiles";
 import { getSessionId } from "@/app/lib/session";
 import { supabase } from "@/app/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────
 
-type DashboardView = "search" | "loading" | "results" | "profile" | "shortlist" | "outreach" | "history";
+type DashboardView = "search" | "loading" | "results" | "profile" | "shortlist" | "outreach" | "history" | "analyse" | "pipeline";
 
 function chatMsg(type: "user" | "agent", text: string): ChatMessage {
   return {
@@ -34,6 +37,8 @@ function viewToSection(view: DashboardView): NavSection {
   if (view === "shortlist") return "shortlist";
   if (view === "outreach") return "outreach";
   if (view === "history") return "history";
+  if (view === "analyse") return "analyse";
+  if (view === "pipeline") return "pipeline";
   return "search";
 }
 
@@ -54,6 +59,7 @@ export default function Dashboard() {
   // ─── Account state ─────────────────────────────────────────
   const [sessionId, setSessionId] = useState<string>("ssr");
   const [userProfile, setUserProfile] = useState<{ name: string; company: string; email: string } | null>(null);
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -358,7 +364,7 @@ export default function Dashboard() {
   // ─── Render ────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-screen" style={{ background: "#f8f9fa" }}>
+    <div className="flex min-h-screen" style={{ background: "#ffffff" }}>
       {/* Sidebar */}
       <Sidebar
         activeSection={viewToSection(view)}
@@ -367,6 +373,7 @@ export default function Dashboard() {
         sessionId={sessionId}
         userProfile={userProfile}
         onNavigate={handleNavigate}
+        onOpenAccount={() => setAccountModalOpen(true)}
       />
 
       {/* Main content */}
@@ -424,6 +431,18 @@ export default function Dashboard() {
             onRelaunch={(q) => { handleSearch(q); }}
           />
         )}
+
+        {view === "analyse" && (
+          <AnalyseView sessionId={sessionId} />
+        )}
+
+        {view === "pipeline" && (
+          <PipelineView
+            sessionId={sessionId}
+            onOpenProfile={handleSelectProfile}
+            onContact={handleContact}
+          />
+        )}
       </main>
 
       {/* Outreach modal */}
@@ -432,6 +451,15 @@ export default function Dashboard() {
           profile={outreachTarget}
           sessionId={sessionId}
           onClose={handleOutreachClose}
+        />
+      )}
+
+      {/* Account modal */}
+      {accountModalOpen && (
+        <AccountModal
+          userProfile={userProfile}
+          onClose={() => setAccountModalOpen(false)}
+          onProfileUpdated={(updated) => setUserProfile(updated)}
         />
       )}
     </div>
