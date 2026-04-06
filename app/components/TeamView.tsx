@@ -33,11 +33,15 @@ export default function TeamView({ companyName }: TeamViewProps) {
     setCopied(false);
   }
 
-  function copyLink() {
+  async function copyLink() {
     if (!token) return;
-    navigator.clipboard.writeText(`https://claw4hr.io/invite/${token}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(`https://claw4hr.io/invite/${token}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard not available — no-op
+    }
   }
 
   const members: Member[] = [

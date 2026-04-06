@@ -72,8 +72,14 @@ export default function PipelineView({ sessionId, onOpenProfile, onContact }: Pi
 
       setCards(initial);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [sessionId]);
+
+  useEffect(() => {
+    return () => {
+      if (undoToast) clearTimeout(undoToast.timer);
+    };
+  }, [undoToast]);
 
   const moveCard = useCallback((profileKey: string, newStage: StageId) => {
     setCards((prev) => prev.map((c) => c.key === profileKey ? { ...c, stage: newStage } : c));
@@ -170,7 +176,12 @@ export default function PipelineView({ sessionId, onOpenProfile, onContact }: Pi
                 className="flex flex-col gap-3 transition-all duration-150"
                 style={{ width: 240 }}
                 onDragOver={(e) => handleDragOver(e, col.id)}
-                onDragLeave={() => setDragOverCol(null)}
+                onDragLeave={(e) => {
+                  const col = e.currentTarget as HTMLElement;
+                  if (!col.contains(e.relatedTarget as Node)) {
+                    setDragOverCol(null);
+                  }
+                }}
                 onDrop={(e) => handleDrop(e, col.id)}
               >
                 <div
