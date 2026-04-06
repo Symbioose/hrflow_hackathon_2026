@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import type { SourceType } from "@/app/lib/types";
 
 interface SearchViewProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string, count: number) => void;
   initialQuery?: string;
+  initialCount?: number;
 }
 
 const SUGGESTIONS = [
@@ -23,8 +24,11 @@ const CONNECTORS: { type: SourceType; label: string; color: string; active: bool
   { type: "hellowork", label: "HelloWork", color: "#e05c2a", active: false },
 ];
 
-export default function SearchView({ onSearch, initialQuery }: SearchViewProps) {
+const COUNT_OPTIONS = [5, 10, 20, 50];
+
+export default function SearchView({ onSearch, initialQuery, initialCount = 10 }: SearchViewProps) {
   const [query, setQuery] = useState(initialQuery ?? "");
+  const [count, setCount] = useState(initialCount);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export default function SearchView({ onSearch, initialQuery }: SearchViewProps) 
   function handleSubmit() {
     const q = query.trim();
     if (!q) return;
-    onSearch(q);
+    onSearch(q, count);
   }
 
   return (
@@ -76,6 +80,25 @@ export default function SearchView({ onSearch, initialQuery }: SearchViewProps) 
               style={{ color: "#1a1a2e", fontFamily: "var(--font-sans)" }}
               autoFocus
             />
+            {/* Profile count selector */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span className="text-[11px] font-mono" style={{ color: "#9ca3af" }}>profils</span>
+              <select
+                value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
+                className="text-xs font-semibold rounded-lg px-2 py-1.5 outline-none cursor-pointer"
+                style={{
+                  background: "#f3f4f6",
+                  border: "1px solid #e5e7eb",
+                  color: "#374151",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                {COUNT_OPTIONS.map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
             <button
               onClick={handleSubmit}
               disabled={!query.trim()}
