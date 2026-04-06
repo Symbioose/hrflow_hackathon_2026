@@ -20,7 +20,7 @@
 | Profil | Score | Source | Ce qu'on montre |
 |--------|-------|--------|-----------------|
 | **Lina Faik** | 94% | LinkedIn ✅ RÉEL | **Profil principal** — clic sur lien LinkedIn live + SWOT + Q&A + Shortlist + Outreach |
-| **Lucas Moreau** | 79% | GitHub | Sourcing hors LinkedIn — "son code parle pour lui" |
+| **Olivier Grisel** | 79% | GitHub ✅ RÉEL | Clic sur github.com/ogrisel live — "son code parle pour lui" |
 | **Marie Duplessis** | 83% | LinkedIn | Shortlistée en J-1 → visible dans Pipeline |
 | **Thomas Leroy** | 88% | LinkedIn | Outreach pré-envoyé → colonne "Contactés" dans Pipeline |
 
@@ -102,11 +102,17 @@ Est-ce qu'elle a une expérience en déploiement de LLMs en production ?
 
 > *"Shortlistée."*
 
-**→ Revenir aux résultats. Cliquer sur Lucas Moreau (GitHub, 79%).**
+**→ Revenir aux résultats. Cliquer sur Olivier Grisel (GitHub, 79%).**
 
-> *"Lui, il est sur GitHub — pas de poste LinkedIn visible. Il ne cherche pas activement. Mais son code parle pour lui."*
+> *"Lui, on l'a trouvé sur GitHub — pas sur LinkedIn. Il ne cherche pas activement. Mais son code parle pour lui : core contributor scikit-learn, 4 900 followers GitHub."*
 
-**→ Shortlister Lucas Moreau. Retour aux résultats.**
+**→ [MOMENT CLÉ] Cliquer sur le lien source GitHub sous son nom.**
+
+> *"Vrai profil GitHub. 15 ans de commits publics. Claw4HR l'a identifié parce qu'il correspond sémantiquement au poste — pas parce qu'il a mis 'ouvert aux opportunités' sur LinkedIn."*
+
+**→ Laisser le GitHub s'ouvrir 2 secondes. Revenir sur l'app.**
+
+**→ Shortlister Olivier Grisel. Retour aux résultats.**
 
 ---
 
