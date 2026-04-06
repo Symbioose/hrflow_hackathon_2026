@@ -215,7 +215,7 @@ export default function LoginPage() {
               Sourcing mondial
             </p>
             <p className="text-sm max-w-[280px] text-center leading-relaxed" style={{ color: "#6b7280" }}>
-              Sourcing automatique sur <span style={{ color: "#1a1a2e", fontWeight: 600 }}>LinkedIn, GitHub, Indeed, HelloWork, Reddit</span> et tout le web — en quelques secondes.
+              Sourcing automatique sur LinkedIn, GitHub, Indeed, HelloWork, Reddit et tout le web — en quelques secondes.
             </p>
           </div>
         </div>
