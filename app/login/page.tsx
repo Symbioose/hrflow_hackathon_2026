@@ -111,12 +111,12 @@ export default function LoginPage() {
       ))}
 
       {/* Globe plein écran centré */}
-      <div className="absolute" style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)", opacity: 0.85 }}>
+      <div className="absolute" style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
         <GlobeEarth size={680} />
       </div>
 
-      {/* Overlay sombre pour lisibilité */}
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(6,13,31,0.1) 30%, rgba(6,13,31,0.65) 100%)" }} />
+      {/* Overlay très léger sur les bords uniquement */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(6,13,31,0.55) 100%)" }} />
 
       {/* Bouton retour */}
       <button
