@@ -172,7 +172,7 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     educations: [
       { degree: "MSc Machine Learning (MVA)", school: "ENS Paris-Saclay", period: "2017 — 2019" },
     ],
-    hrflow_score: 70,
+    hrflow_score: 71,
     hrflow_key: null,
     avatar_color: "#0077b5",
   },
@@ -280,7 +280,7 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     educations: [
       { degree: "MSc Machine Learning & Data Mining", school: "Mines Saint-Étienne", period: "2017 — 2019" },
     ],
-    hrflow_score: 65,
+    hrflow_score: 72,
     hrflow_key: null,
     avatar_color: "#1f2937",
   },
@@ -322,7 +322,7 @@ export const DEMO_PROFILES: SourcedProfile[] = [
       { degree: "MSc Data Science & Business Analytics", school: "HEC Paris / Polytechnique (DSBA)", period: "2015 — 2017" },
       { degree: "Licence Mathématiques & Informatique", school: "Université Paris VI (Sorbonne)", period: "2012 — 2015" },
     ],
-    hrflow_score: 62,
+    hrflow_score: 70,
     hrflow_key: null,
     avatar_color: "#0077b5",
   },
@@ -356,7 +356,7 @@ export const DEMO_PROFILES: SourcedProfile[] = [
     educations: [
       { degree: "MSc Traitement du Signal & Machine Learning", school: "CentraleSupélec", period: "2017 — 2019" },
     ],
-    hrflow_score: 58,
+    hrflow_score: 70,
     hrflow_key: null,
     avatar_color: "#1f2937",
   },
