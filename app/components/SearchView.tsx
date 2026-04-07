@@ -16,11 +16,11 @@ const SUGGESTIONS = [
 ];
 
 const CONNECTORS: { type: SourceType; label: string; color: string; active: boolean }[] = [
-  { type: "github", label: "GitHub", color: "#1a1a2e", active: true },
-  { type: "linkedin", label: "LinkedIn", color: "#0077b5", active: true },
-  { type: "reddit", label: "Reddit", color: "#ff4500", active: true },
-  { type: "internet", label: "Web", color: "#6b7280", active: true },
-  { type: "indeed", label: "Indeed", color: "#2164f3", active: false },
+  { type: "github",    label: "GitHub",    color: "#1a1a2e", active: true },
+  { type: "linkedin",  label: "LinkedIn",  color: "#0077b5", active: true },
+  { type: "reddit",    label: "Reddit",    color: "#ff4500", active: true },
+  { type: "internet",  label: "Web",       color: "#6b7280", active: true },
+  { type: "indeed",    label: "Indeed",    color: "#2164f3", active: false },
   { type: "hellowork", label: "HelloWork", color: "#e05c2a", active: false },
 ];
 
@@ -75,7 +75,7 @@ export default function SearchView({ onSearch, initialQuery, initialCount = 10 }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              placeholder="Ex: Dev Python senior à Paris avec 5 ans d'XP..."
+              placeholder="Ex: Lead Data Scientist Python, 5 ans d'XP, Paris..."
               className="flex-1 bg-transparent outline-none text-[15px]"
               style={{ color: "#1a1a2e", fontFamily: "var(--font-sans)" }}
               autoFocus
