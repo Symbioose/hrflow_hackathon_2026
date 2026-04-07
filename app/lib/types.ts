@@ -112,6 +112,7 @@ export interface SavedSearch {
   query: string;
   profile_count: number;
   created_at: string;
+  results?: SourcedProfile[];
 }
 
 export interface ShortlistEntry {
