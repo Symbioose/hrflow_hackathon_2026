@@ -9,7 +9,7 @@ interface PipelineViewProps {
   onContact: (profile: SourcedProfile) => void;
 }
 
-type StageId = "shortlisted" | "contacted" | "waiting" | "discussing" | "archived";
+type StageId = "shortlisted" | "contacted" | "discussing" | "archived";
 
 const COLUMNS: {
   id: StageId;
@@ -20,7 +20,6 @@ const COLUMNS: {
 }[] = [
   { id: "shortlisted", label: "Shortlistés",   sub: "Sélectionnés",          color: "#4f46e5", bg: "rgba(79,70,229,0.05)" },
   { id: "contacted",  label: "Contactés",      sub: "Outreach envoyé",       color: "#f59e0b", bg: "rgba(245,158,11,0.05)" },
-  { id: "waiting",    label: "En attente",     sub: "En attente de réponse", color: "#3b82f6", bg: "rgba(59,130,246,0.05)" },
   { id: "discussing", label: "En discussion",  sub: "Échanges en cours",     color: "#10b981", bg: "rgba(16,185,129,0.05)" },
   { id: "archived",   label: "Archivés",       sub: "Candidatures closes",   color: "#6b7280", bg: "rgba(107,114,128,0.05)" },
 ];
