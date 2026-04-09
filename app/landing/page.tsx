@@ -811,26 +811,14 @@ function DemoSection() {
         </Reveal>
 
         <Reveal delay={200}>
-          <div className="relative aspect-video max-w-4xl mx-auto overflow-hidden cursor-pointer group" style={{ borderRadius: "16px", border: `1px solid ${WHITE}10`, background: `linear-gradient(135deg, ${NAVY}, #1a1a3e, ${NAVY})` }}>
-            {/* Fake screenshot background — faded dashboard */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="w-full h-full p-8 grid grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="rounded-lg" style={{ backgroundColor: `${WHITE}05` }} />
-                ))}
-              </div>
-            </div>
-
-            {/* TODO: remplacer par la vraie vidéo (tag <video> ou embed YouTube/Vimeo) */}
-            {/* Play button */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-              <div className="w-20 h-20 flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{ backgroundColor: CORAL, borderRadius: "50%", boxShadow: `0 0 0 16px ${CORAL}15, 0 0 0 32px ${CORAL}08` }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-                  <polygon points="9,5 20,12 9,19" />
-                </svg>
-              </div>
-              <span className="font-mono text-xs uppercase tracking-wider" style={{ color: `${WHITE}50` }}>3 minutes. De la fiche de poste aux candidats classés.</span>
-            </div>
+          <div className="relative max-w-4xl mx-auto overflow-hidden" style={{ borderRadius: "16px", border: `1px solid ${WHITE}10` }}>
+            <video
+              src="/demo.mov"
+              controls
+              playsInline
+              className="w-full block"
+              style={{ display: "block" }}
+            />
           </div>
         </Reveal>
 
